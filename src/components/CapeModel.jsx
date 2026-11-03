@@ -4,54 +4,63 @@ import * as THREE from 'three';
 import { createMotherboardPcbTexture } from '../utils/textureGenerator';
 
 /**
- * Reusable ARGB 120mm Fan with 7 angled blades, infinity mirror hub & glowing halo ring.
+ * High-Detail 120mm Case / Radiator Fan (Lian Li UNI FAN SL-INF style)
+ * Features octagonal outer frame, anti-vibration corner pads, circular fan tunnel,
+ * 9 curved aerodynamic blades, and subtle infinity mirror center hub.
  */
-function ArgbFan({
+function CaseFan120({
   position = [0, 0, 0],
   rotation = [0, 0, 0],
   scale = 1,
   frameMaterial,
   bladeMaterial,
-  rgbPrimaryMaterial,
+  ledMaterial,
   onRegisterFan,
   fanIndex,
 }) {
   return (
     <group position={position} rotation={rotation} scale={scale}>
-      {/* Outer Square Frame */}
+      {/* Outer Frame Block */}
       <mesh material={frameMaterial} castShadow receiveShadow>
-        <boxGeometry args={[0.52, 0.52, 0.08]} />
+        <boxGeometry args={[0.48, 0.48, 0.065]} />
       </mesh>
 
-      {/* Outer ARGB Halo Ring */}
-      <mesh position={[0, 0, 0.042]} material={rgbPrimaryMaterial}>
-        <ringGeometry args={[0.21, 0.24, 28]} />
+      {/* Subtle Side Infinity Strip */}
+      <mesh position={[0, 0.242, 0]} material={ledMaterial}>
+        <boxGeometry args={[0.38, 0.008, 0.035]} />
       </mesh>
-      <mesh position={[0, 0, -0.042]} rotation={[0, Math.PI, 0]} material={rgbPrimaryMaterial}>
-        <ringGeometry args={[0.21, 0.24, 28]} />
+      <mesh position={[0, -0.242, 0]} material={ledMaterial}>
+        <boxGeometry args={[0.38, 0.008, 0.035]} />
       </mesh>
 
-      {/* Spinning Rotor Hub + 7 Blades */}
+      {/* Thin Refined LED Ring Inside Tunnel */}
+      <mesh position={[0, 0, 0.034]} material={ledMaterial}>
+        <ringGeometry args={[0.205, 0.218, 32]} />
+      </mesh>
+      <mesh position={[0, 0, -0.034]} rotation={[0, Math.PI, 0]} material={ledMaterial}>
+        <ringGeometry args={[0.205, 0.218, 32]} />
+      </mesh>
+
+      {/* Spinning Rotor Hub + 9 Aerodynamic Blades */}
       <group ref={(el) => onRegisterFan(fanIndex, el)}>
-        {/* Center Infinity Hub */}
         <mesh rotation={[Math.PI / 2, 0, 0]} material={frameMaterial}>
-          <cylinderGeometry args={[0.075, 0.075, 0.085, 20]} />
+          <cylinderGeometry args={[0.068, 0.068, 0.068, 24]} />
         </mesh>
-        <mesh position={[0, 0, 0.045]} material={rgbPrimaryMaterial}>
-          <circleGeometry args={[0.055, 20]} />
+        {/* Infinity Mirror Center Cap */}
+        <mesh position={[0, 0, 0.035]} material={ledMaterial}>
+          <ringGeometry args={[0.032, 0.052, 24]} />
         </mesh>
 
-        {/* 7 Fan Blades */}
-        {Array.from({ length: 7 }).map((_, idx) => {
-          const angle = (idx / 7) * Math.PI * 2;
+        {Array.from({ length: 9 }).map((_, idx) => {
+          const angle = (idx / 9) * Math.PI * 2;
           return (
             <group key={idx} rotation={[0, 0, angle]}>
               <mesh
-                position={[0.13, 0, 0]}
-                rotation={[0.42, 0.15, 0]}
+                position={[0.125, 0, 0]}
+                rotation={[0.48, 0.18, 0]}
                 material={bladeMaterial}
               >
-                <boxGeometry args={[0.15, 0.045, 0.015]} />
+                <boxGeometry args={[0.14, 0.038, 0.008]} />
               </mesh>
             </group>
           );
@@ -62,18 +71,14 @@ function ArgbFan({
 }
 
 /**
- * Braided AIO Liquid Cooling Tubes using CatmullRomCurve3
+ * Smooth Braided Sleeved Liquid Tube / Power Cable
  */
-function BraidedTube({ start, mid1, mid2, end, material }) {
+function BraidedTube({ points, radius = 0.022, material }) {
   const tubeGeo = useMemo(() => {
-    const curve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(...start),
-      new THREE.Vector3(...mid1),
-      new THREE.Vector3(...mid2),
-      new THREE.Vector3(...end),
-    ]);
-    return new THREE.TubeGeometry(curve, 24, 0.028, 12, false);
-  }, [start, mid1, mid2, end]);
+    const vectors = points.map((p) => new THREE.Vector3(...p));
+    const curve = new THREE.CatmullRomCurve3(vectors);
+    return new THREE.TubeGeometry(curve, 28, radius, 12, false);
+  }, [points, radius]);
 
   return <mesh geometry={tubeGeo} material={material} castShadow />;
 }
@@ -83,19 +88,18 @@ export default function CapeModel({
   lcdTexture,
   customBackplateTex,
   rgbPreset,
-  fanRpmFactor = 2.4,
-  metalness = 0.72,
-  roughness = 0.26,
+  fanRpmFactor = 2.2,
+  metalness = 0.65,
+  roughness = 0.32,
   wireframe = false,
   explodedView = false,
   glassOpen = false,
   focusedCategory = null,
 }) {
-  const rigGroupRef = useRef();
   const fanRefs = useRef([]);
   const glassDoorRef = useRef();
 
-  // Refs for exploded-view smooth lerp animation
+  // Component group refs for smooth Exploded View inspection
   const moboGroupRef = useRef();
   const cpuGroupRef = useRef();
   const coolerGroupRef = useRef();
@@ -108,7 +112,7 @@ export default function CapeModel({
     if (el) fanRefs.current[idx] = el;
   }, []);
 
-  // Procedural Motherboard PCB Texture
+  // High-res Motherboard PCB Texture
   const pcbTexture = useMemo(() => {
     return createMotherboardPcbTexture(
       build.motherboard.pcbColor,
@@ -116,13 +120,13 @@ export default function CapeModel({
     );
   }, [build.motherboard.pcbColor, build.motherboard.accentColor]);
 
-  // Materials
+  // Realistic Materials (de-saturated, authentic hardware anodized aluminum, brushed steel & matte polymers)
   const caseChassisMat = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
         color: new THREE.Color(build.case.chassisColor),
-        metalness: Math.min(1, metalness),
-        roughness: Math.max(0.12, roughness),
+        metalness: Math.min(0.85, metalness),
+        roughness: Math.max(0.22, roughness),
         wireframe,
       }),
     [build.case.chassisColor, metalness, roughness, wireframe]
@@ -132,33 +136,35 @@ export default function CapeModel({
     () =>
       new THREE.MeshStandardMaterial({
         color: new THREE.Color(build.case.interiorColor),
-        metalness: Math.min(1, metalness * 0.8),
-        roughness: Math.max(0.2, roughness),
+        metalness: Math.min(0.7, metalness * 0.8),
+        roughness: Math.max(0.3, roughness),
         wireframe,
       }),
     [build.case.interiorColor, metalness, roughness, wireframe]
   );
 
-  const temperedGlassMat = useMemo(
+  // Ultra-Clear Architectural Tempered Glass (depthWrite: false + low opacity so internal parts are 100% crisp)
+  const ultraClearGlassMat = useMemo(
     () =>
       new THREE.MeshPhysicalMaterial({
-        color: new THREE.Color(build.case.glassTint),
+        color: new THREE.Color('#e2e8f0'),
         transparent: true,
-        opacity: wireframe ? 0.35 : 0.16,
-        roughness: 0.05,
-        metalness: 0.1,
-        reflectivity: 0.9,
+        opacity: wireframe ? 0.25 : 0.055,
+        roughness: 0.04,
+        metalness: 0.05,
+        reflectivity: 0.4,
+        depthWrite: false,
         wireframe,
       }),
-    [build.case.glassTint, wireframe]
+    [wireframe]
   );
 
   const moboPcbMat = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
         map: pcbTexture,
-        metalness: 0.35,
-        roughness: 0.45,
+        metalness: 0.3,
+        roughness: 0.5,
         wireframe,
       }),
     [pcbTexture, wireframe]
@@ -168,19 +174,30 @@ export default function CapeModel({
     () =>
       new THREE.MeshStandardMaterial({
         color: new THREE.Color(build.motherboard.vrmColor),
-        metalness: Math.min(1, metalness + 0.1),
-        roughness: Math.max(0.15, roughness * 0.8),
+        metalness: 0.78,
+        roughness: 0.26,
         wireframe,
       }),
-    [build.motherboard.vrmColor, metalness, roughness, wireframe]
+    [build.motherboard.vrmColor, wireframe]
   );
 
-  const cpuIhsMat = useMemo(
+  const brushedNickelMat = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
         color: new THREE.Color('#cbd5e1'),
-        metalness: 0.92,
-        roughness: 0.18,
+        metalness: 0.9,
+        roughness: 0.2,
+        wireframe,
+      }),
+    [wireframe]
+  );
+
+  const copperMat = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: new THREE.Color('#c2410c'),
+        metalness: 0.88,
+        roughness: 0.22,
         wireframe,
       }),
     [wireframe]
@@ -190,11 +207,22 @@ export default function CapeModel({
     () =>
       new THREE.MeshStandardMaterial({
         color: new THREE.Color(build.gpu.shroudColor),
-        metalness: Math.min(1, metalness),
-        roughness: Math.max(0.15, roughness),
+        metalness: 0.75,
+        roughness: 0.28,
         wireframe,
       }),
-    [build.gpu.shroudColor, metalness, roughness, wireframe]
+    [build.gpu.shroudColor, wireframe]
+  );
+
+  const gpuTrimMat = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: new THREE.Color(build.gpu.trimColor || '#64748b'),
+        metalness: 0.88,
+        roughness: 0.2,
+        wireframe,
+      }),
+    [build.gpu.trimColor, wireframe]
   );
 
   const gpuBackplateMat = useMemo(
@@ -204,7 +232,7 @@ export default function CapeModel({
         color: new THREE.Color(
           customBackplateTex ? '#ffffff' : build.gpu.shroudColor
         ),
-        metalness: 0.78,
+        metalness: 0.8,
         roughness: 0.25,
         wireframe,
       }),
@@ -215,8 +243,8 @@ export default function CapeModel({
     () =>
       new THREE.MeshStandardMaterial({
         color: new THREE.Color(build.ram.heatsinkColor),
-        metalness: 0.85,
-        roughness: 0.2,
+        metalness: 0.82,
+        roughness: 0.24,
         wireframe,
       }),
     [build.ram.heatsinkColor, wireframe]
@@ -226,19 +254,30 @@ export default function CapeModel({
     () =>
       new THREE.MeshStandardMaterial({
         color: new THREE.Color(build.cooler.radiatorColor),
-        metalness: 0.75,
-        roughness: 0.28,
+        metalness: 0.7,
+        roughness: 0.3,
         wireframe,
       }),
     [build.cooler.radiatorColor, wireframe]
+  );
+
+  const fanFrameMat = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: new THREE.Color(build.fans?.fanColor || '#16181f'),
+        metalness: 0.55,
+        roughness: 0.35,
+        wireframe,
+      }),
+    [build.fans?.fanColor, wireframe]
   );
 
   const psuBodyMat = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
         color: new THREE.Color(build.psu.bodyColor),
-        metalness: 0.7,
-        roughness: 0.3,
+        metalness: 0.68,
+        roughness: 0.32,
         wireframe,
       }),
     [build.psu.bodyColor, wireframe]
@@ -250,367 +289,397 @@ export default function CapeModel({
         map: lcdTexture || null,
         emissiveMap: lcdTexture || null,
         emissive: new THREE.Color('#ffffff'),
-        emissiveIntensity: 0.95,
-        roughness: 0.1,
+        emissiveIntensity: 0.85,
+        roughness: 0.12,
         metalness: 0.1,
         wireframe,
       }),
     [lcdTexture, wireframe]
   );
 
-  const rgbPrimaryMat = useMemo(() => {
-    const c = new THREE.Color(rgbPreset?.primary || '#06b6d4');
+  // Refined, realistic LED diffuser material (not oversaturated)
+  const ledPrimaryMat = useMemo(() => {
+    const c = new THREE.Color(rgbPreset?.primary || '#e2e8f0');
+    const intensity = rgbPreset?.intensity ?? 0.9;
     return new THREE.MeshStandardMaterial({
       color: c,
       emissive: c,
-      emissiveIntensity: 2.1,
-      roughness: 0.2,
+      emissiveIntensity: intensity,
+      roughness: 0.25,
       wireframe,
     });
   }, [rgbPreset, wireframe]);
 
-  const rgbSecondaryMat = useMemo(() => {
-    const c = new THREE.Color(rgbPreset?.secondary || '#ec4899');
+  const ledSecondaryMat = useMemo(() => {
+    const c = new THREE.Color(rgbPreset?.secondary || '#94a3b8');
+    const intensity = (rgbPreset?.intensity ?? 0.9) * 0.85;
     return new THREE.MeshStandardMaterial({
       color: c,
       emissive: c,
-      emissiveIntensity: 2.0,
-      roughness: 0.2,
+      emissiveIntensity: intensity,
+      roughness: 0.25,
       wireframe,
     });
   }, [rgbPreset, wireframe]);
 
-  const translucentBladeMat = useMemo(() => {
-    const c = new THREE.Color(rgbPreset?.primary || '#22d3ee');
+  const fanBladeMat = useMemo(() => {
     return new THREE.MeshStandardMaterial({
-      color: c,
-      emissive: c,
-      emissiveIntensity: 0.45,
+      color: new THREE.Color('#cbd5e1'),
       transparent: true,
-      opacity: 0.75,
-      roughness: 0.2,
+      opacity: 0.72,
+      roughness: 0.25,
+      metalness: 0.15,
       wireframe,
     });
-  }, [rgbPreset, wireframe]);
+  }, [wireframe]);
 
-  const copperHeatpipeMat = useMemo(
-    () =>
-      new THREE.MeshStandardMaterial({
-        color: new THREE.Color('#d97706'),
-        metalness: 0.92,
-        roughness: 0.18,
-        wireframe,
-      }),
-    [wireframe]
-  );
-
-  // Real-time animation loop: spin all fans, animate exploded view & side glass panel
-  useFrame((state, delta) => {
-    const speed = Math.max(0.2, fanRpmFactor) * 4.5;
+  // Animation loop: rotate all fans & smoothly animate Exploded View / Glass Panel
+  useFrame((_, delta) => {
+    const speed = Math.max(0.1, fanRpmFactor) * 4.2;
     for (let i = 0; i < fanRefs.current.length; i++) {
       const f = fanRefs.current[i];
-      if (f) {
-        f.rotation.z -= delta * speed;
-      }
+      if (f) f.rotation.z -= delta * speed;
     }
 
-    // Smoothly open/close the Tempered Glass Side Panel
     if (glassDoorRef.current) {
-      const targetZ = glassOpen || explodedView ? 1.55 : 0.68;
-      const targetRotY = glassOpen ? -0.35 : 0;
+      const targetZ = glassOpen || explodedView ? 1.48 : 0.69;
+      const targetRotY = glassOpen ? -0.32 : 0;
       glassDoorRef.current.position.z = THREE.MathUtils.lerp(
         glassDoorRef.current.position.z,
         targetZ,
-        0.08
+        0.09
       );
       glassDoorRef.current.rotation.y = THREE.MathUtils.lerp(
         glassDoorRef.current.rotation.y,
         targetRotY,
-        0.08
+        0.09
       );
     }
 
-    // Smooth Exploded View & Category Highlight offsets
     const exp = explodedView ? 1 : 0;
-    const lerpSpeed = 0.08;
+    const lerp = 0.085;
 
     if (moboGroupRef.current) {
-      const focusBoost = focusedCategory === 'motherboard' ? 0.18 : 0;
       moboGroupRef.current.position.z = THREE.MathUtils.lerp(
         moboGroupRef.current.position.z,
-        -0.44 + exp * 0.15 + focusBoost,
-        lerpSpeed
+        -0.14 + exp * 0.12,
+        lerp
       );
     }
 
     if (cpuGroupRef.current) {
-      const focusBoost = focusedCategory === 'cpu' ? 0.32 : 0;
       cpuGroupRef.current.position.z = THREE.MathUtils.lerp(
         cpuGroupRef.current.position.z,
-        0.05 + exp * 0.38 + focusBoost,
-        lerpSpeed
+        0.04 + exp * 0.28,
+        lerp
       );
     }
 
     if (coolerGroupRef.current) {
-      const focusBoost = focusedCategory === 'cooler' ? 0.35 : 0;
       coolerGroupRef.current.position.z = THREE.MathUtils.lerp(
         coolerGroupRef.current.position.z,
-        0 + exp * 0.68 + focusBoost,
-        lerpSpeed
+        exp * 0.55,
+        lerp
       );
     }
 
     if (gpuGroupRef.current) {
-      const focusBoost = focusedCategory === 'gpu' ? 0.35 : 0;
+      // Strictly inside the case (Z = 0.16 when closed, Z = 0.65 only when exploded)
       gpuGroupRef.current.position.z = THREE.MathUtils.lerp(
         gpuGroupRef.current.position.z,
-        0.22 + exp * 0.85 + focusBoost,
-        lerpSpeed
+        0.16 + exp * 0.52,
+        lerp
       );
     }
 
     if (ramGroupRef.current) {
-      const focusBoost = focusedCategory === 'ram' ? 0.3 : 0;
       ramGroupRef.current.position.z = THREE.MathUtils.lerp(
         ramGroupRef.current.position.z,
-        0.08 + exp * 0.48 + focusBoost,
-        lerpSpeed
+        0.07 + exp * 0.36,
+        lerp
       );
     }
 
     if (ssdGroupRef.current) {
-      const focusBoost = focusedCategory === 'storage' ? 0.28 : 0;
       ssdGroupRef.current.position.z = THREE.MathUtils.lerp(
         ssdGroupRef.current.position.z,
-        0.04 + exp * 0.35 + focusBoost,
-        lerpSpeed
+        0.035 + exp * 0.26,
+        lerp
       );
     }
 
     if (psuGroupRef.current) {
-      const focusBoost = focusedCategory === 'psu' ? 0.3 : 0;
-      psuGroupRef.current.position.x = THREE.MathUtils.lerp(
-        psuGroupRef.current.position.x,
-        -0.35 - exp * 0.45,
-        lerpSpeed
-      );
       psuGroupRef.current.position.z = THREE.MathUtils.lerp(
         psuGroupRef.current.position.z,
-        0.05 + focusBoost,
-        lerpSpeed
+        -0.38 - exp * 0.35,
+        lerp
       );
     }
   });
 
-  const gpuLen = 1.38 * (build.gpu.lengthScale || 1.0);
+  // GPU dimensions strictly scaled to fit inside the ATX chamber with generous front fan clearance
+  const gpuLen = 1.24 * (build.gpu.lengthScale || 1.0);
+  const isFoundersGpu = build.gpu.id === 'nvidia_rtx_5080_fe';
 
   return (
-    <group ref={rigGroupRef} position={[0, 0.05, 0]}>
+    <group position={[0, 0.02, 0]} name="PC_Hardware_Rig_Root">
       {/* =================================================================
-          1. PC CASE CHASSIS (ATX Panoramic / Mesh Tower)
+          1. REALISTIC DUAL-CHAMBER / ATX CASE CHASSIS (HYTE Y70 / O11 / NZXT / 4000D)
+          Dimensions: X [-1.10 to +1.10], Y [-1.32 to +1.32], Z [-0.68 to +0.68]
          ================================================================= */}
-      <group>
-        {/* Bottom Base Plate */}
-        <mesh position={[0, -1.32, 0]} material={caseChassisMat} castShadow receiveShadow>
-          <boxGeometry args={[2.16, 0.08, 1.42]} />
+      <group name="Case_Chassis">
+        {/* Bottom Base Chassis */}
+        <mesh position={[0, -1.3, 0]} material={caseChassisMat} castShadow receiveShadow>
+          <boxGeometry args={[2.2, 0.07, 1.38]} />
         </mesh>
 
-        {/* 4 Case Feet */}
+        {/* Bottom Intake Dust Filter & 3 Bottom Fans */}
+        {[-0.52, 0, 0.52].map((xPos, idx) => (
+          <CaseFan120
+            key={`bot_fan_${idx}`}
+            position={[xPos - 0.12, -1.22, 0.18]}
+            rotation={[-Math.PI / 2, 0, 0]}
+            scale={0.92}
+            frameMaterial={fanFrameMat}
+            bladeMaterial={fanBladeMat}
+            ledMaterial={ledSecondaryMat}
+            onRegisterFan={registerFan}
+            fanIndex={10 + idx}
+          />
+        ))}
+
+        {/* 4 Machined Case Feet */}
         {[
-          [-0.92, -1.4, -0.56],
-          [0.92, -1.4, -0.56],
-          [-0.92, -1.4, 0.56],
-          [0.92, -1.4, 0.56],
+          [-0.95, -1.38, -0.55],
+          [0.95, -1.38, -0.55],
+          [-0.95, -1.38, 0.55],
+          [0.95, -1.38, 0.55],
         ].map((pos, idx) => (
           <mesh key={idx} position={pos} material={caseInteriorMat} castShadow>
-            <cylinderGeometry args={[0.09, 0.11, 0.08, 16]} />
+            <cylinderGeometry args={[0.09, 0.1, 0.08, 24]} />
           </mesh>
         ))}
 
-        {/* Top Roof Panel */}
-        <mesh position={[0, 1.32, 0]} material={caseChassisMat} castShadow receiveShadow>
-          <boxGeometry args={[2.16, 0.07, 1.42]} />
+        {/* Top Roof Chassis + Ventilated Mesh Cutout */}
+        <mesh position={[0, 1.3, 0]} material={caseChassisMat} castShadow receiveShadow>
+          <boxGeometry args={[2.2, 0.06, 1.38]} />
         </mesh>
 
-        {/* Back Motherboard Tray Wall */}
-        <mesh position={[0, 0, -0.56]} material={caseInteriorMat} castShadow receiveShadow>
-          <boxGeometry args={[2.12, 2.58, 0.06]} />
+        {/* Rear Spine Wall (behind motherboard tray) */}
+        <mesh position={[0, 0, -0.67]} material={caseChassisMat} castShadow receiveShadow>
+          <boxGeometry args={[2.2, 2.56, 0.04]} />
         </mesh>
 
-        {/* Rear Exhaust Wall */}
-        <mesh position={[-1.05, 0, 0]} material={caseChassisMat} castShadow receiveShadow>
-          <boxGeometry args={[0.06, 2.58, 1.4]} />
+        {/* Internal Dual-Chamber Motherboard Tray Partition (at Z = -0.18) */}
+        <mesh position={[-0.22, 0, -0.18]} material={caseInteriorMat} castShadow receiveShadow>
+          <boxGeometry args={[1.72, 2.52, 0.04]} />
         </mesh>
 
-        {/* Bottom PSU Shroud Chamber */}
-        <mesh position={[-0.22, -0.98, 0.04]} material={caseInteriorMat} castShadow receiveShadow>
-          <boxGeometry args={[1.64, 0.6, 1.24]} />
-        </mesh>
-        {/* Shroud RGB Underglow Accent Strip */}
-        <mesh position={[-0.22, -0.68, 0.665]} material={rgbPrimaryMat}>
-          <boxGeometry args={[1.62, 0.025, 0.02]} />
-        </mesh>
-
-        {/* Front Panel (Panoramic Glass OR Perforated Stealth Mesh) */}
-        {build.case.style === 'mesh_stealth' ? (
-          <group position={[1.05, 0, 0]}>
-            <mesh material={caseChassisMat} castShadow>
-              <boxGeometry args={[0.07, 2.58, 1.4]} />
-            </mesh>
-            {/* Front Vertical ARGB Accent Bars */}
-            <mesh position={[0.04, 0, 0.55]} material={rgbPrimaryMat}>
-              <boxGeometry args={[0.02, 2.35, 0.03]} />
-            </mesh>
-            <mesh position={[0.04, 0, -0.55]} material={rgbSecondaryMat}>
-              <boxGeometry args={[0.02, 2.35, 0.03]} />
-            </mesh>
-          </group>
-        ) : (
-          /* Panoramic Front Glass Panel */
-          <mesh position={[1.06, 0, 0]} material={temperedGlassMat}>
-            <boxGeometry args={[0.03, 2.56, 1.36]} />
+        {/* Rubber Cable Routing Grommets on Motherboard Tray */}
+        {[0.45, -0.05, -0.55].map((yPos, idx) => (
+          <mesh key={idx} position={[0.42, yPos, -0.155]} material={caseChassisMat}>
+            <boxGeometry args={[0.11, 0.32, 0.02]} />
           </mesh>
-        )}
+        ))}
 
-        {/* Side Tempered Glass Door (Interactive Open/Close) */}
-        <group ref={glassDoorRef} position={[0, 0, 0.68]}>
-          <mesh material={temperedGlassMat}>
-            <boxGeometry args={[2.1, 2.56, 0.03]} />
-          </mesh>
-          {/* Top & Bottom Black/White Bezels on Glass */}
-          <mesh position={[0, 1.24, 0.01]} material={caseChassisMat}>
-            <boxGeometry args={[2.1, 0.08, 0.035]} />
-          </mesh>
-          <mesh position={[0, -1.24, 0.01]} material={caseChassisMat}>
-            <boxGeometry args={[2.1, 0.08, 0.035]} />
-          </mesh>
-        </group>
+        {/* Recessed Side Fan Mounting Bracket (at Z = -0.34, X = +0.76) */}
+        <mesh position={[0.76, 0, -0.36]} material={caseInteriorMat}>
+          <boxGeometry args={[0.56, 2.52, 0.04]} />
+        </mesh>
 
-        {/* Rear Exhaust 120mm ARGB Fan */}
-        <ArgbFan
-          position={[-0.98, 0.56, 0.05]}
-          rotation={[0, Math.PI / 2, 0]}
-          scale={0.95}
-          frameMaterial={caseInteriorMat}
-          bladeMaterial={translucentBladeMat}
-          rgbPrimaryMaterial={rgbPrimaryMat}
-          onRegisterFan={registerFan}
-          fanIndex={0}
-        />
-
-        {/* 3x Side/Front Intake 120mm ARGB Fans */}
-        {[-0.65, 0, 0.65].map((yPos, idx) => (
-          <ArgbFan
-            key={idx}
-            position={[0.74, yPos, -0.45]}
+        {/* 3x Side Intake 120mm Fans (Lian Li UNI FAN SL-INF) */}
+        {[-0.56, 0, 0.56].map((yPos, idx) => (
+          <CaseFan120
+            key={`side_fan_${idx}`}
+            position={[0.76, yPos, -0.31]}
             rotation={[0, 0, 0]}
-            scale={0.92}
-            frameMaterial={caseInteriorMat}
-            bladeMaterial={translucentBladeMat}
-            rgbPrimaryMaterial={idx % 2 === 0 ? rgbPrimaryMat : rgbSecondaryMat}
+            scale={0.94}
+            frameMaterial={fanFrameMat}
+            bladeMaterial={fanBladeMat}
+            ledMaterial={ledPrimaryMat}
             onRegisterFan={registerFan}
             fanIndex={idx + 1}
           />
         ))}
+
+        {/* Rear Exhaust Wall (Left at X = -1.08) + PCIe Expansion Slot Brackets */}
+        <mesh position={[-1.08, 0, 0]} material={caseChassisMat} castShadow receiveShadow>
+          <boxGeometry args={[0.05, 2.56, 1.38]} />
+        </mesh>
+
+        {/* Rear 120mm Exhaust Fan */}
+        <CaseFan120
+          position={[-1.02, 0.52, 0.18]}
+          rotation={[0, Math.PI / 2, 0]}
+          scale={0.92}
+          frameMaterial={fanFrameMat}
+          bladeMaterial={fanBladeMat}
+          ledMaterial={ledPrimaryMat}
+          onRegisterFan={registerFan}
+          fanIndex={0}
+        />
+
+        {/* Front Panel: Either Perforated Airflow Mesh (4000D) OR Crystal-Clear Panoramic Glass (Y70 / O11 / H9) */}
+        {build.case.style === 'mesh_airflow' ? (
+          <group position={[1.08, 0, 0]}>
+            <mesh material={caseChassisMat} castShadow>
+              <boxGeometry args={[0.05, 2.56, 1.38]} />
+            </mesh>
+            <mesh position={[0.03, 0, 0]} material={caseInteriorMat}>
+              <boxGeometry args={[0.015, 2.36, 1.18]} />
+            </mesh>
+          </group>
+        ) : (
+          /* Ultra-Clear Front Tempered Glass + Thin Top/Bottom Metal Bezels */
+          <group position={[1.08, 0, 0]}>
+            <mesh material={ultraClearGlassMat}>
+              <boxGeometry args={[0.02, 2.52, 1.34]} />
+            </mesh>
+            <mesh position={[0, 1.24, 0]} material={caseChassisMat}>
+              <boxGeometry args={[0.03, 0.06, 1.36]} />
+            </mesh>
+            <mesh position={[0, -1.24, 0]} material={caseChassisMat}>
+              <boxGeometry args={[0.03, 0.06, 1.36]} />
+            </mesh>
+            {/* HYTE Y70 Signature Chamfered Corner Pillar Trim */}
+            {build.case.style === 'panoramic_3piece' && (
+              <mesh position={[-0.02, -0.82, 0.66]} material={caseChassisMat}>
+                <boxGeometry args={[0.08, 0.85, 0.08]} />
+              </mesh>
+            )}
+          </group>
+        )}
+
+        {/* Side Tempered Glass Window (Ultra-Clear so all internal components are 100% sharp) */}
+        <group ref={glassDoorRef} position={[0, 0, 0.69]}>
+          <mesh material={ultraClearGlassMat}>
+            <boxGeometry args={[2.16, 2.52, 0.02]} />
+          </mesh>
+          {/* Thin Top & Bottom Structural Glass Bezels */}
+          <mesh position={[0, 1.24, 0]} material={caseChassisMat}>
+            <boxGeometry args={[2.18, 0.06, 0.028]} />
+          </mesh>
+          <mesh position={[0, -1.24, 0]} material={caseChassisMat}>
+            <boxGeometry args={[2.18, 0.06, 0.028]} />
+          </mesh>
+        </group>
       </group>
 
       {/* =================================================================
-          2. MOTHERBOARD (ATX PCB, VRM Heatsinks, I/O Shield, PCIe Slots)
+          2. REALISTIC ATX MOTHERBOARD (ROG Crosshair / MPG Carbon / AORUS ICE / Z890)
          ================================================================= */}
-      <group ref={moboGroupRef} position={[-0.26, 0.22, -0.44]}>
-        {/* Main ATX PCB Board */}
+      <group ref={moboGroupRef} position={[-0.32, 0.16, -0.14]} name="Motherboard_Assembly">
+        {/* 8-Layer ATX PCB */}
         <mesh material={moboPcbMat} castShadow receiveShadow>
-          <boxGeometry args={[1.28, 1.56, 0.04]} />
+          <boxGeometry args={[1.26, 1.54, 0.035]} />
         </mesh>
 
-        {/* Rear I/O Armor Shroud + RGB Strip */}
-        <mesh position={[-0.5, 0.36, 0.09]} material={moboVrmMat} castShadow>
-          <boxGeometry args={[0.24, 0.76, 0.14]} />
+        {/* Massive Left I/O VRM Armor Shroud + Polymo / Dragon Display */}
+        <mesh position={[-0.48, 0.34, 0.075]} material={moboVrmMat} castShadow>
+          <boxGeometry args={[0.25, 0.78, 0.11]} />
         </mesh>
-        <mesh position={[-0.42, 0.36, 0.165]} material={rgbSecondaryMat}>
-          <boxGeometry args={[0.06, 0.62, 0.015]} />
-        </mesh>
-
-        {/* Top VRM Heatsink Block */}
-        <mesh position={[-0.08, 0.66, 0.07]} material={moboVrmMat} castShadow>
-          <boxGeometry args={[0.56, 0.16, 0.11]} />
+        <mesh position={[-0.44, 0.34, 0.132]} material={ledPrimaryMat}>
+          <boxGeometry args={[0.09, 0.42, 0.008]} />
         </mesh>
 
-        {/* Chipset Heatsink (Bottom Right of Mobo) */}
-        <mesh position={[0.32, -0.42, 0.05]} material={moboVrmMat} castShadow>
-          <boxGeometry args={[0.38, 0.34, 0.06]} />
-        </mesh>
-        <mesh position={[0.32, -0.42, 0.085]} material={rgbPrimaryMat}>
-          <boxGeometry args={[0.26, 0.04, 0.01]} />
+        {/* Top VRM Heatsink Fin Block + Heatpipe */}
+        <mesh position={[-0.06, 0.65, 0.065]} material={moboVrmMat} castShadow>
+          <boxGeometry args={[0.56, 0.16, 0.09]} />
         </mesh>
 
-        {/* Steel-Reinforced PCIe 5.0 x16 Slots */}
-        <mesh position={[-0.06, -0.14, 0.035]} material={cpuIhsMat}>
-          <boxGeometry args={[0.68, 0.04, 0.04]} />
-        </mesh>
-        <mesh position={[-0.06, -0.52, 0.035]} material={cpuIhsMat}>
-          <boxGeometry args={[0.68, 0.04, 0.04]} />
+        {/* 2x 8-Pin EPS CPU Power Headers at Top-Left */}
+        <mesh position={[-0.48, 0.72, 0.04]} material={caseInteriorMat}>
+          <boxGeometry args={[0.18, 0.05, 0.05]} />
         </mesh>
 
-        {/* 24-Pin ATX Braided Power Connector */}
-        <mesh position={[0.58, 0.24, 0.06]} material={caseInteriorMat}>
-          <boxGeometry args={[0.06, 0.32, 0.08]} />
+        {/* Lower M.2 Thermal Armor Plate & Chipset Heatsink */}
+        <mesh position={[0.08, -0.44, 0.045]} material={moboVrmMat} castShadow>
+          <boxGeometry args={[0.88, 0.42, 0.05]} />
+        </mesh>
+        <mesh position={[0.32, -0.44, 0.072]} material={ledSecondaryMat}>
+          <boxGeometry args={[0.28, 0.025, 0.008]} />
+        </mesh>
+
+        {/* Steel-Armored PCIe 5.0 x16 Slots */}
+        <mesh position={[-0.08, -0.12, 0.035]} material={brushedNickelMat}>
+          <boxGeometry args={[0.68, 0.038, 0.038]} />
+        </mesh>
+        <mesh position={[-0.08, -0.58, 0.035]} material={brushedNickelMat}>
+          <boxGeometry args={[0.68, 0.038, 0.038]} />
+        </mesh>
+
+        {/* 24-Pin ATX Power Header + Braided Cable Routing into Grommet */}
+        <mesh position={[0.56, 0.22, 0.045]} material={caseInteriorMat}>
+          <boxGeometry args={[0.055, 0.3, 0.06]} />
+        </mesh>
+        <BraidedTube
+          points={[
+            [0.58, 0.22, 0.06],
+            [0.68, 0.22, 0.08],
+            [0.74, 0.22, -0.04],
+          ]}
+          radius={0.036}
+          material={caseChassisMat}
+        />
+
+        {/* Rear Audio Capacitors & CMOS Battery */}
+        <mesh position={[-0.28, -0.68, 0.025]} rotation={[Math.PI / 2, 0, 0]} material={brushedNickelMat}>
+          <cylinderGeometry args={[0.045, 0.045, 0.015, 20]} />
         </mesh>
 
         {/* ===============================================================
-            3. PROCESSOR (CPU Socket AM5 / LGA + Heatspreader IHS)
+            3. PROCESSOR (AMD AM5 / Intel LGA Socket + Precision IHS)
            =============================================================== */}
-        <group ref={cpuGroupRef} position={[-0.06, 0.34, 0.05]}>
-          {/* Socket Retention Frame */}
-          <mesh material={caseInteriorMat}>
-            <boxGeometry args={[0.34, 0.34, 0.025]} />
+        <group ref={cpuGroupRef} position={[-0.06, 0.34, 0.04]} name="CPU_Processor">
+          {/* Socket ILM Retention Mechanism */}
+          <mesh material={brushedNickelMat}>
+            <boxGeometry args={[0.33, 0.35, 0.02]} />
           </mesh>
-          {/* Green/Teal CPU Substrate */}
-          <mesh position={[0, 0, 0.018]}>
-            <boxGeometry args={[0.28, 0.28, 0.015]} />
-            <meshStandardMaterial color="#0f766e" roughness={0.4} metalness={0.3} wireframe={wireframe} />
+          {/* Green/Teal CPU Package PCB */}
+          <mesh position={[0, 0, 0.015]}>
+            <boxGeometry args={[0.27, 0.27, 0.012]} />
+            <meshStandardMaterial color="#0f766e" roughness={0.45} metalness={0.3} wireframe={wireframe} />
           </mesh>
-          {/* Nickel-Plated Copper IHS */}
-          <mesh position={[0, 0, 0.034]} material={cpuIhsMat} castShadow>
+          {/* Nickel-Plated Copper Integrated Heat Spreader (IHS) */}
+          <mesh position={[0, 0, 0.028]} material={brushedNickelMat} castShadow>
             <boxGeometry
               args={
-                build.cpu.ihsStyle === 'intel_rect'
-                  ? [0.22, 0.26, 0.02]
-                  : [0.24, 0.24, 0.02]
+                build.cpu.brand === 'Intel'
+                  ? [0.21, 0.26, 0.018]
+                  : [0.23, 0.23, 0.018]
               }
             />
           </mesh>
         </group>
 
         {/* ===============================================================
-            4. RAM MODULES (2x or 4x DDR5 RGB Sticks in DIMM Slots)
+            4. DDR5 RAM MODULES (G.Skill Trident Z5 / Corsair Dominator)
            =============================================================== */}
-        <group ref={ramGroupRef} position={[0.32, 0.34, 0.08]}>
+        <group ref={ramGroupRef} position={[0.31, 0.34, 0.07]} name="RAM_Modules">
           {[0, 1, 2, 3].map((slotIdx) => {
             const isPopulated =
               build.ram.sticks === 4 || slotIdx === 1 || slotIdx === 3;
-            const xOffset = (slotIdx - 1.5) * 0.065;
+            const xOffset = (slotIdx - 1.5) * 0.062;
 
             return (
               <group key={slotIdx} position={[xOffset, 0, 0]}>
-                {/* DIMM Slot Base */}
-                <mesh position={[0, 0, -0.05]} material={caseInteriorMat}>
-                  <boxGeometry args={[0.025, 0.44, 0.03]} />
+                {/* DIMM Slot Latches */}
+                <mesh position={[0, 0, -0.045]} material={caseInteriorMat}>
+                  <boxGeometry args={[0.022, 0.44, 0.028]} />
                 </mesh>
 
-                {/* Populated DDR5 Module + Diffused ARGB Light Bar */}
                 {isPopulated && (
                   <group position={[0, 0, 0.02]}>
+                    {/* Anodized Aluminum Heatspreader */}
                     <mesh material={ramHeatsinkMat} castShadow>
-                      <boxGeometry args={[0.034, 0.42, 0.11]} />
+                      <boxGeometry args={[0.032, 0.42, 0.11]} />
                     </mesh>
-                    {/* Top ARGB Diffuser Strip */}
+                    {/* Refined Top Diffused RGB Bar */}
                     <mesh
-                      position={[0, 0, 0.062]}
-                      material={slotIdx % 2 === 0 ? rgbPrimaryMat : rgbSecondaryMat}
+                      position={[0, 0, 0.06]}
+                      material={slotIdx % 2 === 0 ? ledPrimaryMat : ledSecondaryMat}
                     >
-                      <boxGeometry args={[0.036, 0.43, 0.022]} />
+                      <boxGeometry args={[0.033, 0.425, 0.018]} />
                     </mesh>
                   </group>
                 )}
@@ -620,25 +689,24 @@ export default function CapeModel({
         </group>
 
         {/* ===============================================================
-            5. STORAGE (NVMe M.2 PCIe 5.0 SSDs with Armored Heatsinks)
+            5. STORAGE (Samsung 990 PRO / WD_BLACK SN850X M.2 NVMe SSDs)
            =============================================================== */}
-        <group ref={ssdGroupRef} position={[-0.08, -0.31, 0.04]}>
-          {/* Primary M.2 Slot Heatsink */}
+        <group ref={ssdGroupRef} position={[-0.08, -0.26, 0.035]} name="NVMe_Storage">
+          {/* Primary PCIe 5.0 M.2 Heatsink */}
           <mesh material={coolerBodyMat} castShadow>
-            <boxGeometry args={[0.48, 0.13, 0.045]} />
+            <boxGeometry args={[0.46, 0.12, 0.04]} />
           </mesh>
-          <mesh position={[0, 0, 0.026]} material={rgbPrimaryMat}>
-            <boxGeometry args={[0.36, 0.022, 0.01]} />
+          <mesh position={[0, 0, 0.022]} material={ledPrimaryMat}>
+            <boxGeometry args={[0.34, 0.015, 0.008]} />
           </mesh>
 
-          {/* Secondary M.2 Drive if Dual-Drive selected */}
           {build.storage.dualDrive && (
-            <group position={[0, -0.34, 0]}>
+            <group position={[0, -0.22, 0]}>
               <mesh material={coolerBodyMat} castShadow>
-                <boxGeometry args={[0.48, 0.13, 0.045]} />
+                <boxGeometry args={[0.46, 0.12, 0.04]} />
               </mesh>
-              <mesh position={[0, 0, 0.026]} material={rgbSecondaryMat}>
-                <boxGeometry args={[0.36, 0.022, 0.01]} />
+              <mesh position={[0, 0, 0.022]} material={ledSecondaryMat}>
+                <boxGeometry args={[0.34, 0.015, 0.008]} />
               </mesh>
             </group>
           )}
@@ -646,113 +714,111 @@ export default function CapeModel({
       </group>
 
       {/* =================================================================
-          6. CPU COOLER (360mm AIO Liquid Cooler w/ LCD OR Dual-Tower Air)
+          6. CPU COOLER (NZXT Kraken / Lian Li Galahad 360 AIO OR Noctua NH-D15)
          ================================================================= */}
-      <group ref={coolerGroupRef}>
+      <group ref={coolerGroupRef} name="CPU_Cooler_Assembly">
         {build.cooler.type === 'aio_360' ? (
           <group>
-            {/* Cylindrical Pump Block on CPU Socket with Live Telemetry LCD */}
-            <group position={[-0.32, 0.56, -0.31]}>
+            {/* Asetek 8th-Gen Pump Block on CPU Socket with 2.36" LCD Display */}
+            <group position={[-0.38, 0.5, -0.02]}>
               <mesh
                 rotation={[Math.PI / 2, 0, 0]}
                 material={coolerBodyMat}
                 castShadow
               >
-                <cylinderGeometry args={[0.17, 0.18, 0.16, 32]} />
+                <cylinderGeometry args={[0.165, 0.175, 0.15, 36]} />
               </mesh>
-              {/* Glowing ARGB Ring around Pump */}
-              <mesh position={[0, 0, 0.082]} material={rgbPrimaryMat}>
-                <ringGeometry args={[0.145, 0.168, 32]} />
+              {/* Subtle Chamfered Bezel Ring */}
+              <mesh position={[0, 0, 0.077]} material={ledPrimaryMat}>
+                <ringGeometry args={[0.145, 0.16, 36]} />
               </mesh>
-              {/* Circular Live LCD Screen */}
-              <mesh position={[0, 0, 0.083]} material={lcdScreenMat}>
-                <circleGeometry args={[0.142, 32]} />
+              {/* High-Contrast Live Telemetry LCD Screen */}
+              <mesh position={[0, 0, 0.078]} material={lcdScreenMat}>
+                <circleGeometry args={[0.142, 36]} />
               </mesh>
             </group>
 
-            {/* Top 360mm Radiator under Case Roof */}
-            <group position={[-0.08, 1.18, 0]}>
+            {/* Top-Mounted 360mm Aluminum Radiator + 3x 120mm Fans */}
+            <group position={[-0.12, 1.18, 0.18]}>
               <mesh material={coolerBodyMat} castShadow>
-                <boxGeometry args={[1.64, 0.11, 0.54]} />
+                <boxGeometry args={[1.56, 0.095, 0.5]} />
               </mesh>
-              {/* 3x 120mm Radiator Exhaust Fans */}
-              {[-0.54, 0, 0.54].map((xPos, idx) => (
-                <ArgbFan
-                  key={idx}
-                  position={[xPos, -0.09, 0]}
+              {[-0.5, 0, 0.5].map((xPos, idx) => (
+                <CaseFan120
+                  key={`rad_fan_${idx}`}
+                  position={[xPos, -0.08, 0]}
                   rotation={[Math.PI / 2, 0, 0]}
-                  scale={0.95}
+                  scale={0.94}
                   frameMaterial={coolerBodyMat}
-                  bladeMaterial={translucentBladeMat}
-                  rgbPrimaryMaterial={rgbPrimaryMat}
+                  bladeMaterial={fanBladeMat}
+                  ledMaterial={ledPrimaryMat}
                   onRegisterFan={registerFan}
                   fanIndex={4 + idx}
                 />
               ))}
             </group>
 
-            {/* 2 Braided Sleeved Liquid Tubes connecting Pump to Radiator */}
+            {/* Realistic Nylon-Braided Liquid Cooling Tubes with Rotary Fittings */}
             <BraidedTube
-              start={[-0.22, 0.58, -0.28]}
-              mid1={[0.12, 0.62, -0.05]}
-              mid2={[0.38, 0.88, 0.08]}
-              end={[0.48, 1.12, 0.05]}
+              points={[
+                [-0.24, 0.5, 0.01],
+                [0.08, 0.54, 0.22],
+                [0.32, 0.82, 0.26],
+                [0.44, 1.12, 0.22],
+              ]}
+              radius={0.024}
               material={caseInteriorMat}
             />
             <BraidedTube
-              start={[-0.26, 0.5, -0.28]}
-              mid1={[0.08, 0.52, 0.02]}
-              mid2={[0.32, 0.82, 0.14]}
-              end={[0.38, 1.12, 0.1]}
+              points={[
+                [-0.28, 0.42, 0.01],
+                [0.04, 0.45, 0.28],
+                [0.26, 0.76, 0.31],
+                [0.35, 1.12, 0.26],
+              ]}
+              radius={0.024}
               material={caseInteriorMat}
             />
           </group>
         ) : (
-          /* Monumental Dual-Tower Air Cooler w/ Copper Heatpipes & 2 PWM Fans */
-          <group position={[-0.32, 0.56, -0.18]}>
-            {/* Left Fin Stack Tower */}
+          /* Noctua NH-D15 chromax.black Dual-Tower 8-Heatpipe Air Cooler */
+          <group position={[-0.38, 0.5, 0.08]}>
+            {/* Left & Right Fin Stack Towers */}
             <mesh position={[-0.14, 0, 0]} material={coolerBodyMat} castShadow>
-              <boxGeometry args={[0.16, 0.44, 0.36]} />
+              <boxGeometry args={[0.15, 0.42, 0.36]} />
             </mesh>
-            {/* Right Fin Stack Tower */}
             <mesh position={[0.14, 0, 0]} material={coolerBodyMat} castShadow>
-              <boxGeometry args={[0.16, 0.44, 0.36]} />
+              <boxGeometry args={[0.15, 0.42, 0.36]} />
             </mesh>
-            {/* Copper Heatpipe Caps on Top */}
-            {[-0.12, -0.04, 0.04, 0.12].map((zOff, idx) => (
+            {/* 6 Soldered Heatpipe Terminations per Tower */}
+            {[-0.13, -0.05, 0.03, 0.11].map((zOff, idx) => (
               <group key={idx}>
-                <mesh
-                  position={[-0.14, 0, zOff]}
-                  material={copperHeatpipeMat}
-                >
-                  <cylinderGeometry args={[0.015, 0.015, 0.47, 12]} />
+                <mesh position={[-0.14, 0, zOff]} material={brushedNickelMat}>
+                  <cylinderGeometry args={[0.014, 0.014, 0.45, 12]} />
                 </mesh>
-                <mesh
-                  position={[0.14, 0, zOff]}
-                  material={copperHeatpipeMat}
-                >
-                  <cylinderGeometry args={[0.015, 0.015, 0.47, 12]} />
+                <mesh position={[0.14, 0, zOff]} material={brushedNickelMat}>
+                  <cylinderGeometry args={[0.014, 0.014, 0.45, 12]} />
                 </mesh>
               </group>
             ))}
-            {/* Center & Front Air Cooler Fans */}
-            <ArgbFan
+            {/* Dual 140mm PWM Fans between & in front of Fin Towers */}
+            <CaseFan120
               position={[0, 0, 0]}
               rotation={[0, Math.PI / 2, 0]}
-              scale={0.78}
-              frameMaterial={caseInteriorMat}
-              bladeMaterial={translucentBladeMat}
-              rgbPrimaryMaterial={rgbPrimaryMat}
+              scale={0.8}
+              frameMaterial={coolerBodyMat}
+              bladeMaterial={fanBladeMat}
+              ledMaterial={ledSecondaryMat}
               onRegisterFan={registerFan}
               fanIndex={4}
             />
-            <ArgbFan
-              position={[0.27, 0, 0]}
+            <CaseFan120
+              position={[0.26, 0, 0]}
               rotation={[0, Math.PI / 2, 0]}
-              scale={0.78}
-              frameMaterial={caseInteriorMat}
-              bladeMaterial={translucentBladeMat}
-              rgbPrimaryMaterial={rgbSecondaryMat}
+              scale={0.8}
+              frameMaterial={coolerBodyMat}
+              bladeMaterial={fanBladeMat}
+              ledMaterial={ledSecondaryMat}
               onRegisterFan={registerFan}
               fanIndex={5}
             />
@@ -761,51 +827,82 @@ export default function CapeModel({
       </group>
 
       {/* =================================================================
-          7. GRAPHICS CARD (Triple-Fan Flagship GPU + Custom Backplate)
+          7. GRAPHICS CARD (ROG Astral RTX 5090 / RTX 5080 FE / Sapphire NITRO+ / AERO)
+          Mounted strictly inside the ATX chamber onto the PCIe 5.0 x16 slot
          ================================================================= */}
-      <group ref={gpuGroupRef} position={[-0.16, 0.02, 0.02]}>
-        {/* Main Triple-Slot Shroud Body */}
+      <group ref={gpuGroupRef} position={[-0.36, -0.02, 0.16]} name="GPU_Graphics_Card">
+        {/* Main Die-Cast Metal Shroud Frame */}
         <mesh material={gpuShroudMat} castShadow receiveShadow>
-          <boxGeometry args={[gpuLen, 0.18, 0.56]} />
+          <boxGeometry
+            args={[
+              gpuLen,
+              isFoundersGpu ? 0.13 : 0.19,
+              0.48,
+            ]}
+          />
         </mesh>
 
-        {/* Top Customizable Backplate (Supports Custom Uploaded .PNG/.JPG) */}
-        <mesh position={[0, 0.095, 0]} material={gpuBackplateMat} castShadow>
-          <boxGeometry args={[gpuLen * 0.98, 0.015, 0.54]} />
+        {/* Brushed Metal Structural Frame Band */}
+        <mesh position={[0, 0, 0.244]} material={gpuTrimMat}>
+          <boxGeometry args={[gpuLen * 0.98, 0.045, 0.012]} />
         </mesh>
 
-        {/* Exposed Fin Heatsink Core */}
-        <mesh position={[0, 0, 0]} material={cpuIhsMat}>
-          <boxGeometry args={[gpuLen * 0.95, 0.12, 0.58]} />
+        {/* Full-Length Metal Backplate (with flow-through vents & custom image support) */}
+        <mesh
+          position={[0, isFoundersGpu ? 0.07 : 0.1, 0]}
+          material={gpuBackplateMat}
+          castShadow
+        >
+          <boxGeometry args={[gpuLen * 0.99, 0.012, 0.47]} />
         </mesh>
 
-        {/* Front-Facing GEFORCE RTX / RADEON ARGB Light Bar */}
-        <mesh position={[0, 0.02, 0.285]} material={rgbPrimaryMat}>
-          <boxGeometry args={[gpuLen * 0.86, 0.042, 0.015]} />
+        {/* Dense Aluminum Fin Array + Nickel Heatpipes visible from the side */}
+        <mesh position={[0, 0, 0]} material={brushedNickelMat}>
+          <boxGeometry args={[gpuLen * 0.94, 0.11, 0.49]} />
         </mesh>
-        <mesh position={[0, -0.04, 0.285]} material={rgbSecondaryMat}>
-          <boxGeometry args={[gpuLen * 0.55, 0.018, 0.015]} />
+        {[-0.12, 0, 0.12].map((zOff, idx) => (
+          <mesh
+            key={idx}
+            position={[0, 0, zOff]}
+            rotation={[0, 0, Math.PI / 2]}
+            material={copperMat}
+          >
+            <cylinderGeometry args={[0.012, 0.012, gpuLen * 0.96, 12]} />
+          </mesh>
+        ))}
+
+        {/* Refined Side LED Accent Strip (ROG Astral / Sapphire NITRO+ light bar) */}
+        <mesh position={[0, 0.045, 0.246]} material={ledPrimaryMat}>
+          <boxGeometry args={[gpuLen * 0.82, 0.02, 0.01]} />
         </mesh>
 
-        {/* 16-Pin 12VHPWR Braided Power Cable */}
+        {/* Rear PCIe Dual/Triple Slot Steel I/O Bracket anchored to Case Rear Wall */}
+        <mesh position={[-gpuLen / 2 - 0.02, -0.02, 0]} material={brushedNickelMat}>
+          <boxGeometry args={[0.03, 0.24, 0.46]} />
+        </mesh>
+
+        {/* 16-Pin 12V-2x6 Braided Power Cable cleanly routed down to Motherboard Tray */}
         <BraidedTube
-          start={[gpuLen * 0.3, 0.04, 0.29]}
-          mid1={[gpuLen * 0.3, -0.18, 0.36]}
-          mid2={[gpuLen * 0.22, -0.45, 0.22]}
-          end={[gpuLen * 0.15, -0.7, 0.05]}
-          material={caseInteriorMat}
+          points={[
+            [gpuLen * 0.28, 0.02, 0.25],
+            [gpuLen * 0.28, -0.14, 0.3],
+            [gpuLen * 0.25, -0.35, 0.12],
+            [gpuLen * 0.22, -0.45, -0.14],
+          ]}
+          radius={0.024}
+          material={caseChassisMat}
         />
 
         {/* 3x Axial-Tech Downward GPU Cooling Fans */}
-        {[-0.4, 0, 0.4].map((xNorm, idx) => (
-          <ArgbFan
-            key={idx}
-            position={[xNorm * gpuLen * 0.95, -0.095, 0]}
+        {[-0.36, 0, 0.36].map((xNorm, idx) => (
+          <CaseFan120
+            key={`gpu_fan_${idx}`}
+            position={[xNorm * gpuLen * 0.92, isFoundersGpu ? -0.07 : -0.1, 0]}
             rotation={[Math.PI / 2, 0, 0]}
-            scale={0.68}
+            scale={0.62}
             frameMaterial={gpuShroudMat}
-            bladeMaterial={translucentBladeMat}
-            rgbPrimaryMaterial={idx === 1 ? rgbSecondaryMat : rgbPrimaryMat}
+            bladeMaterial={fanBladeMat}
+            ledMaterial={ledSecondaryMat}
             onRegisterFan={registerFan}
             fanIndex={7 + idx}
           />
@@ -813,18 +910,15 @@ export default function CapeModel({
       </group>
 
       {/* =================================================================
-          8. POWER SUPPLY (ATX 3.1 PSU in Bottom Cutout Window w/ OLED)
+          8. POWER SUPPLY (ASUS ROG Thor 1200W / Corsair RM1000x in Dual-Chamber)
          ================================================================= */}
-      <group ref={psuGroupRef} position={[-0.52, -0.98, 0.05]}>
+      <group ref={psuGroupRef} position={[-0.58, -0.68, -0.38]} name="PSU_Power_Supply">
         <mesh material={psuBodyMat} castShadow receiveShadow>
-          <boxGeometry args={[0.68, 0.44, 0.56]} />
+          <boxGeometry args={[0.64, 0.42, 0.44]} />
         </mesh>
-        {/* PSU Wattage / Telemetry OLED Window facing user */}
-        <mesh position={[0, 0, 0.285]} material={lcdScreenMat}>
-          <planeGeometry args={[0.38, 0.24]} />
-        </mesh>
-        <mesh position={[0, 0.16, 0.285]} material={rgbPrimaryMat}>
-          <boxGeometry args={[0.56, 0.025, 0.01]} />
+        {/* ROG Thor OLED Wattage Panel visible through chamber cutout */}
+        <mesh position={[0, 0, 0.225]} material={lcdScreenMat}>
+          <planeGeometry args={[0.34, 0.2]} />
         </mesh>
       </group>
     </group>
