@@ -61,16 +61,14 @@ function ArticulatedCapeSegment({
   index,
   total,
   segmentGeometries,
-  segmentRefs,
+  onRegisterSegment,
   capeMaterial,
 }) {
   const segH = CAPE_TOTAL_HEIGHT / total;
 
   return (
     <group
-      ref={(el) => {
-        segmentRefs.current[index] = el;
-      }}
+      ref={(el) => onRegisterSegment(index, el)}
       position={[0, index === 0 ? 0 : -segH, 0]}
     >
       <mesh
@@ -84,7 +82,7 @@ function ArticulatedCapeSegment({
           index={index + 1}
           total={total}
           segmentGeometries={segmentGeometries}
-          segmentRefs={segmentRefs}
+          onRegisterSegment={onRegisterSegment}
           capeMaterial={capeMaterial}
         />
       )}
@@ -105,6 +103,10 @@ export default function CapeModel({
   const leftArmRef = useRef();
   const rightArmRef = useRef();
   const segmentRefs = useRef([]);
+
+  const handleRegisterSegment = React.useCallback((idx, el) => {
+    segmentRefs.current[idx] = el;
+  }, []);
 
   // Pre-build the 14 slice geometries once
   const segmentGeometries = useMemo(() => {
@@ -340,7 +342,7 @@ export default function CapeModel({
           index={0}
           total={CAPE_SEGMENTS}
           segmentGeometries={segmentGeometries}
-          segmentRefs={segmentRefs}
+          onRegisterSegment={handleRegisterSegment}
           capeMaterial={capeMaterial}
         />
       </group>

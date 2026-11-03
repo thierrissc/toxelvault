@@ -98,10 +98,11 @@ function StudioLightingRig({ lightingMode }) {
 function SceneBridge({ onStatsUpdate, screenshotHandlerRef }) {
   const { gl, scene, camera } = useThree();
   const frameCount = useRef(0);
-  const lastTime = useRef(performance.now());
+  const lastTime = useRef(0);
 
   // Expose an instant HD transparent PNG capture method to the parent UI
   useEffect(() => {
+    lastTime.current = performance.now();
     if (!screenshotHandlerRef) return;
 
     screenshotHandlerRef.current = () => {
