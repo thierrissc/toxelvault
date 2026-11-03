@@ -283,20 +283,23 @@ export default function InspectorModal({
                           : 'border-white/[0.08] hover:border-white/[0.2]'
                       }`}
                     >
-                      {/* Real Product Photo (realPhotoUrl) */}
+                      {/* E-Commerce Studio Packshot on Pure #FFFFFF Background */}
                       <button
                         onClick={() => onOpenPartDetails(activeCategory, part)}
-                        className="relative h-44 w-full bg-white flex items-center justify-center cursor-pointer group overflow-hidden"
+                        style={{ backgroundColor: '#ffffff' }}
+                        className="relative h-44 w-full flex items-center justify-center cursor-pointer group overflow-hidden"
                       >
                         <img
-                          src={part.realPhotoUrl}
+                          src={getFallbackProductPhotoDataUri(part)}
                           alt={part.name}
                           loading="lazy"
-                          onError={(e) => {
-                            e.currentTarget.onerror = null;
-                            e.currentTarget.src = getFallbackProductPhotoDataUri(part);
+                          style={{
+                            objectFit: 'contain',
+                            objectPosition: 'center',
+                            padding: '8px',
+                            mixBlendMode: 'multiply',
                           }}
-                          className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          className="h-full w-full group-hover:scale-105 transition-transform duration-300"
                         />
                         {isEquipped && (
                           <span className="absolute top-2 right-2 rounded bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shadow">
@@ -412,15 +415,20 @@ export default function InspectorModal({
 
           <div className="flex-1 overflow-y-auto p-6 grid grid-cols-1 md:grid-cols-12 gap-6">
             <div className="md:col-span-5 space-y-4">
-              <div className="rounded-xl bg-white overflow-hidden border border-white/10 h-60 flex items-center justify-center">
+              <div
+                style={{ backgroundColor: '#ffffff' }}
+                className="rounded-xl overflow-hidden border border-white/10 h-60 flex items-center justify-center"
+              >
                 <img
-                  src={part.realPhotoUrl}
+                  src={getFallbackProductPhotoDataUri(part)}
                   alt={part.name}
-                  onError={(e) => {
-                    e.currentTarget.onerror = null;
-                    e.currentTarget.src = getFallbackProductPhotoDataUri(part);
+                  style={{
+                    objectFit: 'contain',
+                    objectPosition: 'center',
+                    padding: '8px',
+                    mixBlendMode: 'multiply',
                   }}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full"
                 />
               </div>
 

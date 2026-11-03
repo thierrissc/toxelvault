@@ -375,23 +375,26 @@ export default function SidebarControls({
                     className="group rounded-xl bg-[#161920] hover:bg-[#1c2029] border border-white/[0.07] hover:border-white/[0.15] p-2.5 transition"
                   >
                     <div className="flex items-center gap-3">
-                      {/* Real Product Photo from partsCatalog.json (realPhotoUrl) */}
+                      {/* E-Commerce Studio Packshot Photo on Pure #FFFFFF Background */}
                       <button
                         onClick={() => onOpenPartDetails(cat.id, selectedPart)}
-                        className="relative h-16 w-20 shrink-0 rounded-lg overflow-hidden bg-white border border-white/10 cursor-pointer group/img flex items-center justify-center"
+                        style={{ backgroundColor: '#ffffff' }}
+                        className="relative h-16 w-20 shrink-0 rounded-lg overflow-hidden border border-white/15 cursor-pointer group/img flex items-center justify-center"
                         title="Inspecionar ficha técnica real e caminho .GLB"
                       >
                         <img
-                          src={selectedPart.realPhotoUrl}
+                          src={getFallbackProductPhotoDataUri(selectedPart)}
                           alt={selectedPart.name}
                           loading="lazy"
-                          onError={(e) => {
-                            e.currentTarget.onerror = null;
-                            e.currentTarget.src = getFallbackProductPhotoDataUri(selectedPart);
+                          style={{
+                            objectFit: 'contain',
+                            objectPosition: 'center',
+                            padding: '8px',
+                            mixBlendMode: 'multiply',
                           }}
-                          className="h-full w-full object-cover group-hover/img:scale-105 transition-transform"
+                          className="h-full w-full group-hover/img:scale-105 transition-transform"
                         />
-                        <span className="absolute bottom-0 inset-x-0 bg-black/75 text-[8px] font-mono-tech text-center text-amber-300 py-0.5 truncate px-1">
+                        <span className="absolute bottom-0 inset-x-0 bg-slate-900/80 text-[8px] font-mono-tech text-center text-amber-300 py-0.5 truncate px-1">
                           {cat.socketTarget}
                         </span>
                       </button>
