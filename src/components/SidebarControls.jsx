@@ -169,7 +169,9 @@ export default function SidebarControls({
             <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" />
             <span>{stats.fps} FPS</span>
             <span className="hidden sm:inline text-slate-500">|</span>
-            <span className="hidden sm:inline text-cyan-300">{cpuTemp}°C CPU</span>
+            <span className="hidden sm:inline text-cyan-300">
+              {cpuTemp}°C CPU • {gpuTemp}°C GPU
+            </span>
           </button>
         </div>
       </header>

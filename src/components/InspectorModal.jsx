@@ -1,53 +1,56 @@
-import React from 'react';
-import { X, Cpu, Layers, Activity, Terminal, Sparkles, Check } from 'lucide-react';
+import React, { useState } from 'react';
+import {
+  X,
+  Cpu,
+  Layers,
+  Activity,
+  Zap,
+  Sparkles,
+  Check,
+  Copy,
+  Thermometer,
+} from 'lucide-react';
+import { HARDWARE_CATEGORIES } from '../utils/textureGenerator';
 
 export default function InspectorModal({
   isOpen,
   onClose,
-  activeTheme,
-  customTextureName,
+  build,
   stats,
-  windSpeed,
-  metalness,
-  roughness,
-  lightingMode,
-  wireframe,
-  previewUrl,
+  totalPrice,
+  totalWattage,
+  cpuTemp,
+  gpuTemp,
+  rgbPreset,
 }) {
-  const [copied, setCopied] = React.useState(false);
+  const [copied, setCopied] = useState(false);
 
   if (!isOpen) return null;
 
-  const shaderSnippet = `// VoxelVault 3D — Procedural PBR & Sinusoidal Cape Shader Config
-const material = new THREE.MeshStandardMaterial({
-  name: "${customTextureName || activeTheme.name}",
-  map: proceduralCanvasTexture, // 512x512 NearestFilter (SRGB)
-  emissiveMap: proceduralEmissiveTexture,
-  emissiveIntensity: ${activeTheme.defaultEmissiveIntensity},
-  metalness: ${metalness.toFixed(2)},
-  roughness: ${roughness.toFixed(2)},
-  wireframe: ${wireframe},
-});
+  const buildManifestText = `=== VOXELVAULT 3D — CUSTOM PC BUILD MANIFEST ===
+• Gabinete: ${build.case.name} (R$ ${build.case.price})
+• Placa-Mãe: ${build.motherboard.name} (R$ ${build.motherboard.price})
+• Processador: ${build.cpu.name} (R$ ${build.cpu.price})
+• Resfriamento: ${build.cooler.name} (R$ ${build.cooler.price})
+• Placa de Vídeo: ${build.gpu.name} (R$ ${build.gpu.price})
+• Memória RAM: ${build.ram.name} (R$ ${build.ram.price})
+• Armazenamento: ${build.storage.name} (R$ ${build.storage.price})
+• Fonte (PSU): ${build.psu.name} (R$ ${build.psu.price})
+------------------------------------------------
+• Consumo Estimado: ${totalWattage}W / Fonte ${build.psu.capacityW}W
+• Sincronização ARGB: ${rgbPreset?.name} (${rgbPreset?.primary})
+• Orçamento Total: R$ ${totalPrice.toLocaleString('pt-BR')}`;
 
-// Articulated 14-Segment Cape Wave (useFrame @ ${stats.fps} FPS)
-useFrame(({ clock }) => {
-  const t = clock.getElapsedTime();
-  segments.forEach((seg, i) => {
-    const phase = t * (1.8 + ${windSpeed.toFixed(1)} * 1.15) - i * 0.42;
-    seg.rotation.x = Math.sin(phase) * (0.025 + (i / 14) * 0.055);
-  });
-});`;
-
-  const handleCopyCode = () => {
-    navigator.clipboard?.writeText(shaderSnippet);
+  const handleCopyManifest = () => {
+    navigator.clipboard?.writeText(buildManifestText);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(() => setCopied(false), 2200);
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-2xl rounded-2xl backdrop-blur-xl bg-[#0d1018]/95 border border-white/15 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.85)] text-slate-100 max-h-[90vh] overflow-y-auto">
-        {/* Top Modal Bar */}
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
+      <div className="relative w-full max-w-3xl rounded-2xl backdrop-blur-xl bg-[#0d1018]/95 border border-white/15 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.85)] text-slate-100 max-h-[90vh] overflow-y-auto">
+        {/* Top Bar */}
         <div className="flex items-center justify-between border-b border-white/10 pb-4">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/15 border border-cyan-400/40">
@@ -55,10 +58,10 @@ useFrame(({ clock }) => {
             </div>
             <div>
               <h3 className="font-display text-base font-bold text-white">
-                Inspetor Técnico WebGL &amp; Especificações do Ativo
+                Ficha Técnica Completa da Máquina &amp; Telemetria WebGL 3D
               </h3>
               <p className="text-xs text-slate-400">
-                Telemetria em tempo real da Engine Three.js + React Three Fiber
+                Resumo de peças, compatibilidade energética, temperaturas e engine Three.js
               </p>
             </div>
           </div>
@@ -71,12 +74,12 @@ useFrame(({ clock }) => {
           </button>
         </div>
 
-        {/* Live Telemetry Metrics Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 my-5">
+        {/* Live Telemetry Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 my-4">
           <div className="rounded-xl bg-white/[0.04] border border-white/10 p-3">
-            <div className="flex items-center gap-1.5 text-[11px] font-mono-tech text-slate-400">
+            <div className="flex items-center gap-1.5 text-[10px] font-mono-tech text-slate-400">
               <Activity className="h-3.5 w-3.5 text-emerald-400" />
-              <span>TAXA DE QUADROS</span>
+              <span>TAXA DE QUADROS 3D</span>
             </div>
             <p className="mt-1 font-mono-tech text-xl font-bold text-emerald-400">
               {stats.fps} <span className="text-xs font-normal text-slate-400">FPS</span>
@@ -84,9 +87,9 @@ useFrame(({ clock }) => {
           </div>
 
           <div className="rounded-xl bg-white/[0.04] border border-white/10 p-3">
-            <div className="flex items-center gap-1.5 text-[11px] font-mono-tech text-slate-400">
+            <div className="flex items-center gap-1.5 text-[10px] font-mono-tech text-slate-400">
               <Layers className="h-3.5 w-3.5 text-cyan-400" />
-              <span>CONTAGEM POLÍGONOS</span>
+              <span>MALHA 3D ATIVA</span>
             </div>
             <p className="mt-1 font-mono-tech text-xl font-bold text-cyan-300">
               {stats.triangles}{' '}
@@ -95,98 +98,83 @@ useFrame(({ clock }) => {
           </div>
 
           <div className="rounded-xl bg-white/[0.04] border border-white/10 p-3">
-            <div className="flex items-center gap-1.5 text-[11px] font-mono-tech text-slate-400">
-              <Sparkles className="h-3.5 w-3.5 text-fuchsia-400" />
-              <span>DRAW CALLS</span>
+            <div className="flex items-center gap-1.5 text-[10px] font-mono-tech text-slate-400">
+              <Thermometer className="h-3.5 w-3.5 text-amber-400" />
+              <span>TEMP. CPU / GPU</span>
             </div>
-            <p className="mt-1 font-mono-tech text-xl font-bold text-fuchsia-300">
-              {stats.calls}{' '}
-              <span className="text-xs font-normal text-slate-400">Calls</span>
+            <p className="mt-1 font-mono-tech text-xl font-bold text-amber-300">
+              {cpuTemp}°C <span className="text-xs font-normal text-slate-400">/ {gpuTemp}°C</span>
             </p>
           </div>
 
           <div className="rounded-xl bg-white/[0.04] border border-white/10 p-3">
-            <div className="flex items-center gap-1.5 text-[11px] font-mono-tech text-slate-400">
-              <Terminal className="h-3.5 w-3.5 text-amber-400" />
-              <span>SEGMENTOS CAPA</span>
+            <div className="flex items-center gap-1.5 text-[10px] font-mono-tech text-slate-400">
+              <Zap className="h-3.5 w-3.5 text-fuchsia-400" />
+              <span>POTÊNCIA / FONTE</span>
             </div>
-            <p className="mt-1 font-mono-tech text-xl font-bold text-amber-300">
-              14 <span className="text-xs font-normal text-slate-400">Bones</span>
+            <p className="mt-1 font-mono-tech text-xl font-bold text-fuchsia-300">
+              {totalWattage}W{' '}
+              <span className="text-xs font-normal text-slate-400">
+                / {build.psu.capacityW}W
+              </span>
             </p>
           </div>
         </div>
 
-        {/* Asset Technical Specifications + Live Procedural Canvas Texture Preview */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
-          {/* Live Texture Atlas Map */}
-          <div className="rounded-xl bg-black/50 border border-white/10 p-3 flex flex-col items-center justify-center">
-            <span className="text-[10px] font-mono-tech uppercase tracking-wider text-slate-400 mb-2">
-              CanvasTexture Atlas (2D → 3D)
+        {/* All 8 Selected Hardware Components Table */}
+        <div className="rounded-xl bg-black/45 border border-white/10 overflow-hidden mb-4">
+          <div className="px-4 py-2.5 bg-white/[0.04] border-b border-white/10 flex items-center justify-between">
+            <span className="font-display text-xs font-bold uppercase tracking-wider text-slate-200">
+              Lista de Peças Selecionadas no Gabinete 3D
             </span>
-            {previewUrl && (
-              <img
-                src={previewUrl}
-                alt="Procedural Texture Atlas"
-                className="h-28 w-28 rounded-lg border border-white/20 object-cover shadow-md"
-                style={{ imageRendering: 'pixelated' }}
-              />
-            )}
-            <span className="mt-2 font-mono-tech text-[10px] text-cyan-300">
-              THREE.NearestFilter • SRGB
+            <span className="font-mono-tech text-xs font-bold text-emerald-400">
+              Total: R$ {totalPrice.toLocaleString('pt-BR')}
             </span>
           </div>
 
-          {/* Specification Table */}
-          <div className="md:col-span-2 rounded-xl bg-black/40 border border-white/10 p-4 space-y-2.5 text-xs">
-            <div className="flex justify-between border-b border-white/10 pb-1.5">
-              <span className="text-slate-400">Ativo Selecionado:</span>
-              <span className="font-mono-tech font-semibold text-white">
-                {customTextureName || activeTheme.name} ({activeTheme.rarity})
-              </span>
-            </div>
-            <div className="flex justify-between border-b border-white/10 pb-1.5">
-              <span className="text-slate-400">Pipeline de Material:</span>
-              <span className="font-mono-tech text-cyan-300">
-                {activeTheme.specs.shader}
-              </span>
-            </div>
-            <div className="flex justify-between border-b border-white/10 pb-1.5">
-              <span className="text-slate-400">Resolução Procedural:</span>
-              <span className="font-mono-tech text-slate-200">
-                {activeTheme.specs.resolution}
-              </span>
-            </div>
-            <div className="flex justify-between border-b border-white/10 pb-1.5">
-              <span className="text-slate-400">Mapeamento UV / Iluminação:</span>
-              <span className="font-mono-tech text-slate-200">
-                {activeTheme.specs.uvMap} • Modo {lightingMode.toUpperCase()}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-400">Número de Série / Float:</span>
-              <span className="font-mono-tech text-emerald-400">
-                {activeTheme.specs.serial} ({activeTheme.floatValue.toFixed(4)})
-              </span>
-            </div>
+          <div className="divide-y divide-white/10 text-xs">
+            {HARDWARE_CATEGORIES.map((cat) => {
+              const item = build[cat.id];
+              return (
+                <div
+                  key={cat.id}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-2.5 gap-1 hover:bg-white/[0.02]"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-20 shrink-0 font-mono-tech text-[10px] uppercase text-cyan-400">
+                      {cat.label}
+                    </span>
+                    <span className="font-semibold text-white">{item.name}</span>
+                  </div>
+                  <div className="flex items-center gap-3 self-end sm:self-auto font-mono-tech text-[11px]">
+                    <span className="text-slate-400">{item.brand}</span>
+                    <span className="text-emerald-400 font-semibold">
+                      R$ {item.price.toLocaleString('pt-BR')}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Live Shader & Physics Code Inspector */}
+        {/* Exportable Build Summary Snippet */}
         <div className="rounded-xl bg-black/70 border border-white/15 overflow-hidden">
           <div className="flex items-center justify-between px-4 py-2 bg-white/[0.04] border-b border-white/10">
-            <span className="font-mono-tech text-[11px] text-slate-300">
-              src/components/CapeModel.jsx — Live Runtime Parameters
+            <span className="font-mono-tech text-[11px] text-slate-300 flex items-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
+              Manifesto de Configuração do PC
             </span>
             <button
-              onClick={handleCopyCode}
-              className="flex items-center gap-1.5 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/30 px-2.5 py-1 text-[11px] font-mono-tech text-cyan-300 transition cursor-pointer"
+              onClick={handleCopyManifest}
+              className="flex items-center gap-1.5 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/30 px-3 py-1 text-[11px] font-mono-tech text-cyan-300 transition cursor-pointer"
             >
-              {copied ? <Check className="h-3.5 w-3.5" /> : null}
-              <span>{copied ? 'Copiado!' : 'Copiar Snippet'}</span>
+              {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+              <span>{copied ? 'Build Copiada!' : 'Copiar Orçamento'}</span>
             </button>
           </div>
           <pre className="p-4 text-[11px] font-mono-tech leading-relaxed text-cyan-200/90 overflow-x-auto">
-            <code>{shaderSnippet}</code>
+            <code>{buildManifestText}</code>
           </pre>
         </div>
       </div>
