@@ -1,0 +1,593 @@
+{
+  "categories": [
+    { "id": "case", "label": "Case (Gabinete)", "socketTarget": "root_chassis" },
+    { "id": "motherboard", "label": "Motherboard (Placa-Mãe)", "socketTarget": "mount_motherboard" },
+    { "id": "cpu", "label": "Processor (CPU)", "socketTarget": "socket_cpu" },
+    { "id": "cooler", "label": "CPU Cooler", "socketTarget": "mount_cooler" },
+    { "id": "gpu", "label": "Graphics Card (GPU)", "socketTarget": "slot_pcie_x16" },
+    { "id": "ram", "label": "Memory (RAM)", "socketTarget": "slot_ram" },
+    { "id": "storage", "label": "Storage (NVMe M.2)", "socketTarget": "slot_m2_1" },
+    { "id": "psu", "label": "Power Supply (PSU)", "socketTarget": "mount_psu" }
+  ],
+  "snapPoints": {
+    "case": {
+      "root_chassis": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 0],
+        "boundingBoxSize": [2.25, 2.55, 1.38]
+      },
+      "mount_motherboard": {
+        "position": [-0.28, 0.18, -0.18],
+        "rotation": [0, 0, 0],
+        "boundingBoxSize": [1.26, 1.54, 0.06]
+      },
+      "mount_psu": {
+        "position": [-0.56, -0.78, -0.38],
+        "rotation": [0, 0, 0],
+        "boundingBoxSize": [0.66, 0.42, 0.46]
+      },
+      "mount_top_radiator": {
+        "position": [-0.08, 1.12, 0.18],
+        "rotation": [0, 0, 0],
+        "boundingBoxSize": [1.56, 0.18, 0.52]
+      }
+    },
+    "motherboard": {
+      "socket_cpu": {
+        "position": [-0.06, 0.34, 0.06],
+        "rotation": [0, 0, 0],
+        "boundingBoxSize": [0.32, 0.32, 0.05]
+      },
+      "mount_cooler": {
+        "position": [-0.06, 0.34, 0.16],
+        "rotation": [0, 0, 0],
+        "boundingBoxSize": [0.42, 0.42, 0.24]
+      },
+      "slot_pcie_x16": {
+        "position": [0.08, -0.16, 0.32],
+        "rotation": [0, 0, 0],
+        "boundingBoxSize": [1.28, 0.24, 0.52]
+      },
+      "slot_ram_1": {
+        "position": [0.24, 0.34, 0.12],
+        "rotation": [0, 0, 0],
+        "boundingBoxSize": [0.035, 0.42, 0.12]
+      },
+      "slot_ram_2": {
+        "position": [0.30, 0.34, 0.12],
+        "rotation": [0, 0, 0],
+        "boundingBoxSize": [0.035, 0.42, 0.12]
+      },
+      "slot_ram_3": {
+        "position": [0.36, 0.34, 0.12],
+        "rotation": [0, 0, 0],
+        "boundingBoxSize": [0.035, 0.42, 0.12]
+      },
+      "slot_ram_4": {
+        "position": [0.42, 0.34, 0.12],
+        "rotation": [0, 0, 0],
+        "boundingBoxSize": [0.035, 0.42, 0.12]
+      },
+      "slot_m2_1": {
+        "position": [-0.06, -0.36, 0.06],
+        "rotation": [0, 0, 0],
+        "boundingBoxSize": [0.46, 0.13, 0.05]
+      }
+    }
+  },
+  "parts": [
+    {
+      "id": "case_hyte_y70_black",
+      "name": "HYTE Y70 Dual-Chamber Panoramic Pitch Black",
+      "brand": "HYTE",
+      "category": "case",
+      "price": 219.99,
+      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Gaming_PC_with_RGB_lighting.jpg?width=640",
+      "model3dPath": "/models/cases/hyte-y70-black.glb",
+      "mountOffset": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "specs": {
+        "formFactor": "ATX / Micro-ATX / Mini-ITX",
+        "maxGpuLengthMm": 422,
+        "dimensionsMm": "470 x 320 x 470 mm",
+        "volume": "70.7L Dual-Chamber",
+        "sidePanel": "3-Piece Panoramic Tempered Glass",
+        "radiatorSupport": "360mm Top & 360mm Side",
+        "tdpW": 0
+      },
+      "merchants": [
+        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 219.99 },
+        { "name": "Newegg", "shipping": "FREE s/h", "stock": "In stock", "price": 224.99 },
+        { "name": "Best Buy", "shipping": "FREE s/h", "stock": "In stock", "price": 229.99 }
+      ]
+    },
+    {
+      "id": "case_lianli_o11_vision",
+      "name": "Lian Li O11 Vision Three-Sided Tempered Glass",
+      "brand": "Lian Li",
+      "category": "case",
+      "price": 149.99,
+      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Lian_Li_PC-O11_Dynamic.jpg?width=640",
+      "model3dPath": "/models/cases/lian-li-o11-vision.glb",
+      "mountOffset": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "specs": {
+        "formFactor": "E-ATX / ATX / Micro-ATX",
+        "maxGpuLengthMm": 455,
+        "dimensionsMm": "480 x 304 x 464 mm",
+        "volume": "67.7L Columnless Vision",
+        "sidePanel": "3-Sided 4mm Tempered Glass",
+        "radiatorSupport": "360mm Side & Bottom",
+        "tdpW": 0
+      },
+      "merchants": [
+        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 149.99 },
+        { "name": "B&H Photo", "shipping": "FREE s/h", "stock": "In stock", "price": 154.99 }
+      ]
+    },
+    {
+      "id": "case_corsair_4000d_airflow",
+      "name": "Corsair 4000D Airflow Tempered Glass Mid-Tower",
+      "brand": "Corsair",
+      "category": "case",
+      "price": 104.99,
+      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Computer_case_with_water_cooling.jpg?width=640",
+      "model3dPath": "/models/cases/corsair-4000d-airflow.glb",
+      "mountOffset": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 0],
+        "scale": [0.96, 0.98, 0.95]
+      },
+      "specs": {
+        "formFactor": "ATX / Micro-ATX",
+        "maxGpuLengthMm": 360,
+        "dimensionsMm": "453 x 230 x 466 mm",
+        "volume": "48.6L High-Airflow",
+        "sidePanel": "Tempered Glass + Steel Mesh Front",
+        "radiatorSupport": "360mm Front / 280mm Top",
+        "tdpW": 0
+      },
+      "merchants": [
+        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 104.99 },
+        { "name": "Walmart", "shipping": "FREE s/h", "stock": "In stock", "price": 104.99 }
+      ]
+    },
+    {
+      "id": "mobo_asus_b650m_plus",
+      "name": "ASUS TUF Gaming B650M-PLUS WiFi AM5",
+      "brand": "ASUS",
+      "category": "motherboard",
+      "price": 209.99,
+      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/ASUS_TUF_Gaming_B550M-Plus_(Wi-Fi).jpg?width=640",
+      "model3dPath": "/models/motherboards/asus-b650m.glb",
+      "mountOffset": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "specs": {
+        "socket": "AM5",
+        "chipset": "AMD B650",
+        "formFactor": "Micro-ATX / ATX Mount",
+        "memoryType": "DDR5",
+        "memorySlots": "4x DIMM DDR5 (Up to 7600+ OC)",
+        "pcieSlot": "PCIe 5.0 M.2 + PCIe 4.0 x16",
+        "dimensionsMm": "244 x 244 mm",
+        "tdpW": 45
+      },
+      "merchants": [
+        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 209.99 },
+        { "name": "Newegg", "shipping": "FREE s/h", "stock": "In stock", "price": 214.99 }
+      ]
+    },
+    {
+      "id": "mobo_asus_rog_crosshair_x870e",
+      "name": "ASUS ROG Crosshair X870E Hero AM5 ATX",
+      "brand": "ASUS ROG",
+      "category": "motherboard",
+      "price": 649.99,
+      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Asus_ROG_Crosshair_VIII_Hero_(Wi-Fi).jpg?width=640",
+      "model3dPath": "/models/motherboards/asus-rog-crosshair-x870e.glb",
+      "mountOffset": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "specs": {
+        "socket": "AM5",
+        "chipset": "AMD X870E",
+        "formFactor": "ATX",
+        "memoryType": "DDR5",
+        "memorySlots": "4x DIMM DDR5 (Up to 8600 MT/s)",
+        "pcieSlot": "2x PCIe 5.0 x16 SafeSlot",
+        "dimensionsMm": "305 x 244 mm",
+        "tdpW": 55
+      },
+      "merchants": [
+        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 649.99 },
+        { "name": "B&H Photo", "shipping": "FREE s/h", "stock": "In stock", "price": 659.99 }
+      ]
+    },
+    {
+      "id": "mobo_asus_rog_maximus_z790",
+      "name": "ASUS ROG Maximus Z790 Hero LGA1700 ATX",
+      "brand": "ASUS ROG",
+      "category": "motherboard",
+      "price": 559.99,
+      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Motherboard_ASUS_ROG_STRIX_Z390-E_GAMING.jpg?width=640",
+      "model3dPath": "/models/motherboards/asus-rog-maximus-z790.glb",
+      "mountOffset": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "specs": {
+        "socket": "LGA1700",
+        "chipset": "Intel Z790",
+        "formFactor": "ATX",
+        "memoryType": "DDR5",
+        "memorySlots": "4x DIMM DDR5 (Up to 7800+ MT/s)",
+        "pcieSlot": "PCIe 5.0 x16 + Thunderbolt 4",
+        "dimensionsMm": "305 x 244 mm",
+        "tdpW": 55
+      },
+      "merchants": [
+        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 559.99 },
+        { "name": "Newegg", "shipping": "FREE s/h", "stock": "In stock", "price": 564.99 }
+      ]
+    },
+    {
+      "id": "cpu_ryzen_7_7800x3d",
+      "name": "AMD Ryzen 7 7800X3D 8-Core 3D V-Cache",
+      "brand": "AMD",
+      "category": "cpu",
+      "price": 363.99,
+      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/AMD_Ryzen_7000_Series_processor_on_motherboard.jpg?width=640",
+      "model3dPath": "/models/cpus/ryzen-7-7800x3d.glb",
+      "mountOffset": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "specs": {
+        "socket": "AM5",
+        "cores": "8 Cores / 16 Threads",
+        "frequency": "4.2 GHz Base / 5.0 GHz Boost",
+        "cacheL3": "96 MB 3D V-Cache",
+        "microarchitecture": "Zen 4 (5nm TSMC)",
+        "dimensionsMm": "40 x 40 mm AM5 Package",
+        "tdpW": 120
+      },
+      "merchants": [
+        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 363.99 },
+        { "name": "Walmart", "shipping": "FREE s/h", "stock": "In stock", "price": 369.00 },
+        { "name": "Best Buy", "shipping": "FREE s/h", "stock": "In stock", "price": 379.99 }
+      ]
+    },
+    {
+      "id": "cpu_ryzen_7_9800x3d",
+      "name": "AMD Ryzen 7 9800X3D Zen 5 3D V-Cache",
+      "brand": "AMD",
+      "category": "cpu",
+      "price": 479.00,
+      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/AMD_Ryzen_7000_Series_CPU.jpg?width=640",
+      "model3dPath": "/models/cpus/ryzen-7-9800x3d.glb",
+      "mountOffset": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "specs": {
+        "socket": "AM5",
+        "cores": "8 Cores / 16 Threads",
+        "frequency": "4.7 GHz Base / 5.2 GHz Boost",
+        "cacheL3": "96 MB 2nd Gen 3D V-Cache",
+        "microarchitecture": "Zen 5 (Granite Ridge)",
+        "dimensionsMm": "40 x 40 mm AM5 Package",
+        "tdpW": 120
+      },
+      "merchants": [
+        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 479.00 },
+        { "name": "Best Buy", "shipping": "FREE s/h", "stock": "In stock", "price": 489.00 }
+      ]
+    },
+    {
+      "id": "cpu_intel_i9_14900k",
+      "name": "Intel Core i9-14900K 24-Core Unlocked",
+      "brand": "Intel",
+      "category": "cpu",
+      "price": 439.00,
+      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Intel_Core_i9-12900K_processor.jpg?width=640",
+      "model3dPath": "/models/cpus/intel-i9-14900k.glb",
+      "mountOffset": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 0],
+        "scale": [0.95, 1.08, 1]
+      },
+      "specs": {
+        "socket": "LGA1700",
+        "cores": "24 Cores (8P + 16E) / 32 Threads",
+        "frequency": "3.2 GHz Base / 6.0 GHz Boost",
+        "cacheL3": "36 MB Intel Smart Cache",
+        "microarchitecture": "Raptor Lake Refresh",
+        "dimensionsMm": "45 x 37.5 mm LGA1700",
+        "tdpW": 253
+      },
+      "merchants": [
+        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 439.00 },
+        { "name": "Walmart", "shipping": "FREE s/h", "stock": "In stock", "price": 444.99 }
+      ]
+    },
+    {
+      "id": "gpu_rtx_4070_rog_strix",
+      "name": "ASUS ROG Strix GeForce RTX 4070 OC 12GB",
+      "brand": "ASUS ROG",
+      "category": "gpu",
+      "price": 649.99,
+      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/NVIDIA_GeForce_RTX_4090_Founders_Edition.jpg?width=640",
+      "model3dPath": "/models/gpus/rtx-4070.glb",
+      "mountOffset": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "specs": {
+        "vram": "12 GB GDDR6X (192-bit)",
+        "frequency": "2640 MHz Boost Clock",
+        "lengthMm": 338,
+        "dimensionsMm": "338.9 x 149.4 x 62.4 mm (3.12-Slot)",
+        "interface": "PCIe 4.0 x16",
+        "powerConnector": "1x 16-pin 12VHPWR",
+        "tdpW": 215
+      },
+      "merchants": [
+        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 649.99 },
+        { "name": "Newegg", "shipping": "FREE s/h", "stock": "In stock", "price": 659.99 }
+      ]
+    },
+    {
+      "id": "gpu_rtx_4090_founders",
+      "name": "NVIDIA GeForce RTX 4090 Founders Edition 24GB",
+      "brand": "NVIDIA",
+      "category": "gpu",
+      "price": 1799.99,
+      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/GeForce_RTX_4090_Founders_Edition.jpg?width=640",
+      "model3dPath": "/models/gpus/rtx-4090-fe.glb",
+      "mountOffset": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 0],
+        "scale": [0.96, 1.0, 1.0]
+      },
+      "specs": {
+        "vram": "24 GB GDDR6X (384-bit, 1008 GB/s)",
+        "frequency": "2520 MHz Boost Clock",
+        "lengthMm": 304,
+        "dimensionsMm": "304 x 137 x 61 mm (3-Slot)",
+        "interface": "PCIe 4.0 x16",
+        "powerConnector": "1x 16-pin 12VHPWR (450W)",
+        "tdpW": 450
+      },
+      "merchants": [
+        { "name": "Best Buy", "shipping": "FREE s/h", "stock": "In stock", "price": 1799.99 },
+        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 1849.99 }
+      ]
+    },
+    {
+      "id": "gpu_rx_7900_xtx_sapphire",
+      "name": "Sapphire NITRO+ Radeon RX 7900 XTX Vapor-X 24GB",
+      "brand": "Sapphire",
+      "category": "gpu",
+      "price": 919.99,
+      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/AMD_Radeon_RX_7900_XTX.jpg?width=640",
+      "model3dPath": "/models/gpus/rx-7900-xtx.glb",
+      "mountOffset": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 0],
+        "scale": [0.98, 1.0, 1.0]
+      },
+      "specs": {
+        "vram": "24 GB GDDR6 (384-bit)",
+        "frequency": "2680 MHz Boost Clock",
+        "lengthMm": 320,
+        "dimensionsMm": "320 x 135.75 x 71.6 mm (3.5-Slot)",
+        "interface": "PCIe 4.0 x16",
+        "powerConnector": "3x 8-pin PCIe",
+        "tdpW": 355
+      },
+      "merchants": [
+        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 919.99 },
+        { "name": "Newegg", "shipping": "FREE s/h", "stock": "In stock", "price": 929.99 }
+      ]
+    },
+    {
+      "id": "ram_gskill_trident_z5_32gb",
+      "name": "G.Skill Trident Z5 Neo RGB 32GB (2x16GB) DDR5-6000",
+      "brand": "G.Skill",
+      "category": "ram",
+      "price": 112.99,
+      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/DDR5_RAM_modules.jpg?width=640",
+      "model3dPath": "/models/ram/gskill-trident-z5.glb",
+      "mountOffset": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "specs": {
+        "memoryType": "DDR5",
+        "capacity": "32 GB (2 x 16 GB Dual-Channel)",
+        "sticks": 2,
+        "frequency": "6000 MT/s (PC5-48000)",
+        "casLatency": "CL30-38-38-96 (1.35V)",
+        "dimensionsMm": "133.35 x 42 x 8 mm",
+        "tdpW": 12
+      },
+      "merchants": [
+        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 112.99 },
+        { "name": "Newegg", "shipping": "FREE s/h", "stock": "In stock", "price": 112.99 }
+      ]
+    },
+    {
+      "id": "ram_corsair_dominator_64gb",
+      "name": "Corsair Dominator Titanium RGB 64GB (4x16GB) DDR5-6600",
+      "brand": "Corsair",
+      "category": "ram",
+      "price": 289.99,
+      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Corsair_Dominator_Platinum_RGB.jpg?width=640",
+      "model3dPath": "/models/ram/corsair-dominator-titanium.glb",
+      "mountOffset": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "specs": {
+        "memoryType": "DDR5",
+        "capacity": "64 GB (4 x 16 GB Quad-DIMM)",
+        "sticks": 4,
+        "frequency": "6600 MT/s (PC5-52800)",
+        "casLatency": "CL32-39-39-76 (1.40V)",
+        "dimensionsMm": "135 x 57 x 7.5 mm",
+        "tdpW": 20
+      },
+      "merchants": [
+        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 289.99 },
+        { "name": "Best Buy", "shipping": "FREE s/h", "stock": "In stock", "price": 299.99 }
+      ]
+    },
+    {
+      "id": "cooler_nzxt_kraken_360",
+      "name": "NZXT Kraken Elite 360 RGB AIO Liquid Cooler",
+      "brand": "NZXT",
+      "category": "cooler",
+      "price": 279.99,
+      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/AIO_water_cooler_on_CPU.jpg?width=640",
+      "model3dPath": "/models/coolers/nzxt-kraken-360.glb",
+      "mountOffset": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "specs": {
+        "supportedSockets": ["AM5", "AM4", "LGA1700", "LGA1851"],
+        "coolerType": "360mm AIO Liquid Cooler (2.36\" LCD)",
+        "fanRpm": "500 - 1,800 ± 180 RPM",
+        "dimensionsMm": "Radiator: 394 x 121 x 27 mm",
+        "noiseLevel": "30.6 dBA",
+        "tdpW": 22
+      },
+      "merchants": [
+        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 279.99 },
+        { "name": "Best Buy", "shipping": "FREE s/h", "stock": "In stock", "price": 284.99 }
+      ]
+    },
+    {
+      "id": "cooler_noctua_nh_d15",
+      "name": "Noctua NH-D15 chromax.black Dual-Tower Air Cooler",
+      "brand": "Noctua",
+      "category": "cooler",
+      "price": 119.95,
+      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Noctua_NH-D15_CPU_cooler.jpg?width=640",
+      "model3dPath": "/models/coolers/noctua-nh-d15.glb",
+      "mountOffset": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1.1, 1.1, 1.3]
+      },
+      "specs": {
+        "supportedSockets": ["AM5", "AM4", "LGA1700", "LGA1851"],
+        "coolerType": "Dual-Tower 6-Heatpipe Air Cooler",
+        "fanRpm": "300 - 1,500 RPM (2x NF-A15 PWM)",
+        "dimensionsMm": "165 x 150 x 161 mm",
+        "noiseLevel": "24.6 dBA",
+        "tdpW": 10
+      },
+      "merchants": [
+        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 119.95 },
+        { "name": "Newegg", "shipping": "FREE s/h", "stock": "In stock", "price": 119.95 }
+      ]
+    },
+    {
+      "id": "storage_samsung_990_pro_2tb",
+      "name": "Samsung 990 PRO 2TB PCIe 4.0 NVMe M.2 2280",
+      "brand": "Samsung",
+      "category": "storage",
+      "price": 169.99,
+      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Samsung_980_PRO_SSD.jpg?width=640",
+      "model3dPath": "/models/storage/samsung-990-pro.glb",
+      "mountOffset": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "specs": {
+        "capacity": "2 TB (2,000 GB)",
+        "interface": "PCIe 4.0 x4 / NVMe 2.0",
+        "frequency": "7,450 MB/s Read / 6,900 MB/s Write",
+        "formFactor": "M.2 2280",
+        "dimensionsMm": "80 x 22 x 2.3 mm",
+        "tdpW": 8
+      },
+      "merchants": [
+        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 169.99 },
+        { "name": "Best Buy", "shipping": "FREE s/h", "stock": "In stock", "price": 174.99 }
+      ]
+    },
+    {
+      "id": "psu_corsair_rm1000x_shift",
+      "name": "Corsair RM1000x SHIFT 1000W 80+ Gold ATX 3.1 Modular",
+      "brand": "Corsair",
+      "category": "psu",
+      "price": 189.99,
+      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Corsair_RM850x_power_supply.jpg?width=640",
+      "model3dPath": "/models/psus/corsair-rm1000x.glb",
+      "mountOffset": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "specs": {
+        "wattageCapacity": 1000,
+        "efficiency": "80 PLUS Gold / Cybenetics Gold",
+        "formFactor": "ATX 3.1 Full Modular (Side Interface)",
+        "dimensionsMm": "150 x 86 x 180 mm",
+        "pcie5Connector": "1x Native 12V-2x6 (600W)",
+        "tdpW": 0
+      },
+      "merchants": [
+        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 189.99 },
+        { "name": "Best Buy", "shipping": "FREE s/h", "stock": "In stock", "price": 189.99 }
+      ]
+    },
+    {
+      "id": "psu_asus_rog_thor_1200p2",
+      "name": "ASUS ROG Thor 1200W Platinum II OLED Modular",
+      "brand": "ASUS ROG",
+      "category": "psu",
+      "price": 329.99,
+      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/PC_Power_Supply_Unit.jpg?width=640",
+      "model3dPath": "/models/psus/asus-rog-thor-1200w.glb",
+      "mountOffset": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "specs": {
+        "wattageCapacity": 1200,
+        "efficiency": "80 PLUS Platinum / Lambda A++",
+        "formFactor": "ATX 3.0 / 3.1 Full Modular + OLED",
+        "dimensionsMm": "190 x 150 x 86 mm",
+        "pcie5Connector": "Native 16-pin PCIe Gen 5.0",
+        "tdpW": 0
+      },
+      "merchants": [
+        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 329.99 },
+        { "name": "Newegg", "shipping": "FREE s/h", "stock": "In stock", "price": 339.99 }
+      ]
+    }
+  ]
+}
