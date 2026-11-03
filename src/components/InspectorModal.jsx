@@ -8,7 +8,6 @@ import {
   ShoppingCart,
   SlidersHorizontal,
   Copy,
-  CheckCircle2,
   AlertTriangle,
   ExternalLink,
   FolderOpen,
@@ -27,7 +26,6 @@ export default function InspectorModal({
   onBackToPicker,
   build,
   totalPrice,
-  stats,
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBrand, setSelectedBrand] = useState('ALL');
@@ -52,18 +50,21 @@ export default function InspectorModal({
   }, [allCategoryParts]);
 
   // Check if a candidate part is socket-compatible with the current build
-  const isPartCompatibleWithBuild = (part) => {
-    if (part.category === 'cpu' && build.motherboard?.specs?.socket) {
-      return part.specs?.socket === build.motherboard.specs.socket;
-    }
-    if (part.category === 'motherboard' && build.cpu?.specs?.socket) {
-      return part.specs?.socket === build.cpu.specs.socket;
-    }
-    if (part.category === 'gpu' && build.case?.specs?.maxGpuLengthMm) {
-      return (part.specs?.lengthMm || 0) <= build.case.specs.maxGpuLengthMm;
-    }
-    return true;
-  };
+  const isPartCompatibleWithBuild = React.useCallback(
+    (part) => {
+      if (part.category === 'cpu' && build.motherboard?.specs?.socket) {
+        return part.specs?.socket === build.motherboard.specs.socket;
+      }
+      if (part.category === 'motherboard' && build.cpu?.specs?.socket) {
+        return part.specs?.socket === build.cpu.specs.socket;
+      }
+      if (part.category === 'gpu' && build.case?.specs?.maxGpuLengthMm) {
+        return (part.specs?.lengthMm || 0) <= build.case.specs.maxGpuLengthMm;
+      }
+      return true;
+    },
+    [build]
+  );
 
   const filteredParts = useMemo(() => {
     return allCategoryParts.filter((part) => {
@@ -85,7 +86,14 @@ export default function InspectorModal({
       }
       return true;
     });
-  }, [allCategoryParts, searchQuery, selectedBrand, maxPriceFilter, compatFilter, build]);
+  }, [
+    allCategoryParts,
+    searchQuery,
+    selectedBrand,
+    maxPriceFilter,
+    compatFilter,
+    isPartCompatibleWithBuild,
+  ]);
 
   if (!isOpen) return null;
 

@@ -58,18 +58,6 @@ function GltfSocketPart({
     let isMounted = true;
     if (!targetUrl) return undefined;
 
-    if (gltfCache.has(targetUrl)) {
-      const cached = gltfCache.get(targetUrl);
-      setLoadState({
-        status: cached.status,
-        scene: cached.scene ? cached.scene.clone(true) : null,
-        errorMsg: cached.errorMsg,
-      });
-      return undefined;
-    }
-
-    setLoadState({ status: 'loading', scene: null, errorMsg: '' });
-
     // Pre-flight check to ensure Vite doesn't return index.html (text/html) for missing .glb files
     fetch(targetUrl, { method: 'HEAD' })
       .then((res) => {
