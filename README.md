@@ -1,16 +1,26 @@
-# React + Vite
+# VoxelVault 3D — Vitrine Interativa de Ativos Digitais & Skins
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Aplicação web interativa de Creative Coding / WebGL construída com **React + Vite + Tailwind CSS + Three.js (`@react-three/fiber` e `@react-three/drei`) + Lucide React**.
 
-Currently, two official plugins are available:
+## ✨ Funcionalidades Principais
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Manequim Voxel 3D & Capa Articulada Procedural (Zero dependências externas)**:
+  - Armadura estilizada Low-Poly/Voxel com capacete, visor emissivo, peitoral, ombreiras e grevas.
+  - Capa traseira dividida em **14 segmentos articulados** com física de ondulação senoidal em tempo real via `useFrame`.
+- **Gerador Procedural de Texturas (`HTML5 Canvas 2D -> THREE.CanvasTexture`)**:
+  - **Copper Oxidized**: Cobre metálico com pátina oxidada verde-água e alto brilho especular.
+  - **Master Builder**: Padrão geométrico real dourado e azul profundo com runas emissivas.
+  - **Home Comfort**: Madeira entalhada quente, bordas creme costuradas e brasão central.
+  - **Neon Cyber**: Chassi preto fosco com circuitos ópticos ciano e magenta de alta emissão (`emissiveMap`).
+- **Upload de Textura Customizada**: Carregue qualquer imagem `.png` ou `.jpg` do computador para aplicá-la instantaneamente à capa e armadura 3D.
+- **UI Cyberpunk / Glassmorphism & Inspetor Técnico**:
+  - Catálogo com badges de raridade, barra de desgaste *Float* animada e gráfico SVG de valorização.
+  - Customizador PBR em tempo real (`metalness`, `roughness`, velocidade do vento, modo `Wireframe`, rotação automática e 3 modos de iluminação de estúdio).
+  - Exportação de **Screenshot HD com fundo transparente (PNG)** e modal de telemetria WebGL em tempo real (FPS, contagem de triângulos e código do shader).
 
-## React Compiler
+## 🚀 Como Executar
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+```bash
+npm install
+npm run dev
+```
