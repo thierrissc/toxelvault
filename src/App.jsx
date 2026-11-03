@@ -11,9 +11,9 @@ export default function App() {
   // Optional local .GLB ObjectURL overrides uploaded directly in browser per category
   const [customGlbOverrides, setCustomGlbOverrides] = useState({});
 
-  // 3D Viewport & HDRI Environment Controls
+  // 3D Viewport & HDRI Environment Controls (GLB Path Labels OFF by default)
   const [envPreset, setEnvPreset] = useState('city');
-  const [showBoundingLabels, setShowBoundingLabels] = useState(true);
+  const [showBoundingLabels, setShowBoundingLabels] = useState(false);
   const [wireframe, setWireframe] = useState(false);
   const [autoRotate, setAutoRotate] = useState(false);
   const [explodedView, setExplodedView] = useState(false);
@@ -73,7 +73,7 @@ export default function App() {
     setCustomGlbOverrides({});
     setWireframe(false);
     setExplodedView(false);
-    setShowBoundingLabels(true);
+    setShowBoundingLabels(false);
   }, []);
 
   // Export HD Transparent PNG Screenshot

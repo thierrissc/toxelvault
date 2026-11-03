@@ -16,6 +16,7 @@ import {
   HARDWARE_CATEGORIES,
   HARDWARE_CATALOG,
   validateBuildCompatibility,
+  getFallbackProductPhotoDataUri,
 } from '../utils/textureGenerator';
 
 export default function InspectorModal({
@@ -291,6 +292,10 @@ export default function InspectorModal({
                           src={part.realPhotoUrl}
                           alt={part.name}
                           loading="lazy"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = getFallbackProductPhotoDataUri(part);
+                          }}
                           className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                         {isEquipped && (
@@ -411,6 +416,10 @@ export default function InspectorModal({
                 <img
                   src={part.realPhotoUrl}
                   alt={part.name}
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = getFallbackProductPhotoDataUri(part);
+                  }}
                   className="h-full w-full object-cover"
                 />
               </div>

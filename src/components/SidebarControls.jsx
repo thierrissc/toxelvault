@@ -27,6 +27,7 @@ import {
   HARDWARE_CATEGORIES,
   SNAP_POINTS,
   validateBuildCompatibility,
+  getFallbackProductPhotoDataUri,
 } from '../utils/textureGenerator';
 
 const CATEGORY_ICONS = {
@@ -384,6 +385,10 @@ export default function SidebarControls({
                           src={selectedPart.realPhotoUrl}
                           alt={selectedPart.name}
                           loading="lazy"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = getFallbackProductPhotoDataUri(selectedPart);
+                          }}
                           className="h-full w-full object-cover group-hover/img:scale-105 transition-transform"
                         />
                         <span className="absolute bottom-0 inset-x-0 bg-black/75 text-[8px] font-mono-tech text-center text-amber-300 py-0.5 truncate px-1">
