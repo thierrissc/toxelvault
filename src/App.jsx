@@ -1,33 +1,22 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import * as THREE from 'three';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import Canvas3D from './components/Canvas3D';
 import SidebarControls from './components/SidebarControls';
 import InspectorModal from './components/InspectorModal';
-import {
-  DEFAULT_BUILD,
-  RGB_PRESETS,
-  createLcdTelemetryTexture,
-} from './utils/textureGenerator';
+import { DEFAULT_BUILD } from './utils/textureGenerator';
 
 export default function App() {
-  // Complete 9-component Real PC Hardware Build State
+  // Active PC Hardware Build populated from partsCatalog.json
   const [build, setBuild] = useState(DEFAULT_BUILD);
-  const [rgbPreset, setRgbPreset] = useState(RGB_PRESETS[0]); // Clean Studio White LEDs by default
 
-  // Real-time interactive 3D case & shader controls
-  const [fanRpmFactor, setFanRpmFactor] = useState(2.2);
-  const [metalness, setMetalness] = useState(0.68);
-  const [roughness, setRoughness] = useState(0.32);
-  const [lightingMode, setLightingMode] = useState('studio');
+  // Optional local .GLB ObjectURL overrides uploaded directly in browser per category
+  const [customGlbOverrides, setCustomGlbOverrides] = useState({});
+
+  // 3D Viewport & HDRI Environment Controls
+  const [envPreset, setEnvPreset] = useState('city');
+  const [showBoundingLabels, setShowBoundingLabels] = useState(true);
   const [wireframe, setWireframe] = useState(false);
   const [autoRotate, setAutoRotate] = useState(false);
   const [explodedView, setExplodedView] = useState(false);
-  const [glassOpen, setGlassOpen] = useState(false);
-
-  // Optional custom image for AIO LCD & GPU Backplate
-  const [customLogoImg, setCustomLogoImg] = useState(null);
-  const [customBackplateTex, setCustomBackplateTex] = useState(null);
-  const [customLogoName, setCustomLogoName] = useState('');
 
   // Camera angle preset trigger
   const [cameraViewTrigger, setCameraViewTrigger] = useState({
@@ -35,7 +24,7 @@ export default function App() {
     ts: 0,
   });
 
-  // BuildCores-Style Modal State ('closed' | 'picker' | 'details' | 'manifest')
+  // Modal State ('closed' | 'picker' | 'details' | 'manifest')
   const [modalState, setModalState] = useState({
     mode: 'closed',
     category: 'cpu',
@@ -47,57 +36,21 @@ export default function App() {
   // Real-Time WebGL Telemetry
   const [stats, setStats] = useState({
     fps: 60,
-    triangles: 3840,
-    calls: 74,
+    triangles: 0,
+    calls: 0,
   });
 
   const screenshotHandlerRef = useRef(null);
 
-  // Calculate Total Build Price, Wattage & Realistic CPU/GPU Temps
-  const { totalPrice, totalWattage, cpuTemp, gpuTemp } = useMemo(() => {
-    const items = Object.values(build);
-    const price = items.reduce((acc, item) => acc + (item.price || 0), 0);
-    const watts = items.reduce((acc, item) => acc + (item.wattage || 0), 0);
-
-    const coolingBonus =
-      Math.round(fanRpmFactor * 2.0) +
-      (build.cooler.type === 'aio_360' ? 9 : 4);
-    const cTemp = Math.max(
-      32,
-      Math.round(45 + build.cpu.wattage * 0.075 - coolingBonus)
+  // Total Build Price
+  const totalPrice = useMemo(() => {
+    return Object.values(build).reduce(
+      (acc, item) => acc + (item?.price || 0),
+      0
     );
-    const gTemp = Math.max(
-      36,
-      Math.round(47 + build.gpu.wattage * 0.035 - coolingBonus * 0.8)
-    );
+  }, [build]);
 
-    return {
-      totalPrice: price,
-      totalWattage: watts,
-      cpuTemp: cTemp,
-      gpuTemp: gTemp,
-    };
-  }, [build, fanRpmFactor]);
-
-  // Generate Live NZXT/LianLi AIO LCD & PSU OLED CanvasTexture
-  const lcdTexture = useMemo(() => {
-    return createLcdTelemetryTexture({
-      cpuTemp,
-      gpuTemp,
-      wattage: totalWattage,
-      primaryColor: rgbPreset.primary,
-      secondaryColor: rgbPreset.secondary,
-      customLogoImg,
-    });
-  }, [cpuTemp, gpuTemp, totalWattage, rgbPreset, customLogoImg]);
-
-  useEffect(() => {
-    return () => {
-      lcdTexture?.dispose?.();
-    };
-  }, [lcdTexture]);
-
-  // Select a part and update the 3D rig immediately
+  // Select a part from partsCatalog.json and snap its .glb to the corresponding socket
   const handleSelectPart = useCallback((category, part) => {
     setBuild((prev) => ({
       ...prev,
@@ -105,47 +58,32 @@ export default function App() {
     }));
   }, []);
 
-  // Upload custom image (.png / .jpg) for GPU Backplate & AIO LCD Screen
-  const handleUploadCustomTexture = useCallback((file) => {
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const img = new Image();
-      img.onload = () => {
-        const tex = new THREE.Texture(img);
-        tex.colorSpace = THREE.SRGBColorSpace;
-        tex.needsUpdate = true;
-        setCustomLogoImg(img);
-        setCustomBackplateTex(tex);
-        setCustomLogoName(file.name);
-      };
-      img.src = event.target.result;
-    };
-    reader.readAsDataURL(file);
+  // Upload a local .glb/.gltf file from the user's computer to test a socket immediately
+  const handleUploadCustomGlb = useCallback((category, file) => {
+    const objectUrl = URL.createObjectURL(file);
+    setCustomGlbOverrides((prev) => ({
+      ...prev,
+      [category]: objectUrl,
+    }));
   }, []);
 
   // Reset build & settings to default
   const handleResetBuild = useCallback(() => {
     setBuild(DEFAULT_BUILD);
-    setRgbPreset(RGB_PRESETS[0]);
-    setFanRpmFactor(2.2);
-    setMetalness(0.68);
-    setRoughness(0.32);
+    setCustomGlbOverrides({});
     setWireframe(false);
     setExplodedView(false);
-    setGlassOpen(false);
-    setCustomLogoImg(null);
-    setCustomBackplateTex(null);
-    setCustomLogoName('');
+    setShowBoundingLabels(true);
   }, []);
 
-  // Export HD Transparent PNG Screenshot of the 3D PC Rig
+  // Export HD Transparent PNG Screenshot
   const handleCaptureScreenshot = useCallback(() => {
     if (!screenshotHandlerRef.current) return;
     const dataUrl = screenshotHandlerRef.current();
     if (!dataUrl) return;
 
     const link = document.createElement('a');
-    link.download = `voxelcores-3d-pc-build.png`;
+    link.download = `voxelcores-gltf-build.png`;
     link.href = dataUrl;
     document.body.appendChild(link);
     link.click();
@@ -163,32 +101,24 @@ export default function App() {
     <>
       <SidebarControls
         build={build}
+        customGlbOverrides={customGlbOverrides}
+        onUploadCustomGlb={handleUploadCustomGlb}
         onOpenPartPicker={(category) =>
           setModalState({ mode: 'picker', category, item: null })
         }
         onOpenPartDetails={(category, item) =>
           setModalState({ mode: 'details', category, item })
         }
-        rgbPreset={rgbPreset}
-        setRgbPreset={setRgbPreset}
-        fanRpmFactor={fanRpmFactor}
-        setFanRpmFactor={setFanRpmFactor}
-        metalness={metalness}
-        setMetalness={setMetalness}
-        roughness={roughness}
-        setRoughness={setRoughness}
-        lightingMode={lightingMode}
-        setLightingMode={setLightingMode}
+        envPreset={envPreset}
+        setEnvPreset={setEnvPreset}
+        showBoundingLabels={showBoundingLabels}
+        setShowBoundingLabels={setShowBoundingLabels}
         wireframe={wireframe}
         setWireframe={setWireframe}
         autoRotate={autoRotate}
         setAutoRotate={setAutoRotate}
         explodedView={explodedView}
         setExplodedView={setExplodedView}
-        glassOpen={glassOpen}
-        setGlassOpen={setGlassOpen}
-        customLogoName={customLogoName}
-        onUploadCustomTexture={handleUploadCustomTexture}
         onSnapCamera={handleSnapCamera}
         onCaptureScreenshot={handleCaptureScreenshot}
         screenshotToast={screenshotToast}
@@ -198,31 +128,21 @@ export default function App() {
         onResetBuild={handleResetBuild}
         stats={stats}
         totalPrice={totalPrice}
-        totalWattage={totalWattage}
-        cpuTemp={cpuTemp}
-        gpuTemp={gpuTemp}
       >
         <Canvas3D
           build={build}
-          lcdTexture={lcdTexture}
-          customBackplateTex={customBackplateTex}
-          rgbPreset={rgbPreset}
-          fanRpmFactor={fanRpmFactor}
-          metalness={metalness}
-          roughness={roughness}
-          lightingMode={lightingMode}
+          customGlbOverrides={customGlbOverrides}
+          showBoundingLabels={showBoundingLabels}
+          envPreset={envPreset}
           wireframe={wireframe}
           autoRotate={autoRotate}
           explodedView={explodedView}
-          glassOpen={glassOpen}
-          focusedCategory={modalState.category}
           cameraViewTrigger={cameraViewTrigger}
           onStatsUpdate={setStats}
           screenshotHandlerRef={screenshotHandlerRef}
         />
       </SidebarControls>
 
-      {/* BuildCores Part Picker Modal, Part Details Modal & Export Modal */}
       <InspectorModal
         modalState={modalState}
         onClose={() =>
@@ -237,7 +157,6 @@ export default function App() {
         }
         build={build}
         totalPrice={totalPrice}
-        totalWattage={totalWattage}
         stats={stats}
       />
     </>
