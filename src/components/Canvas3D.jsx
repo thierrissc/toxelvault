@@ -1,66 +1,31 @@
 import React, { useEffect, useRef } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, ContactShadows, Sparkles } from '@react-three/drei';
+import { OrbitControls, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
 import CapeModel from './CapeModel';
 
 /**
- * 3-Point Studio Lighting Rig with 3 Switchable Presets + Internal Case PointLight
+ * Clean, Neutral 3-Point Hardware Studio Lighting (BuildCores style)
+ * No oversaturated neon wash — highlights brushed aluminum, PCB details & clear glass.
  */
 function StudioLightingRig({ lightingMode, rgbPreset }) {
-  const primaryHex = rgbPreset?.primary || '#06b6d4';
-  const secondaryHex = rgbPreset?.secondary || '#ec4899';
+  const primaryHex = rgbPreset?.primary || '#e2e8f0';
 
-  if (lightingMode === 'neon') {
+  if (lightingMode === 'darkroom') {
     return (
       <>
-        <ambientLight intensity={0.5} color="#0f172a" />
+        <ambientLight intensity={0.45} color="#cbd5e1" />
         <directionalLight
           position={[4.5, 5.5, 4.5]}
-          intensity={3.0}
-          color={primaryHex}
+          intensity={2.2}
+          color="#f8fafc"
           castShadow
           shadow-mapSize={[1024, 1024]}
         />
-        <directionalLight
-          position={[-4.5, 3.0, 2.5]}
-          intensity={2.4}
-          color={secondaryHex}
-        />
-        <spotLight
-          position={[0, 5.5, -5.0]}
-          intensity={3.8}
-          angle={0.65}
-          penumbra={0.8}
-          color="#a855f7"
-        />
-        {/* Internal PC Case Motherboard Chamber Glow */}
+        <directionalLight position={[-4.5, 3.0, 2.5]} intensity={1.1} color="#94a3b8" />
         <pointLight
-          position={[-0.1, 0.25, 0.1]}
-          intensity={2.4}
-          color={primaryHex}
-          distance={3.2}
-        />
-      </>
-    );
-  }
-
-  if (lightingMode === 'solar') {
-    return (
-      <>
-        <ambientLight intensity={0.75} color="#fef3c7" />
-        <hemisphereLight args={['#fde68a', '#1e293b', 0.95]} />
-        <directionalLight
-          position={[5, 6.5, 4.5]}
-          intensity={3.2}
-          color="#fbbf24"
-          castShadow
-          shadow-mapSize={[1024, 1024]}
-        />
-        <directionalLight position={[-4, 2.5, 2]} intensity={1.3} color="#38bdf8" />
-        <pointLight
-          position={[-0.1, 0.25, 0.1]}
-          intensity={1.5}
+          position={[-0.1, 0.25, 0.15]}
+          intensity={1.4}
           color={primaryHex}
           distance={3.0}
         />
@@ -68,32 +33,55 @@ function StudioLightingRig({ lightingMode, rgbPreset }) {
     );
   }
 
-  // Default: 'studio' (Balanced 3-Point Hardware Showcase Lighting)
+  if (lightingMode === 'warm') {
+    return (
+      <>
+        <ambientLight intensity={0.85} color="#f8fafc" />
+        <hemisphereLight args={['#fef3c7', '#1e293b', 0.85]} />
+        <directionalLight
+          position={[5, 6.5, 4.5]}
+          intensity={2.8}
+          color="#fde68a"
+          castShadow
+          shadow-mapSize={[1024, 1024]}
+        />
+        <directionalLight position={[-4, 2.5, 2]} intensity={1.2} color="#cbd5e1" />
+        <pointLight
+          position={[-0.1, 0.25, 0.15]}
+          intensity={1.1}
+          color={primaryHex}
+          distance={3.0}
+        />
+      </>
+    );
+  }
+
+  // Default: 'studio' (High-Clarity Neutral Product Studio Lighting)
   return (
     <>
-      <ambientLight intensity={0.8} color="#e2e8f0" />
-      <hemisphereLight args={['#f8fafc', '#0f172a', 0.75]} />
+      <ambientLight intensity={0.95} color="#f8fafc" />
+      <hemisphereLight args={['#ffffff', '#1e293b', 0.85]} />
       <directionalLight
-        position={[4.2, 6, 5.0]}
-        intensity={2.6}
+        position={[4.2, 6, 5.2]}
+        intensity={2.7}
         color="#ffffff"
         castShadow
         shadow-mapSize={[1024, 1024]}
       />
-      <directionalLight position={[-4.5, 3, 3]} intensity={1.45} color="#93c5fd" />
+      <directionalLight position={[-4.5, 3, 3.5]} intensity={1.5} color="#e2e8f0" />
       <spotLight
         position={[0, 5.5, -4.5]}
-        intensity={2.8}
+        intensity={1.8}
         angle={0.6}
         penumbra={0.85}
-        color={primaryHex}
+        color="#cbd5e1"
       />
-      {/* Internal Case Chamber ARGB Fill */}
+      {/* Subtle Internal Case Fill so Motherboard, GPU & Cooler are always clearly visible */}
       <pointLight
-        position={[-0.1, 0.25, 0.15]}
-        intensity={1.8}
+        position={[-0.1, 0.2, 0.25]}
+        intensity={1.25}
         color={primaryHex}
-        distance={3.0}
+        distance={3.2}
       />
     </>
   );
@@ -142,10 +130,8 @@ function SceneBridge({ onStatsUpdate, screenshotHandlerRef }) {
       if (onStatsUpdate) {
         onStatsUpdate({
           fps,
-          triangles: gl.info.render.triangles || 3420,
-          calls: gl.info.render.calls || 68,
-          geometries: gl.info.memory.geometries || 42,
-          textures: gl.info.memory.textures || 4,
+          triangles: gl.info.render.triangles || 3840,
+          calls: gl.info.render.calls || 74,
         });
       }
     }
@@ -174,7 +160,6 @@ export default function Canvas3D({
 }) {
   const controlsRef = useRef();
 
-  // Snap camera to inspect specific hardware parts or overall PC views
   useEffect(() => {
     if (!controlsRef.current || !cameraViewTrigger) return;
     const controls = controlsRef.current;
@@ -182,36 +167,31 @@ export default function Canvas3D({
 
     switch (cameraViewTrigger.mode) {
       case 'side':
-        // Direct view into the tempered glass side window
-        cam.position.set(-0.1, 0.15, 3.65);
-        controls.target.set(-0.1, 0.05, 0);
+        cam.position.set(-0.08, 0.12, 3.45);
+        controls.target.set(-0.08, 0.05, 0);
         break;
       case 'gpu':
-        // Close-up on GPU & Motherboard PCIe slot
-        cam.position.set(0.35, -0.05, 2.35);
-        controls.target.set(-0.18, 0.02, 0.05);
+        cam.position.set(0.25, -0.05, 2.25);
+        controls.target.set(-0.22, -0.02, 0.1);
         break;
       case 'cpu':
-        // Close-up on CPU Socket, AIO LCD & DDR5 RAM
-        cam.position.set(0.25, 0.55, 2.15);
-        controls.target.set(-0.15, 0.42, -0.2);
+        cam.position.set(0.2, 0.52, 2.05);
+        controls.target.set(-0.18, 0.42, -0.05);
         break;
       case 'front':
-        // Front panoramic glass / intake fans view
-        cam.position.set(3.4, 0.25, 1.85);
+        cam.position.set(3.25, 0.2, 1.75);
         controls.target.set(0, 0.05, 0);
         break;
       default:
-        // 3/4 Isometric Showcase View
-        cam.position.set(2.45, 0.85, 3.35);
-        controls.target.set(0, 0.05, 0);
+        cam.position.set(2.25, 0.75, 3.15);
+        controls.target.set(0, 0.02, 0);
         break;
     }
     controls.update();
   }, [cameraViewTrigger]);
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden">
+    <div className="relative w-full h-full overflow-hidden bg-[#101216]">
       <Canvas
         shadows
         dpr={[1, 2]}
@@ -222,23 +202,13 @@ export default function Canvas3D({
           powerPreference: 'high-performance',
         }}
         camera={{
-          position: [2.45, 0.85, 3.35],
-          fov: 42,
+          position: [2.25, 0.75, 3.15],
+          fov: 40,
           near: 0.1,
           far: 100,
         }}
       >
         <StudioLightingRig lightingMode={lightingMode} rgbPreset={rgbPreset} />
-
-        {/* Subtle Floating Ambient Dust/Cyber Particles */}
-        <Sparkles
-          count={65}
-          scale={[7.5, 5.5, 7.5]}
-          size={2.1}
-          speed={0.35}
-          opacity={0.42}
-          color={rgbPreset?.primary || '#22d3ee'}
-        />
 
         {/* Complete 3D Modular PC Hardware Rig */}
         <CapeModel
@@ -255,12 +225,12 @@ export default function Canvas3D({
           focusedCategory={focusedCategory}
         />
 
-        {/* Ground Contact Shadows */}
+        {/* Soft Studio Floor Shadow */}
         <ContactShadows
           position={[0, -1.42, 0]}
-          opacity={0.72}
-          scale={8.5}
-          blur={2.3}
+          opacity={0.65}
+          scale={8.0}
+          blur={2.4}
           far={4.5}
           color="#000000"
         />
@@ -269,14 +239,14 @@ export default function Canvas3D({
         <OrbitControls
           ref={controlsRef}
           enableDamping
-          dampingFactor={0.055}
-          minDistance={1.65}
-          maxDistance={6.8}
+          dampingFactor={0.06}
+          minDistance={1.55}
+          maxDistance={6.2}
           minPolarAngle={Math.PI * 0.12}
-          maxPolarAngle={Math.PI * 0.8}
+          maxPolarAngle={Math.PI * 0.82}
           autoRotate={autoRotate}
-          autoRotateSpeed={1.25}
-          target={[0, 0.05, 0]}
+          autoRotateSpeed={1.1}
+          target={[0, 0.02, 0]}
         />
 
         <SceneBridge
