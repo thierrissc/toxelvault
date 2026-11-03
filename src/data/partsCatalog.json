@@ -14,64 +14,64 @@
       "root_chassis": {
         "position": [0, 0, 0],
         "rotation": [0, 0, 0],
-        "boundingBoxSize": [2.25, 2.55, 1.38]
+        "boundingBoxSize": [2.2, 2.52, 1.38]
       },
       "mount_motherboard": {
-        "position": [-0.28, 0.18, -0.18],
+        "position": [-0.32, 0.16, -0.14],
         "rotation": [0, 0, 0],
-        "boundingBoxSize": [1.26, 1.54, 0.06]
+        "boundingBoxSize": [1.26, 1.54, 0.04]
       },
       "mount_psu": {
-        "position": [-0.56, -0.78, -0.38],
+        "position": [-0.58, -0.68, -0.38],
         "rotation": [0, 0, 0],
-        "boundingBoxSize": [0.66, 0.42, 0.46]
+        "boundingBoxSize": [0.64, 0.42, 0.44]
       },
       "mount_top_radiator": {
-        "position": [-0.08, 1.12, 0.18],
+        "position": [-0.12, 1.18, 0.18],
         "rotation": [0, 0, 0],
-        "boundingBoxSize": [1.56, 0.18, 0.52]
+        "boundingBoxSize": [1.56, 0.1, 0.5]
       }
     },
     "motherboard": {
       "socket_cpu": {
-        "position": [-0.06, 0.34, 0.06],
+        "position": [-0.06, 0.34, 0.04],
         "rotation": [0, 0, 0],
-        "boundingBoxSize": [0.32, 0.32, 0.05]
+        "boundingBoxSize": [0.33, 0.35, 0.03]
       },
       "mount_cooler": {
-        "position": [-0.06, 0.34, 0.16],
+        "position": [-0.06, 0.34, 0.12],
         "rotation": [0, 0, 0],
-        "boundingBoxSize": [0.42, 0.42, 0.24]
+        "boundingBoxSize": [0.38, 0.38, 0.18]
       },
       "slot_pcie_x16": {
-        "position": [0.08, -0.16, 0.32],
+        "position": [-0.04, -0.18, 0.3],
         "rotation": [0, 0, 0],
-        "boundingBoxSize": [1.28, 0.24, 0.52]
+        "boundingBoxSize": [1.24, 0.19, 0.48]
       },
       "slot_ram_1": {
-        "position": [0.24, 0.34, 0.12],
+        "position": [0.22, 0.34, 0.07],
         "rotation": [0, 0, 0],
-        "boundingBoxSize": [0.035, 0.42, 0.12]
+        "boundingBoxSize": [0.032, 0.42, 0.11]
       },
       "slot_ram_2": {
-        "position": [0.30, 0.34, 0.12],
+        "position": [0.28, 0.34, 0.07],
         "rotation": [0, 0, 0],
-        "boundingBoxSize": [0.035, 0.42, 0.12]
+        "boundingBoxSize": [0.032, 0.42, 0.11]
       },
       "slot_ram_3": {
-        "position": [0.36, 0.34, 0.12],
+        "position": [0.34, 0.34, 0.07],
         "rotation": [0, 0, 0],
-        "boundingBoxSize": [0.035, 0.42, 0.12]
+        "boundingBoxSize": [0.032, 0.42, 0.11]
       },
       "slot_ram_4": {
-        "position": [0.42, 0.34, 0.12],
+        "position": [0.40, 0.34, 0.07],
         "rotation": [0, 0, 0],
-        "boundingBoxSize": [0.035, 0.42, 0.12]
+        "boundingBoxSize": [0.032, 0.42, 0.11]
       },
       "slot_m2_1": {
-        "position": [-0.06, -0.36, 0.06],
+        "position": [-0.08, -0.26, 0.04],
         "rotation": [0, 0, 0],
-        "boundingBoxSize": [0.46, 0.13, 0.05]
+        "boundingBoxSize": [0.46, 0.12, 0.04]
       }
     }
   },
@@ -82,8 +82,11 @@
       "brand": "HYTE",
       "category": "case",
       "price": 219.99,
-      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Gaming_PC_with_RGB_lighting.jpg?width=640",
+      "realPhotoUrl": "https://media.sketchfab.com/models/dc34eb9b89524e4e940a8dc18c393807/thumbnails/dcf2a544e3e148358ed918043ce33ee7/21e38769d01345c4a39d94113a174d48.jpeg",
       "model3dPath": "/models/cases/hyte-y70-black.glb",
+      "chassisColor": "#15171e",
+      "interiorColor": "#0f1117",
+      "style": "panoramic_3piece",
       "mountOffset": {
         "position": [0, 0, 0],
         "rotation": [0, 0, 0],
@@ -110,8 +113,11 @@
       "brand": "Lian Li",
       "category": "case",
       "price": 149.99,
-      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Lian_Li_PC-O11_Dynamic.jpg?width=640",
+      "realPhotoUrl": "https://media.sketchfab.com/models/7cf383ddfe9047f89435b4fc2a6e1053/thumbnails/6407b0e880da494f98fbe576a5632c3e/7c06074c025c44ca801cc82bb6be0089.jpeg",
       "model3dPath": "/models/cases/lian-li-o11-vision.glb",
+      "chassisColor": "#121318",
+      "interiorColor": "#0d0e12",
+      "style": "panoramic_vision",
       "mountOffset": {
         "position": [0, 0, 0],
         "rotation": [0, 0, 0],
@@ -137,12 +143,15 @@
       "brand": "Corsair",
       "category": "case",
       "price": 104.99,
-      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Computer_case_with_water_cooling.jpg?width=640",
+      "realPhotoUrl": "https://media.sketchfab.com/models/5f9261fef2874bf9ae39dd0f4029e978/thumbnails/1c57bc786db7482f8d6e793b4d569bbd/695bb1e3141446d0a9ba22793088769b.jpeg",
       "model3dPath": "/models/cases/corsair-4000d-airflow.glb",
+      "chassisColor": "#1e2028",
+      "interiorColor": "#14161c",
+      "style": "mesh_airflow",
       "mountOffset": {
         "position": [0, 0, 0],
         "rotation": [0, 0, 0],
-        "scale": [0.96, 0.98, 0.95]
+        "scale": [1, 1, 1]
       },
       "specs": {
         "formFactor": "ATX / Micro-ATX",
@@ -164,8 +173,11 @@
       "brand": "ASUS",
       "category": "motherboard",
       "price": 209.99,
-      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/ASUS_TUF_Gaming_B550M-Plus_(Wi-Fi).jpg?width=640",
+      "realPhotoUrl": "https://media.sketchfab.com/models/b998596cfc4945a0bc7b016005c39321/thumbnails/050c3cc4a99e4308a437153e426ff1a8/82a0ea85174a46e1b0edc47d429e53c6.jpeg",
       "model3dPath": "/models/motherboards/asus-b650m.glb",
+      "pcbColor": "#111318",
+      "vrmColor": "#242832",
+      "accentColor": "#f59e0b",
       "mountOffset": {
         "position": [0, 0, 0],
         "rotation": [0, 0, 0],
@@ -192,8 +204,11 @@
       "brand": "ASUS ROG",
       "category": "motherboard",
       "price": 649.99,
-      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Asus_ROG_Crosshair_VIII_Hero_(Wi-Fi).jpg?width=640",
+      "realPhotoUrl": "https://media.sketchfab.com/models/56bd8923fdf341fd8d81b717055a61dd/thumbnails/e21b5482a2ff4d2c8d8f7c2c27456241/23fe7c1bd9d4400f8c25bc5e322be3f9.jpeg",
       "model3dPath": "/models/motherboards/asus-rog-crosshair-x870e.glb",
+      "pcbColor": "#101218",
+      "vrmColor": "#1d222c",
+      "accentColor": "#38bdf8",
       "mountOffset": {
         "position": [0, 0, 0],
         "rotation": [0, 0, 0],
@@ -220,8 +235,11 @@
       "brand": "ASUS ROG",
       "category": "motherboard",
       "price": 559.99,
-      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Motherboard_ASUS_ROG_STRIX_Z390-E_GAMING.jpg?width=640",
+      "realPhotoUrl": "https://media.sketchfab.com/models/7ac2ed91599a4239aba96770a00874ce/thumbnails/6425166f7d5a402d83889983a150d87b/731989a4823c4fd0940e35411527ecc4.jpeg",
       "model3dPath": "/models/motherboards/asus-rog-maximus-z790.glb",
+      "pcbColor": "#12151c",
+      "vrmColor": "#1e2430",
+      "accentColor": "#60a5fa",
       "mountOffset": {
         "position": [0, 0, 0],
         "rotation": [0, 0, 0],
@@ -248,7 +266,7 @@
       "brand": "AMD",
       "category": "cpu",
       "price": 363.99,
-      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/AMD_Ryzen_7000_Series_processor_on_motherboard.jpg?width=640",
+      "realPhotoUrl": "https://media.sketchfab.com/models/6f96dcbe3a8a488196da999989e01152/thumbnails/9c3e685b8e8241cda8465cbe9e5ab2d6/b9d11fd99023400e95fe49eb52ab3f54.jpeg",
       "model3dPath": "/models/cpus/ryzen-7-7800x3d.glb",
       "mountOffset": {
         "position": [0, 0, 0],
@@ -276,7 +294,7 @@
       "brand": "AMD",
       "category": "cpu",
       "price": 479.00,
-      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/AMD_Ryzen_7000_Series_CPU.jpg?width=640",
+      "realPhotoUrl": "https://media.sketchfab.com/models/5a3bd5e3dcb2453882498b827a11dfbc/thumbnails/f5cd0755af134e999b53eb57bfdf08c3/6b1805fba355430598697b9dc3657194.jpeg",
       "model3dPath": "/models/cpus/ryzen-7-9800x3d.glb",
       "mountOffset": {
         "position": [0, 0, 0],
@@ -303,12 +321,12 @@
       "brand": "Intel",
       "category": "cpu",
       "price": 439.00,
-      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Intel_Core_i9-12900K_processor.jpg?width=640",
+      "realPhotoUrl": "https://media.sketchfab.com/models/cdfe2dfc7b884f25964ada8b11dc535b/thumbnails/c04b6229e0464c508c4cf1ea82ccd0ac/c35b40d33fb843c8a4f0b29e7c987bf9.jpeg",
       "model3dPath": "/models/cpus/intel-i9-14900k.glb",
       "mountOffset": {
         "position": [0, 0, 0],
         "rotation": [0, 0, 0],
-        "scale": [0.95, 1.08, 1]
+        "scale": [1, 1, 1]
       },
       "specs": {
         "socket": "LGA1700",
@@ -330,8 +348,10 @@
       "brand": "ASUS ROG",
       "category": "gpu",
       "price": 649.99,
-      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/NVIDIA_GeForce_RTX_4090_Founders_Edition.jpg?width=640",
+      "realPhotoUrl": "https://media.sketchfab.com/models/dc70c261c70e44b1ab97c03867c19489/thumbnails/59236e4ac5144621b87fec376eb42e6e/749b078ecbd7418cb634c7f451910f3e.jpeg",
       "model3dPath": "/models/gpus/rtx-4070.glb",
+      "shroudColor": "#1c2029",
+      "trimColor": "#475569",
       "mountOffset": {
         "position": [0, 0, 0],
         "rotation": [0, 0, 0],
@@ -357,8 +377,10 @@
       "brand": "NVIDIA",
       "category": "gpu",
       "price": 1799.99,
-      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/GeForce_RTX_4090_Founders_Edition.jpg?width=640",
+      "realPhotoUrl": "https://media.sketchfab.com/models/0eeef36c440f44f586501532dd61bba0/thumbnails/e34ac2c695dd40b1a4dd1ce60fd51f92/58c6a523d8aa458d81edb42682ef7bee.jpeg",
       "model3dPath": "/models/gpus/rtx-4090-fe.glb",
+      "shroudColor": "#272a33",
+      "trimColor": "#94a3b8",
       "mountOffset": {
         "position": [0, 0, 0],
         "rotation": [0, 0, 0],
@@ -384,8 +406,10 @@
       "brand": "Sapphire",
       "category": "gpu",
       "price": 919.99,
-      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/AMD_Radeon_RX_7900_XTX.jpg?width=640",
+      "realPhotoUrl": "https://media.sketchfab.com/models/648b333a485040f68c6d47d166ee7532/thumbnails/04b12054787f4131befca7a1b53a1f2c/5b14cc7b063247ef826586f4ab521a9f.jpeg",
       "model3dPath": "/models/gpus/rx-7900-xtx.glb",
+      "shroudColor": "#3f4756",
+      "trimColor": "#cbd5e1",
       "mountOffset": {
         "position": [0, 0, 0],
         "rotation": [0, 0, 0],
@@ -411,8 +435,9 @@
       "brand": "G.Skill",
       "category": "ram",
       "price": 112.99,
-      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/DDR5_RAM_modules.jpg?width=640",
+      "realPhotoUrl": "https://media.sketchfab.com/models/79db2e2ec451464a9fe64a733d53985d/thumbnails/294502ce36da43aa877e53b3f27852a9/1d9bea0387724d728cd106f0e2f8bf6e.jpeg",
       "model3dPath": "/models/ram/gskill-trident-z5.glb",
+      "heatsinkColor": "#181b22",
       "mountOffset": {
         "position": [0, 0, 0],
         "rotation": [0, 0, 0],
@@ -438,8 +463,9 @@
       "brand": "Corsair",
       "category": "ram",
       "price": 289.99,
-      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Corsair_Dominator_Platinum_RGB.jpg?width=640",
+      "realPhotoUrl": "https://media.sketchfab.com/models/8995a60d2dcc46b3be14c35c1c016c0a/thumbnails/becc533137be4b5fa1b9a1d97dbeb957/7d8245e6b9f5420fa33e2e3df39ec534.jpeg",
       "model3dPath": "/models/ram/corsair-dominator-titanium.glb",
+      "heatsinkColor": "#222631",
       "mountOffset": {
         "position": [0, 0, 0],
         "rotation": [0, 0, 0],
@@ -465,8 +491,10 @@
       "brand": "NZXT",
       "category": "cooler",
       "price": 279.99,
-      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/AIO_water_cooler_on_CPU.jpg?width=640",
+      "realPhotoUrl": "https://media.sketchfab.com/models/22f06ed7cf93498f8324e642f056e4d0/thumbnails/af04009ba71b4afeb433cc859ec3df0f/abbb533a9e1d4804bd7e175cd0c6ed49.jpeg",
       "model3dPath": "/models/coolers/nzxt-kraken-360.glb",
+      "coolerStyle": "aio_360",
+      "radiatorColor": "#161920",
       "mountOffset": {
         "position": [0, 0, 0],
         "rotation": [0, 0, 0],
@@ -491,12 +519,14 @@
       "brand": "Noctua",
       "category": "cooler",
       "price": 119.95,
-      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Noctua_NH-D15_CPU_cooler.jpg?width=640",
+      "realPhotoUrl": "https://media.sketchfab.com/models/e54651982f524644a2144b52a6b36e89/thumbnails/dc580967bc1548c481d40b2653ec8973/e2215c198ddf4f7597cb269336cca4d2.jpeg",
       "model3dPath": "/models/coolers/noctua-nh-d15.glb",
+      "coolerStyle": "air_dual",
+      "radiatorColor": "#181a20",
       "mountOffset": {
         "position": [0, 0, 0],
         "rotation": [0, 0, 0],
-        "scale": [1.1, 1.1, 1.3]
+        "scale": [1, 1, 1]
       },
       "specs": {
         "supportedSockets": ["AM5", "AM4", "LGA1700", "LGA1851"],
@@ -517,7 +547,7 @@
       "brand": "Samsung",
       "category": "storage",
       "price": 169.99,
-      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Samsung_980_PRO_SSD.jpg?width=640",
+      "realPhotoUrl": "https://media.sketchfab.com/models/b9d5c181040a48b5af8aef09b6d91419/thumbnails/92471adca4524d7881a332787e4a1f17/51dea8c471f34bdf983c6b9f24391a13.jpeg",
       "model3dPath": "/models/storage/samsung-990-pro.glb",
       "mountOffset": {
         "position": [0, 0, 0],
@@ -539,11 +569,11 @@
     },
     {
       "id": "psu_corsair_rm1000x_shift",
-      "name": "Corsair RM1000x SHIFT 1000W 80+ Gold ATX 3.1 Modular",
+      "name": "Corsair RM1000e / RM1000x 1000W 80+ Gold ATX 3.1 Modular",
       "brand": "Corsair",
       "category": "psu",
       "price": 189.99,
-      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Corsair_RM850x_power_supply.jpg?width=640",
+      "realPhotoUrl": "https://media.sketchfab.com/models/6d122273398b446a876600401ba08b55/thumbnails/e2ed7c36df7240aa90a6039c396bb59a/8453fcbe49bb4b58bc138fab295fc144.jpeg",
       "model3dPath": "/models/psus/corsair-rm1000x.glb",
       "mountOffset": {
         "position": [0, 0, 0],
@@ -553,7 +583,7 @@
       "specs": {
         "wattageCapacity": 1000,
         "efficiency": "80 PLUS Gold / Cybenetics Gold",
-        "formFactor": "ATX 3.1 Full Modular (Side Interface)",
+        "formFactor": "ATX 3.1 Full Modular",
         "dimensionsMm": "150 x 86 x 180 mm",
         "pcie5Connector": "1x Native 12V-2x6 (600W)",
         "tdpW": 0
@@ -569,7 +599,7 @@
       "brand": "ASUS ROG",
       "category": "psu",
       "price": 329.99,
-      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/PC_Power_Supply_Unit.jpg?width=640",
+      "realPhotoUrl": "https://media.sketchfab.com/models/5f2d5547de614032b4cbf5be92645b28/thumbnails/401dbf78aa6a4d98b6cd0ed1094ef454/1c87f2f292f44fa7a496660ddf510940.jpeg",
       "model3dPath": "/models/psus/asus-rog-thor-1200w.glb",
       "mountOffset": {
         "position": [0, 0, 0],
