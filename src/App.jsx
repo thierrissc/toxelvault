@@ -10,15 +10,14 @@ import {
 } from './utils/textureGenerator';
 
 export default function App() {
-  // Complete 8-component PC Hardware Build State
+  // Complete 9-component Real PC Hardware Build State
   const [build, setBuild] = useState(DEFAULT_BUILD);
-  const [activeCategory, setActiveCategory] = useState('gpu');
-  const [rgbPreset, setRgbPreset] = useState(RGB_PRESETS[0]);
+  const [rgbPreset, setRgbPreset] = useState(RGB_PRESETS[0]); // Clean Studio White LEDs by default
 
   // Real-time interactive 3D case & shader controls
-  const [fanRpmFactor, setFanRpmFactor] = useState(2.4);
-  const [metalness, setMetalness] = useState(0.75);
-  const [roughness, setRoughness] = useState(0.24);
+  const [fanRpmFactor, setFanRpmFactor] = useState(2.2);
+  const [metalness, setMetalness] = useState(0.68);
+  const [roughness, setRoughness] = useState(0.32);
   const [lightingMode, setLightingMode] = useState('studio');
   const [wireframe, setWireframe] = useState(false);
   const [autoRotate, setAutoRotate] = useState(false);
@@ -36,32 +35,41 @@ export default function App() {
     ts: 0,
   });
 
-  // UI Modals & Mobile Tabs
-  const [isInspectorOpen, setIsInspectorOpen] = useState(false);
+  // BuildCores-Style Modal State ('closed' | 'picker' | 'details' | 'manifest')
+  const [modalState, setModalState] = useState({
+    mode: 'closed',
+    category: 'cpu',
+    item: null,
+  });
+
   const [screenshotToast, setScreenshotToast] = useState(false);
-  const [mobileTab, setMobileTab] = useState('none');
 
   // Real-Time WebGL Telemetry
   const [stats, setStats] = useState({
     fps: 60,
-    triangles: 3420,
-    calls: 68,
-    geometries: 42,
-    textures: 4,
+    triangles: 3840,
+    calls: 74,
   });
 
   const screenshotHandlerRef = useRef(null);
 
-  // Calculate Total Build Price & Wattage
+  // Calculate Total Build Price, Wattage & Realistic CPU/GPU Temps
   const { totalPrice, totalWattage, cpuTemp, gpuTemp } = useMemo(() => {
     const items = Object.values(build);
     const price = items.reduce((acc, item) => acc + (item.price || 0), 0);
     const watts = items.reduce((acc, item) => acc + (item.wattage || 0), 0);
 
-    // Calculate realistic CPU & GPU temps based on cooler capacity & fan RPM
-    const coolingBonus = Math.round(fanRpmFactor * 2.2) + (build.cooler.type === 'aio_360' ? 8 : 3);
-    const cTemp = Math.max(31, Math.round(44 + build.cpu.wattage * 0.08 - coolingBonus));
-    const gTemp = Math.max(35, Math.round(46 + build.gpu.wattage * 0.045 - coolingBonus * 0.8));
+    const coolingBonus =
+      Math.round(fanRpmFactor * 2.0) +
+      (build.cooler.type === 'aio_360' ? 9 : 4);
+    const cTemp = Math.max(
+      32,
+      Math.round(45 + build.cpu.wattage * 0.075 - coolingBonus)
+    );
+    const gTemp = Math.max(
+      36,
+      Math.round(47 + build.gpu.wattage * 0.035 - coolingBonus * 0.8)
+    );
 
     return {
       totalPrice: price,
@@ -71,7 +79,7 @@ export default function App() {
     };
   }, [build, fanRpmFactor]);
 
-  // Generate Live AIO LCD & PSU OLED CanvasTexture whenever telemetry or RGB changes
+  // Generate Live NZXT/LianLi AIO LCD & PSU OLED CanvasTexture
   const lcdTexture = useMemo(() => {
     return createLcdTelemetryTexture({
       cpuTemp,
@@ -89,7 +97,7 @@ export default function App() {
     };
   }, [lcdTexture]);
 
-  // Select a part in a category & smoothly focus camera if helpful
+  // Select a part and update the 3D rig immediately
   const handleSelectPart = useCallback((category, part) => {
     setBuild((prev) => ({
       ...prev,
@@ -97,7 +105,7 @@ export default function App() {
     }));
   }, []);
 
-  // Upload custom image (.png / .jpg) for GPU Backplate & AIO Pump LCD Screen
+  // Upload custom image (.png / .jpg) for GPU Backplate & AIO LCD Screen
   const handleUploadCustomTexture = useCallback((file) => {
     const reader = new FileReader();
     reader.onload = (event) => {
@@ -115,13 +123,13 @@ export default function App() {
     reader.readAsDataURL(file);
   }, []);
 
-  // Reset build & visual settings to default flagship rig
+  // Reset build & settings to default
   const handleResetBuild = useCallback(() => {
     setBuild(DEFAULT_BUILD);
     setRgbPreset(RGB_PRESETS[0]);
-    setFanRpmFactor(2.4);
-    setMetalness(0.75);
-    setRoughness(0.24);
+    setFanRpmFactor(2.2);
+    setMetalness(0.68);
+    setRoughness(0.32);
     setWireframe(false);
     setExplodedView(false);
     setGlassOpen(false);
@@ -137,7 +145,7 @@ export default function App() {
     if (!dataUrl) return;
 
     const link = document.createElement('a');
-    link.download = `voxelvault-pc-build-3d-hd.png`;
+    link.download = `voxelcores-3d-pc-build.png`;
     link.href = dataUrl;
     document.body.appendChild(link);
     link.click();
@@ -152,53 +160,15 @@ export default function App() {
   }, []);
 
   return (
-    <main className="relative w-screen h-screen overflow-hidden bg-[#090A0F] select-none">
-      {/* Dynamic Ambient Radial Background Glow synchronized with PC ARGB */}
-      <div
-        className="pointer-events-none fixed inset-0 z-0 transition-all duration-700"
-        style={{
-          background: `radial-gradient(circle at 50% 45%, ${rgbPreset.primary}22 0%, ${rgbPreset.secondary}12 38%, #090A0F 80%)`,
-        }}
-      />
-
-      {/* Subtle Cyber Engineering Grid */}
-      <div
-        className="pointer-events-none fixed inset-0 z-0 opacity-[0.04]"
-        style={{
-          backgroundImage:
-            'linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px)',
-          backgroundSize: '48px 48px',
-        }}
-      />
-
-      {/* Central Fullscreen 3D PC Viewport (100vw x 100vh) */}
-      <div className="relative z-10 w-full h-full">
-        <Canvas3D
-          build={build}
-          lcdTexture={lcdTexture}
-          customBackplateTex={customBackplateTex}
-          rgbPreset={rgbPreset}
-          fanRpmFactor={fanRpmFactor}
-          metalness={metalness}
-          roughness={roughness}
-          lightingMode={lightingMode}
-          wireframe={wireframe}
-          autoRotate={autoRotate}
-          explodedView={explodedView}
-          glassOpen={glassOpen}
-          focusedCategory={activeCategory}
-          cameraViewTrigger={cameraViewTrigger}
-          onStatsUpdate={setStats}
-          screenshotHandlerRef={screenshotHandlerRef}
-        />
-      </div>
-
-      {/* Floating Glassmorphism PC Part Picker & Case Customizer HUD */}
+    <>
       <SidebarControls
         build={build}
-        activeCategory={activeCategory}
-        setActiveCategory={setActiveCategory}
-        onSelectPart={handleSelectPart}
+        onOpenPartPicker={(category) =>
+          setModalState({ mode: 'picker', category, item: null })
+        }
+        onOpenPartDetails={(category, item) =>
+          setModalState({ mode: 'details', category, item })
+        }
         rgbPreset={rgbPreset}
         setRgbPreset={setRgbPreset}
         fanRpmFactor={fanRpmFactor}
@@ -222,29 +192,54 @@ export default function App() {
         onSnapCamera={handleSnapCamera}
         onCaptureScreenshot={handleCaptureScreenshot}
         screenshotToast={screenshotToast}
-        onOpenInspector={() => setIsInspectorOpen(true)}
+        onOpenInspector={() =>
+          setModalState({ mode: 'manifest', category: 'cpu', item: null })
+        }
         onResetBuild={handleResetBuild}
         stats={stats}
         totalPrice={totalPrice}
         totalWattage={totalWattage}
         cpuTemp={cpuTemp}
         gpuTemp={gpuTemp}
-        mobileTab={mobileTab}
-        setMobileTab={setMobileTab}
-      />
+      >
+        <Canvas3D
+          build={build}
+          lcdTexture={lcdTexture}
+          customBackplateTex={customBackplateTex}
+          rgbPreset={rgbPreset}
+          fanRpmFactor={fanRpmFactor}
+          metalness={metalness}
+          roughness={roughness}
+          lightingMode={lightingMode}
+          wireframe={wireframe}
+          autoRotate={autoRotate}
+          explodedView={explodedView}
+          glassOpen={glassOpen}
+          focusedCategory={modalState.category}
+          cameraViewTrigger={cameraViewTrigger}
+          onStatsUpdate={setStats}
+          screenshotHandlerRef={screenshotHandlerRef}
+        />
+      </SidebarControls>
 
-      {/* Full PC Build Manifest & WebGL Telemetry Modal */}
+      {/* BuildCores Part Picker Modal, Part Details Modal & Export Modal */}
       <InspectorModal
-        isOpen={isInspectorOpen}
-        onClose={() => setIsInspectorOpen(false)}
+        modalState={modalState}
+        onClose={() =>
+          setModalState((prev) => ({ ...prev, mode: 'closed' }))
+        }
+        onSelectPartForBuild={handleSelectPart}
+        onOpenPartDetails={(category, item) =>
+          setModalState({ mode: 'details', category, item })
+        }
+        onBackToPicker={(category) =>
+          setModalState({ mode: 'picker', category, item: null })
+        }
         build={build}
-        stats={stats}
         totalPrice={totalPrice}
         totalWattage={totalWattage}
-        cpuTemp={cpuTemp}
-        gpuTemp={gpuTemp}
-        rgbPreset={rgbPreset}
+        stats={stats}
       />
-    </main>
+    </>
   );
 }
