@@ -94,7 +94,6 @@ export default function CapeModel({
   wireframe = false,
   explodedView = false,
   glassOpen = false,
-  focusedCategory = null,
 }) {
   const fanRefs = useRef([]);
   const glassDoorRef = useRef();

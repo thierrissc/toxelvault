@@ -1003,7 +1003,7 @@ export function getHardwareProductPhoto(category, item) {
   } else if (category === 'ram') {
     // Pair of DDR5 RGB Memory Modules
     const isWhite = item.heatsinkColor === '#f1f5f9';
-    [-18, 18].forEach((yOff, idx) => {
+    [-18, 18].forEach((yOff) => {
       ctx.save();
       ctx.translate(160, 115 + yOff);
       ctx.rotate(-0.12);
