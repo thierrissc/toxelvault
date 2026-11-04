@@ -23,7 +23,7 @@ import {
   Sparkles,
   Palette,
   Power,
-  Wand2,
+  Layers,
 } from 'lucide-react';
 import {
   HARDWARE_CATEGORIES,
@@ -164,48 +164,43 @@ export default function SidebarControls({
   const equippedCount = HARDWARE_CATEGORIES.filter((c) => Boolean(build[c.id])).length;
 
   return (
-    <div className="flex flex-col w-screen h-screen bg-[#0b0c10] text-slate-100 overflow-hidden select-none">
-      <header className="h-14 shrink-0 flex items-center justify-between px-4 lg:px-6 bg-[#111318] border-b border-white/[0.08] z-30">
+    <div className="flex flex-col w-screen h-screen bg-[#0a0b0e] text-slate-100 overflow-hidden select-none">
+      <header className="h-14 shrink-0 flex items-center justify-between px-4 lg:px-6 bg-[#101217] border-b border-white/[0.08] z-30">
         <div className="flex items-center gap-3">
           <img
             src="/logo.png"
             alt="ToxelVault Logo"
             className="w-9 h-9 rounded-lg object-contain"
           />
-          <div className="flex items-baseline gap-2">
-            <span className="font-display text-sm font-bold tracking-wide text-white">
-              ToxelVault
-            </span>
-            <span className="hidden sm:inline text-xs font-medium text-slate-400">
-              Montador de Hardware 3D
-            </span>
-          </div>
+          <span className="font-display text-sm font-bold tracking-wide text-white">
+            ToxelVault
+          </span>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => setIsPcOn(!isPcOn)}
-            className={`flex items-center gap-1.5 rounded-xl border px-3.5 py-1.5 text-xs font-bold transition cursor-pointer shadow ${
+            className={`flex items-center gap-2 rounded-xl border px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
               isPcOn
-                ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-300 shadow-emerald-500/10'
-                : 'bg-[#181b22] border-white/[0.1] text-slate-400 hover:text-white'
+                ? 'bg-white/[0.1] border-white/[0.22] text-white'
+                : 'bg-[#161920] border-white/[0.08] text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Power className={`h-3.5 w-3.5 ${isPcOn ? 'text-emerald-400' : 'text-slate-500'}`} />
-            <span>⚡ PC {isPcOn ? 'Ligado' : 'Desligado'}</span>
+            <Power className="h-3.5 w-3.5 text-current" />
+            <span>PC {isPcOn ? 'Ligado' : 'Desligado'}</span>
           </button>
 
           <div className="relative" ref={rgbMenuRef}>
             <button
               type="button"
               onClick={() => setRgbMenuOpen((prev) => !prev)}
-              className="flex items-center gap-2 rounded-xl bg-[#181b22] hover:bg-[#222631] border border-white/[0.12] px-3 py-1.5 text-xs font-semibold text-white transition cursor-pointer"
+              className="flex items-center gap-2 rounded-xl bg-[#161920] hover:bg-[#1e222b] border border-white/[0.1] px-3 py-1.5 text-xs font-medium text-slate-200 hover:text-white transition cursor-pointer"
             >
-              <Palette className="h-3.5 w-3.5 text-sky-400" />
+              <Palette className="h-3.5 w-3.5 text-slate-300" />
               <span className="hidden sm:inline">Controlador RGB</span>
               <span
-                className="h-3 w-3 rounded-full border border-white/40"
+                className="h-2.5 w-2.5 rounded-full border border-white/40"
                 style={{
                   background:
                     rgbConfig?.mode === 'rainbow'
@@ -217,10 +212,10 @@ export default function SidebarControls({
             </button>
 
             {rgbMenuOpen && (
-              <div className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-80 rounded-2xl bg-[#14171f]/98 backdrop-blur-xl border border-white/[0.14] p-4 shadow-2xl space-y-4 z-50">
+              <div className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-80 rounded-2xl bg-[#13161d]/98 backdrop-blur-xl border border-white/[0.12] p-4 shadow-2xl space-y-4 z-50">
                 <div className="flex items-center justify-between border-b border-white/[0.08] pb-2.5">
                   <span className="text-xs font-bold text-white flex items-center gap-2">
-                    <Palette className="h-4 w-4 text-sky-400" />
+                    <Palette className="h-4 w-4 text-slate-300" />
                     Controlador RGB / ARGB
                   </span>
                   <span className="text-[11px] text-slate-400">
@@ -245,10 +240,10 @@ export default function SidebarControls({
                         onClick={() =>
                           setRgbConfig((prev) => ({ ...prev, mode: m.id }))
                         }
-                        className={`rounded-lg py-1.5 px-2.5 text-xs font-semibold border transition cursor-pointer ${
+                        className={`rounded-lg py-1.5 px-2.5 text-xs font-medium border transition cursor-pointer ${
                           rgbConfig?.mode === m.id
-                            ? 'bg-sky-500/20 border-sky-400 text-sky-300'
-                            : 'bg-[#1c202b] border-white/[0.08] text-slate-300 hover:text-white'
+                            ? 'bg-white/[0.12] border-white/[0.28] text-white'
+                            : 'bg-[#191d26] border-white/[0.07] text-slate-400 hover:text-white'
                         }`}
                       >
                         {m.label}
@@ -272,7 +267,7 @@ export default function SidebarControls({
                             syncAll: e.target.checked,
                           }))
                         }
-                        className="accent-sky-400"
+                        className="accent-slate-200"
                       />
                       <span>Sincronizar Tudo</span>
                     </label>
@@ -291,7 +286,7 @@ export default function SidebarControls({
                           key={preset.id}
                           type="button"
                           onClick={() => handleGlobalColorChange(preset.color)}
-                          className="flex items-center gap-1.5 rounded-lg bg-[#1c202b] hover:bg-white/[0.1] border border-white/[0.08] px-2 py-1 text-[11px] text-slate-200 transition cursor-pointer"
+                          className="flex items-center gap-1.5 rounded-lg bg-[#191d26] hover:bg-white/[0.1] border border-white/[0.08] px-2 py-1 text-[11px] text-slate-200 transition cursor-pointer"
                         >
                           <span
                             className="h-2.5 w-2.5 rounded-full"
@@ -317,7 +312,7 @@ export default function SidebarControls({
                     ].map((grp) => (
                       <label
                         key={grp.key}
-                        className="flex items-center justify-between rounded-lg bg-[#1c202b] border border-white/[0.07] px-2.5 py-1.5 text-xs text-slate-200 cursor-pointer"
+                        className="flex items-center justify-between rounded-lg bg-[#191d26] border border-white/[0.07] px-2.5 py-1.5 text-xs text-slate-200 cursor-pointer"
                       >
                         <span className="truncate pr-1">{grp.label}</span>
                         <input
@@ -343,32 +338,21 @@ export default function SidebarControls({
           <button
             type="button"
             onClick={onOpenAssistant}
-            className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
+            className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-medium transition cursor-pointer ${
               compatibility.isCompatible && compatibility.warnings.length === 0
-                ? 'bg-[#181b22] hover:bg-[#222631] border-white/[0.1] text-emerald-400'
-                : compatibility.isCompatible
-                ? 'bg-amber-500/15 border-amber-500/40 text-amber-300'
-                : 'bg-rose-500/20 border-rose-500/50 text-rose-300'
+                ? 'bg-[#161920] hover:bg-[#1e222b] border-white/[0.1] text-slate-200'
+                : 'bg-white/[0.08] border-white/[0.22] text-white'
             }`}
-            title="Abrir Assistente de Compatibilidade e Recomendação"
+            title="Verificar Compatibilidade e Consumo"
           >
             {compatibility.isCompatible ? (
-              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+              <CheckCircle2 className="h-3.5 w-3.5 text-slate-300" />
             ) : (
-              <AlertTriangle className="h-3.5 w-3.5 text-rose-400" />
+              <AlertTriangle className="h-3.5 w-3.5 text-slate-200" />
             )}
             <span className="hidden md:inline">
-              {compatibility.isCompatible ? 'Compatível' : 'Conflito'} • {compatibility.totalTdp}W
+              {compatibility.isCompatible ? 'Compatível' : 'Revisar'} • {compatibility.totalTdp}W
             </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={onOpenAssistant}
-            className="flex items-center gap-1.5 rounded-xl bg-sky-500 hover:bg-sky-400 px-3 py-1.5 text-xs font-bold text-slate-950 transition cursor-pointer shadow"
-          >
-            <Wand2 className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Montar para Mim</span>
           </button>
         </div>
 
@@ -376,16 +360,16 @@ export default function SidebarControls({
           <button
             type="button"
             onClick={onCaptureScreenshot}
-            className="hidden xl:flex items-center gap-1.5 rounded-lg bg-[#181b22] hover:bg-[#222630] border border-white/[0.1] px-3 py-1.5 text-xs font-medium text-slate-200 transition cursor-pointer"
+            className="hidden xl:flex items-center gap-1.5 rounded-xl bg-[#161920] hover:bg-[#1e222b] border border-white/[0.1] px-3 py-1.5 text-xs font-medium text-slate-200 hover:text-white transition cursor-pointer"
           >
-            <Camera className="h-3.5 w-3.5 text-sky-400" />
+            <Camera className="h-3.5 w-3.5 text-slate-300" />
             <span>Capturar Foto</span>
           </button>
 
           <button
             type="button"
             onClick={() => setMobileDrawer(!mobileDrawer)}
-            className="lg:hidden rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white cursor-pointer"
+            className="lg:hidden rounded-xl bg-white text-slate-950 px-3 py-1.5 text-xs font-semibold cursor-pointer"
           >
             {mobileDrawer ? 'Ver 3D' : `Peças (${equippedCount}/8)`}
           </button>
@@ -393,21 +377,15 @@ export default function SidebarControls({
       </header>
 
       {(!compatibility.isCompatible || compatibility.warnings.length > 0) && (
-        <div
-          className={`${
-            compatibility.isCompatible
-              ? 'bg-amber-950/90 border-amber-500/40 text-amber-200'
-              : 'bg-rose-950/90 border-rose-500/40 text-rose-200'
-          } border-b px-6 py-2 flex items-center justify-between text-xs z-20`}
-        >
+        <div className="bg-[#161922] border-b border-white/[0.1] px-6 py-2 flex items-center justify-between text-xs text-slate-200 z-20">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4 shrink-0" />
+            <AlertTriangle className="h-4 w-4 text-slate-300 shrink-0" />
             <span>{compatibility.issues[0] || compatibility.warnings[0]}</span>
           </div>
           <button
             type="button"
             onClick={onOpenAssistant}
-            className="rounded bg-white/15 hover:bg-white/25 border border-white/20 px-2.5 py-0.5 text-[11px] font-semibold text-white cursor-pointer shrink-0"
+            className="rounded-lg bg-white/[0.1] hover:bg-white/[0.16] border border-white/[0.15] px-2.5 py-1 text-[11px] font-semibold text-white cursor-pointer shrink-0"
           >
             Resolver no Assistente
           </button>
@@ -415,16 +393,16 @@ export default function SidebarControls({
       )}
 
       <div className="relative flex-1 flex overflow-hidden">
-        <div className="relative flex-1 h-full flex flex-col bg-[#0c0e13] overflow-hidden">
+        <div className="relative flex-1 h-full flex flex-col bg-[#0a0b0e] overflow-hidden">
           <div className="pointer-events-none absolute top-3.5 left-4 right-4 z-20 flex items-center justify-between gap-2">
             <div className="pointer-events-auto flex items-center gap-2" ref={dropdownRef}>
               <div className="relative">
                 <button
                   type="button"
                   onClick={() => setViewMenuOpen((prev) => !prev)}
-                  className="flex items-center gap-2 rounded-xl bg-[#14171f]/95 hover:bg-[#1c202b] backdrop-blur-md border border-white/[0.1] px-3.5 py-2 text-xs font-semibold text-white shadow-lg transition cursor-pointer"
+                  className="flex items-center gap-2 rounded-xl bg-[#13161d]/95 hover:bg-[#1b1f29] backdrop-blur-md border border-white/[0.1] px-3.5 py-2 text-xs font-medium text-slate-200 hover:text-white shadow-lg transition cursor-pointer"
                 >
-                  <SlidersHorizontal className="h-3.5 w-3.5 text-sky-400" />
+                  <SlidersHorizontal className="h-3.5 w-3.5 text-slate-300" />
                   <span>Visualização 3D</span>
                   <ChevronDown
                     className={`h-3.5 w-3.5 text-slate-400 transition-transform ${
@@ -434,7 +412,7 @@ export default function SidebarControls({
                 </button>
 
                 {viewMenuOpen && (
-                  <div className="absolute left-0 mt-2 w-72 rounded-2xl bg-[#14171f]/98 backdrop-blur-xl border border-white/[0.12] p-3.5 shadow-2xl space-y-4 z-30">
+                  <div className="absolute left-0 mt-2 w-72 rounded-2xl bg-[#13161d]/98 backdrop-blur-xl border border-white/[0.12] p-3.5 shadow-2xl space-y-4 z-30">
                     <div className="space-y-1.5">
                       <span className="block text-[11px] font-semibold text-slate-400">
                         Ângulos de Câmera
@@ -453,7 +431,7 @@ export default function SidebarControls({
                               onSnapCamera(cam.id);
                               setViewMenuOpen(false);
                             }}
-                            className="rounded-lg bg-[#1c202b] hover:bg-sky-500/20 border border-white/[0.07] hover:border-sky-400/40 px-2.5 py-1.5 text-xs font-medium text-slate-200 hover:text-white text-left transition cursor-pointer"
+                            className="rounded-lg bg-[#191d26] hover:bg-white/[0.1] border border-white/[0.07] hover:border-white/[0.18] px-2.5 py-1.5 text-xs font-medium text-slate-300 hover:text-white text-left transition cursor-pointer"
                           >
                             {cam.label}
                           </button>
@@ -471,12 +449,12 @@ export default function SidebarControls({
                           onClick={() => setShowGlass(!showGlass)}
                           className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-xs font-medium border transition cursor-pointer ${
                             !showGlass
-                              ? 'bg-sky-500/20 border-sky-400/40 text-sky-300'
-                              : 'bg-[#1c202b] border-white/[0.07] text-slate-200 hover:text-white'
+                              ? 'bg-white/[0.12] border-white/[0.25] text-white'
+                              : 'bg-[#191d26] border-white/[0.07] text-slate-300 hover:text-white'
                           }`}
                         >
                           <span className="flex items-center gap-2">
-                            {showGlass ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                            {showGlass ? <EyeOff className="h-3.5 w-3.5 text-slate-300" /> : <Eye className="h-3.5 w-3.5 text-slate-300" />}
                             <span>{showGlass ? 'Remover Vidro do Gabinete' : 'Colocar Vidro do Gabinete'}</span>
                           </span>
                         </button>
@@ -486,12 +464,12 @@ export default function SidebarControls({
                           onClick={() => setExplodedView(!explodedView)}
                           className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-xs font-medium border transition cursor-pointer ${
                             explodedView
-                              ? 'bg-sky-500/20 border-sky-400/40 text-sky-300'
-                              : 'bg-[#1c202b] border-white/[0.07] text-slate-200 hover:text-white'
+                              ? 'bg-white/[0.12] border-white/[0.25] text-white'
+                              : 'bg-[#191d26] border-white/[0.07] text-slate-300 hover:text-white'
                           }`}
                         >
                           <span className="flex items-center gap-2">
-                            <Maximize2 className="h-3.5 w-3.5" />
+                            <Maximize2 className="h-3.5 w-3.5 text-slate-300" />
                             <span>Explodir Peças</span>
                           </span>
                           <span className="text-[10px] text-slate-400">
@@ -504,12 +482,12 @@ export default function SidebarControls({
                           onClick={() => setAutoRotate(!autoRotate)}
                           className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-xs font-medium border transition cursor-pointer ${
                             autoRotate
-                              ? 'bg-emerald-500/20 border-emerald-400/40 text-emerald-300'
-                              : 'bg-[#1c202b] border-white/[0.07] text-slate-200 hover:text-white'
+                              ? 'bg-white/[0.12] border-white/[0.25] text-white'
+                              : 'bg-[#191d26] border-white/[0.07] text-slate-300 hover:text-white'
                           }`}
                         >
                           <span className="flex items-center gap-2">
-                            <RotateCw className={`h-3.5 w-3.5 ${autoRotate ? 'animate-spin' : ''}`} />
+                            <RotateCw className={`h-3.5 w-3.5 text-slate-300 ${autoRotate ? 'animate-spin' : ''}`} />
                             <span>Girar 360°</span>
                           </span>
                           <span className="text-[10px] text-slate-400">
@@ -535,8 +513,8 @@ export default function SidebarControls({
                             onClick={() => setEnvPreset(env.id)}
                             className={`rounded-lg py-1.5 px-2 text-xs font-medium border transition cursor-pointer ${
                               envPreset === env.id
-                                ? 'bg-sky-500/20 border-sky-400 text-sky-300'
-                                : 'bg-[#1c202b] border-white/[0.07] text-slate-300 hover:text-white'
+                                ? 'bg-white/[0.14] border-white/[0.28] text-white'
+                                : 'bg-[#191d26] border-white/[0.07] text-slate-400 hover:text-white'
                             }`}
                           >
                             {env.label}
@@ -552,7 +530,7 @@ export default function SidebarControls({
                       <select
                         value={uploadTargetCategory}
                         onChange={(e) => setUploadTargetCategory(e.target.value)}
-                        className="w-full rounded-lg bg-[#0e1015] border border-white/15 px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-sky-400"
+                        className="w-full rounded-lg bg-[#0d0f14] border border-white/15 px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-white/40"
                       >
                         {HARDWARE_CATEGORIES.map((c) => (
                           <option key={c.id} value={c.id}>
@@ -570,9 +548,9 @@ export default function SidebarControls({
                       <button
                         type="button"
                         onClick={() => glbInputRef.current?.click()}
-                        className="w-full flex items-center justify-center gap-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 py-2 px-3 text-xs font-bold text-slate-950 transition cursor-pointer"
+                        className="w-full flex items-center justify-center gap-1.5 rounded-lg bg-white hover:bg-slate-200 py-2 px-3 text-xs font-semibold text-slate-950 transition cursor-pointer"
                       >
-                        <Upload className="h-3.5 w-3.5" />
+                        <Upload className="h-3.5 w-3.5 text-slate-950" />
                         <span>Carregar Arquivo .GLB</span>
                       </button>
                     </div>
@@ -583,20 +561,20 @@ export default function SidebarControls({
               <button
                 type="button"
                 onClick={() => setShowGlass(!showGlass)}
-                className={`flex items-center gap-1.5 rounded-xl backdrop-blur-md border px-3.5 py-2 text-xs font-semibold shadow-lg transition cursor-pointer ${
+                className={`flex items-center gap-1.5 rounded-xl backdrop-blur-md border px-3.5 py-2 text-xs font-medium shadow-lg transition cursor-pointer ${
                   !showGlass
-                    ? 'bg-sky-500/20 border-sky-400/50 text-sky-300'
-                    : 'bg-[#14171f]/95 hover:bg-[#1c202b] border-white/[0.1] text-slate-200 hover:text-white'
+                    ? 'bg-white/[0.14] border-white/[0.28] text-white'
+                    : 'bg-[#13161d]/95 hover:bg-[#1b1f29] border-white/[0.1] text-slate-200 hover:text-white'
                 }`}
               >
                 {showGlass ? (
                   <>
-                    <EyeOff className="h-3.5 w-3.5 text-sky-400" />
+                    <EyeOff className="h-3.5 w-3.5 text-slate-300" />
                     <span>Remover Vidro</span>
                   </>
                 ) : (
                   <>
-                    <Eye className="h-3.5 w-3.5 text-sky-400" />
+                    <Eye className="h-3.5 w-3.5 text-slate-300" />
                     <span>Colocar Vidro</span>
                   </>
                 )}
@@ -607,22 +585,22 @@ export default function SidebarControls({
           <div className="flex-1 w-full h-full">{children}</div>
 
           {screenshotToast && (
-            <div className="pointer-events-auto absolute bottom-4 right-4 z-20 flex items-center gap-2 rounded-lg bg-emerald-500/20 border border-emerald-400/40 px-3.5 py-2 text-xs font-medium text-emerald-200 shadow-lg">
-              <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-              <span>Imagem capturada com sucesso!</span>
+            <div className="pointer-events-auto absolute bottom-4 right-4 z-20 flex items-center gap-2 rounded-xl bg-[#161922] border border-white/[0.15] px-3.5 py-2 text-xs font-medium text-white shadow-lg">
+              <CheckCircle2 className="h-4 w-4 text-slate-300" />
+              <span>Imagem capturada com sucesso</span>
             </div>
           )}
         </div>
 
         <aside
-          className={`fixed lg:static top-14 bottom-0 right-0 z-30 w-full sm:w-[420px] lg:w-[440px] shrink-0 bg-[#111318] border-l border-white/[0.08] flex flex-col transition-transform duration-300 ${
+          className={`fixed lg:static top-14 bottom-0 right-0 z-30 w-full sm:w-[420px] lg:w-[440px] shrink-0 bg-[#101217] border-l border-white/[0.08] flex flex-col transition-transform duration-300 ${
             mobileDrawer ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'
           }`}
         >
           <div className="flex items-center justify-between border-b border-white/[0.08] px-5 py-3.5 shrink-0">
             <div>
               <h2 className="text-sm font-bold text-white flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-rose-500" />
+                <Layers className="h-4 w-4 text-slate-300" />
                 <span>Montador de PC</span>
               </h2>
               <p className="text-xs text-slate-400 mt-0.5">
@@ -630,20 +608,20 @@ export default function SidebarControls({
               </p>
             </div>
 
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={onOpenAssistant}
-                className="flex items-center gap-1 rounded-lg bg-sky-500/15 hover:bg-sky-500/25 border border-sky-400/30 px-2.5 py-1.5 text-xs font-semibold text-sky-300 transition cursor-pointer"
-                title="Abrir Assistente de Recomendação"
+                className="flex items-center gap-2 rounded-xl bg-white hover:bg-slate-200 px-3.5 py-2 text-xs font-semibold text-slate-950 shadow-sm transition cursor-pointer"
+                title="Abrir Assistente de Montagem e Compatibilidade"
               >
-                <Wand2 className="h-3.5 w-3.5" />
+                <Sparkles className="h-3.5 w-3.5 text-slate-950" />
                 <span>Assistente</span>
               </button>
               <button
                 type="button"
                 onClick={onResetBuild}
-                className="flex items-center gap-1 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] px-2.5 py-1.5 text-xs font-medium text-slate-300 hover:text-white transition cursor-pointer"
+                className="flex items-center justify-center rounded-xl bg-[#161920] hover:bg-[#1e222b] border border-white/[0.1] p-2 text-slate-300 hover:text-white transition cursor-pointer"
                 title="Restaurar configuração padrão"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
@@ -662,23 +640,23 @@ export default function SidebarControls({
                     key={cat.id}
                     type="button"
                     onClick={() => onOpenPartPicker(cat.id)}
-                    className="w-full rounded-xl border border-dashed border-white/20 hover:border-sky-400/60 bg-[#151821]/60 hover:bg-[#191d28] p-3.5 flex items-center justify-between text-left transition cursor-pointer group"
+                    className="w-full rounded-xl border border-dashed border-white/[0.15] hover:border-white/[0.3] bg-[#14171f]/60 hover:bg-[#181c26] p-3.5 flex items-center justify-between text-left transition cursor-pointer group"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="h-11 w-11 rounded-xl bg-white/[0.04] group-hover:bg-sky-500/15 border border-white/[0.08] flex items-center justify-center text-slate-400 group-hover:text-sky-400 transition">
+                      <div className="h-11 w-11 rounded-xl bg-white/[0.04] group-hover:bg-white/[0.08] border border-white/[0.08] flex items-center justify-center text-slate-400 group-hover:text-white transition">
                         <Icon className="h-5 w-5" />
                       </div>
                       <div>
                         <span className="block text-xs text-slate-400">
                           {cat.label}
                         </span>
-                        <span className="block text-[15px] font-semibold text-sky-400 group-hover:text-sky-300 mt-0.5">
+                        <span className="block text-[15px] font-semibold text-slate-200 group-hover:text-white mt-0.5">
                           + Escolher {cat.label}
                         </span>
                       </div>
                     </div>
 
-                    <span className="rounded-lg bg-sky-500/15 border border-sky-400/30 px-3 py-1.5 text-xs font-semibold text-sky-300 group-hover:bg-sky-500 group-hover:text-slate-950 transition">
+                    <span className="rounded-lg bg-white/[0.07] border border-white/[0.12] px-3 py-1.5 text-xs font-semibold text-slate-200 group-hover:bg-white group-hover:text-slate-950 transition">
                       Adicionar
                     </span>
                   </button>
@@ -688,7 +666,7 @@ export default function SidebarControls({
               return (
                 <div
                   key={cat.id}
-                  className="rounded-xl bg-[#161922] hover:bg-[#1b1f2a] border border-white/[0.08] p-3 transition"
+                  className="rounded-xl bg-[#151820] hover:bg-[#191d27] border border-white/[0.07] hover:border-white/[0.14] p-3 transition"
                 >
                   <div className="flex items-center gap-3.5">
                     <ProductThumbnail
@@ -701,7 +679,7 @@ export default function SidebarControls({
                         <span className="text-xs text-slate-400 font-medium">
                           {cat.label}
                         </span>
-                        <span className="text-sm font-bold text-emerald-400 shrink-0">
+                        <span className="text-sm font-semibold text-slate-100 tabular-nums shrink-0">
                           ${selectedPart.price.toFixed(2)}
                         </span>
                       </div>
@@ -710,7 +688,7 @@ export default function SidebarControls({
                         type="button"
                         onClick={() => onOpenPartDetails(cat.id, selectedPart)}
                         style={{ fontSize: '15px' }}
-                        className="block text-left font-semibold text-white hover:text-sky-400 truncate w-full mt-0.5 cursor-pointer leading-snug"
+                        className="block text-left font-semibold text-white hover:text-slate-300 truncate w-full mt-0.5 cursor-pointer leading-snug"
                         title={selectedPart.name}
                       >
                         {selectedPart.name}
@@ -720,17 +698,17 @@ export default function SidebarControls({
                         <button
                           type="button"
                           onClick={() => onOpenPartPicker(cat.id)}
-                          className="rounded-lg bg-white/[0.08] hover:bg-white/[0.15] border border-white/[0.1] px-3 py-1 text-xs font-semibold text-white transition cursor-pointer"
+                          className="rounded-lg bg-white/[0.08] hover:bg-white/[0.15] border border-white/[0.1] px-3 py-1 text-xs font-medium text-slate-100 hover:text-white transition cursor-pointer"
                         >
                           Trocar
                         </button>
                         <button
                           type="button"
                           onClick={() => onRemovePart(cat.id)}
-                          className="flex items-center gap-1 rounded-lg bg-rose-500/15 hover:bg-rose-600 border border-rose-500/30 hover:border-rose-500 px-2.5 py-1 text-xs font-semibold text-rose-400 hover:text-white transition cursor-pointer"
-                          title={`Remover ${cat.label} do PC 3D`}
+                          className="flex items-center gap-1.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.09] border border-white/[0.07] hover:border-white/[0.16] px-2.5 py-1 text-xs font-medium text-slate-400 hover:text-slate-200 transition cursor-pointer"
+                          title={`Remover ${cat.label}`}
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <Trash2 className="h-3.5 w-3.5 text-current" />
                           <span>Remover</span>
                         </button>
                       </div>
@@ -741,12 +719,12 @@ export default function SidebarControls({
             })}
           </div>
 
-          <div className="p-4 border-t border-white/[0.08] bg-[#14171f] flex items-center justify-between shrink-0">
+          <div className="p-4 border-t border-white/[0.08] bg-[#13161d] flex items-center justify-between shrink-0">
             <div>
               <span className="block text-xs text-slate-400">
                 Valor Total do Setup
               </span>
-              <span className="text-xl font-bold text-emerald-400">
+              <span className="text-xl font-bold text-white tabular-nums">
                 ${totalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
@@ -754,9 +732,9 @@ export default function SidebarControls({
             <button
               type="button"
               onClick={onCaptureScreenshot}
-              className="flex items-center gap-2 rounded-xl bg-rose-600 hover:bg-rose-500 px-4 py-2.5 text-xs font-bold text-white shadow-lg transition cursor-pointer"
+              className="flex items-center gap-2 rounded-xl bg-white hover:bg-slate-200 px-4 py-2.5 text-xs font-semibold text-slate-950 shadow-sm transition cursor-pointer"
             >
-              <Camera className="h-4 w-4" />
+              <Camera className="h-4 w-4 text-slate-950" />
               <span>Salvar Imagem</span>
             </button>
           </div>

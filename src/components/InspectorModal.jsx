@@ -223,18 +223,18 @@ export default function InspectorModal({
   if (modalState.mode === 'assistant') {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm">
-        <div className="relative w-full max-w-6xl h-[90vh] rounded-2xl bg-[#111318] border border-white/[0.1] shadow-[0_24px_90px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden text-slate-100">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.08] bg-[#14171d]">
+        <div className="relative w-full max-w-6xl h-[90vh] rounded-2xl bg-[#101217] border border-white/[0.1] shadow-[0_24px_90px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden text-slate-100">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.08] bg-[#13161d]">
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-500/15 border border-sky-400/30 text-sky-300">
-                <Sparkles className="h-4 w-4" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.06] border border-white/[0.12] text-slate-200">
+                <Sparkles className="h-4 w-4 text-slate-200" />
               </div>
               <div>
                 <h2 className="font-display text-base font-bold text-white">
                   Assistente de Compatibilidade e Recomendação
                 </h2>
                 <p className="text-xs text-slate-400">
-                  Verificação física e elétrica em tempo real + Montador inteligente sem gargalos
+                  Verificação física e elétrica em tempo real e recomendação de montagem sem gargalos
                 </p>
               </div>
             </div>
@@ -249,14 +249,10 @@ export default function InspectorModal({
           </div>
 
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
-            <div className="rounded-2xl bg-[#151821] border border-white/[0.08] p-5 space-y-4">
+            <div className="rounded-2xl bg-[#14171f] border border-white/[0.08] p-5 space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2.5">
-                  <ShieldCheck
-                    className={`h-5 w-5 ${
-                      compatibility.compatible ? 'text-emerald-400' : 'text-amber-400'
-                    }`}
-                  />
+                  <ShieldCheck className="h-5 w-5 text-slate-200" />
                   <div>
                     <h3 className="text-sm font-bold text-white">
                       Diagnóstico da Build Atual em Tempo Real
@@ -268,21 +264,21 @@ export default function InspectorModal({
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <div className="rounded-xl bg-[#101218] border border-white/[0.07] px-3 py-1.5 text-xs">
+                  <div className="rounded-xl bg-[#0e1015] border border-white/[0.08] px-3 py-1.5 text-xs">
                     <span className="text-slate-400 mr-1.5">Consumo Total:</span>
-                    <span className="font-bold text-amber-300">
+                    <span className="font-bold text-white tabular-nums">
                       {compatibility.totalTdp}W
                     </span>
                   </div>
-                  <div className="rounded-xl bg-[#101218] border border-white/[0.07] px-3 py-1.5 text-xs">
+                  <div className="rounded-xl bg-[#0e1015] border border-white/[0.08] px-3 py-1.5 text-xs">
                     <span className="text-slate-400 mr-1.5">Fonte Recomendada (+30%):</span>
-                    <span className="font-bold text-sky-300">
+                    <span className="font-bold text-white tabular-nums">
                       {compatibility.recommendedPsuWatts}W
                     </span>
                   </div>
-                  <div className="rounded-xl bg-[#101218] border border-white/[0.07] px-3 py-1.5 text-xs">
+                  <div className="rounded-xl bg-[#0e1015] border border-white/[0.08] px-3 py-1.5 text-xs">
                     <span className="text-slate-400 mr-1.5">Fonte Atual:</span>
-                    <span className="font-bold text-emerald-400">
+                    <span className="font-bold text-white tabular-nums">
                       {compatibility.psuWatts}W
                     </span>
                   </div>
@@ -295,8 +291,8 @@ export default function InspectorModal({
                     key={chk.id}
                     className={`rounded-xl p-3.5 border ${
                       chk.ok
-                        ? 'bg-emerald-500/[0.06] border-emerald-500/25'
-                        : 'bg-rose-500/[0.1] border-rose-500/35'
+                        ? 'bg-[#0e1015] border-white/[0.08]'
+                        : 'bg-white/[0.06] border-white/[0.25]'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
@@ -304,16 +300,16 @@ export default function InspectorModal({
                         {chk.label}
                       </span>
                       {chk.ok ? (
-                        <span className="rounded bg-emerald-500/20 px-1.5 py-0.5 text-[10px] font-bold text-emerald-300">
+                        <span className="rounded bg-white/[0.08] px-1.5 py-0.5 text-[10px] font-bold text-slate-200">
                           OK
                         </span>
                       ) : (
-                        <span className="rounded bg-rose-500/25 px-1.5 py-0.5 text-[10px] font-bold text-rose-300">
+                        <span className="rounded bg-white text-slate-950 px-1.5 py-0.5 text-[10px] font-bold">
                           CONFLITO
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-slate-300">{chk.detail}</p>
+                    <p className="text-xs text-slate-400">{chk.detail}</p>
                   </div>
                 ))}
               </div>
@@ -324,16 +320,16 @@ export default function InspectorModal({
                   {compatibility.issues.map((issue, idx) => (
                     <div
                       key={`issue-${idx}`}
-                      className="flex items-center justify-between gap-3 rounded-xl bg-rose-500/15 border border-rose-500/30 px-4 py-2.5 text-xs text-rose-200"
+                      className="flex items-center justify-between gap-3 rounded-xl bg-white/[0.06] border border-white/[0.16] px-4 py-2.5 text-xs text-slate-200"
                     >
                       <div className="flex items-center gap-2">
-                        <AlertTriangle className="h-4 w-4 text-rose-400 shrink-0" />
+                        <AlertTriangle className="h-4 w-4 text-slate-300 shrink-0" />
                         <span>{issue}</span>
                       </div>
                       <button
                         type="button"
                         onClick={() => onBackToPicker('motherboard')}
-                        className="rounded-lg bg-rose-500 hover:bg-rose-400 px-3 py-1 text-[11px] font-bold text-white transition cursor-pointer shrink-0"
+                        className="rounded-lg bg-white hover:bg-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-950 transition cursor-pointer shrink-0"
                       >
                         Corrigir Peça
                       </button>
@@ -342,16 +338,16 @@ export default function InspectorModal({
                   {compatibility.warnings.map((warn, idx) => (
                     <div
                       key={`warn-${idx}`}
-                      className="flex items-center justify-between gap-3 rounded-xl bg-amber-500/15 border border-amber-500/30 px-4 py-2.5 text-xs text-amber-200"
+                      className="flex items-center justify-between gap-3 rounded-xl bg-white/[0.05] border border-white/[0.12] px-4 py-2.5 text-xs text-slate-200"
                     >
                       <div className="flex items-center gap-2">
-                        <Zap className="h-4 w-4 text-amber-400 shrink-0" />
+                        <Zap className="h-4 w-4 text-slate-300 shrink-0" />
                         <span>{warn}</span>
                       </div>
                       <button
                         type="button"
                         onClick={() => onBackToPicker('psu')}
-                        className="rounded-lg bg-amber-500 hover:bg-amber-400 px-3 py-1 text-[11px] font-bold text-slate-950 transition cursor-pointer shrink-0"
+                        className="rounded-lg bg-white hover:bg-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-950 transition cursor-pointer shrink-0"
                       >
                         Trocar Fonte
                       </button>
@@ -361,11 +357,11 @@ export default function InspectorModal({
               )}
             </div>
 
-            <div className="rounded-2xl bg-[#151821] border border-white/[0.08] p-5 space-y-5">
+            <div className="rounded-2xl bg-[#14171f] border border-white/[0.08] p-5 space-y-5">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                  <span className="inline-flex items-center gap-1.5 rounded-md bg-sky-500/15 border border-sky-400/30 px-2.5 py-0.5 text-[11px] font-bold text-sky-300 mb-1.5">
-                    <Sparkles className="h-3 w-3" />
+                  <span className="inline-flex items-center gap-1.5 rounded-md bg-white/[0.07] border border-white/[0.12] px-2.5 py-0.5 text-[11px] font-semibold text-slate-200 mb-1.5">
+                    <Sparkles className="h-3 w-3 text-slate-300" />
                     MONTAR PARA MIM
                   </span>
                   <h3 className="text-base font-bold text-white">
@@ -384,9 +380,9 @@ export default function InspectorModal({
                       onClose();
                     }
                   }}
-                  className="flex items-center gap-2 rounded-xl bg-sky-500 hover:bg-sky-400 px-5 py-3 text-xs font-bold text-slate-950 shadow-[0_0_25px_rgba(14,165,233,0.35)] transition cursor-pointer"
+                  className="flex items-center gap-2 rounded-xl bg-white hover:bg-slate-200 px-5 py-3 text-xs font-semibold text-slate-950 shadow-sm transition cursor-pointer"
                 >
-                  <Sparkles className="h-4 w-4" />
+                  <Sparkles className="h-4 w-4 text-slate-950" />
                   <span>
                     Aplicar Build no PC 3D (${recommendation.totalPrice.toFixed(2)})
                   </span>
@@ -407,21 +403,21 @@ export default function InspectorModal({
                       }}
                       className={`text-left rounded-xl p-4 border transition cursor-pointer ${
                         active
-                          ? 'bg-sky-500/15 border-sky-400 shadow-[0_0_20px_rgba(14,165,233,0.15)]'
-                          : 'bg-[#101218] border-white/[0.08] hover:border-white/[0.2]'
+                          ? 'bg-white/[0.1] border-white/[0.28]'
+                          : 'bg-[#0e1015] border-white/[0.08] hover:border-white/[0.18]'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span
                           className={`inline-flex h-8 w-8 items-center justify-center rounded-lg ${
                             active
-                              ? 'bg-sky-500 text-slate-950'
+                              ? 'bg-white text-slate-950'
                               : 'bg-white/[0.06] text-slate-300'
                           }`}
                         >
                           <IconComp className="h-4 w-4" />
                         </span>
-                        <span className="text-xs font-bold text-emerald-400">
+                        <span className="text-xs font-semibold text-slate-300 tabular-nums">
                           Alvo ~${obj.recommendedBudget}
                         </span>
                       </div>
@@ -436,14 +432,14 @@ export default function InspectorModal({
                 })}
               </div>
 
-              <div className="rounded-xl bg-[#101218] border border-white/[0.08] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="rounded-xl bg-[#0e1015] border border-white/[0.08] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="space-y-1 flex-1">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
-                      <DollarSign className="h-3.5 w-3.5 text-emerald-400" />
+                      <DollarSign className="h-3.5 w-3.5 text-slate-300" />
                       Orçamento Máximo Desejado
                     </span>
-                    <span className="text-sm font-bold text-emerald-400">
+                    <span className="text-sm font-bold text-white tabular-nums">
                       ${assistantBudget}
                     </span>
                   </div>
@@ -454,7 +450,7 @@ export default function InspectorModal({
                     step="50"
                     value={assistantBudget}
                     onChange={(e) => setAssistantBudget(Number(e.target.value))}
-                    className="w-full accent-sky-400"
+                    className="w-full accent-white"
                   />
                   <div className="flex justify-between text-[10px] text-slate-500">
                     <span>$900 (Entrada)</span>
@@ -468,7 +464,7 @@ export default function InspectorModal({
                     <span className="block text-[10px] text-slate-400">
                       Total da Recomendação
                     </span>
-                    <span className="text-lg font-bold text-emerald-400">
+                    <span className="text-lg font-bold text-white tabular-nums">
                       ${recommendation.totalPrice.toFixed(2)}
                     </span>
                   </div>
@@ -476,8 +472,8 @@ export default function InspectorModal({
                     <span className="block text-[10px] text-slate-400">
                       Status de Gargalo
                     </span>
-                    <span className="inline-flex items-center gap-1 rounded bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 text-xs font-bold text-emerald-300">
-                      <Check className="h-3 w-3" />
+                    <span className="inline-flex items-center gap-1 rounded bg-white/[0.08] border border-white/[0.15] px-2 py-0.5 text-xs font-semibold text-white">
+                      <Check className="h-3 w-3 text-slate-200" />
                       100% Compatível
                     </span>
                   </div>
@@ -491,7 +487,7 @@ export default function InspectorModal({
                   return (
                     <div
                       key={cat.id}
-                      className="flex items-center gap-3 rounded-xl bg-[#101218] border border-white/[0.08] p-3"
+                      className="flex items-center gap-3 rounded-xl bg-[#0e1015] border border-white/[0.08] p-3"
                     >
                       <div
                         style={{ backgroundColor: '#ffffff' }}
@@ -506,7 +502,7 @@ export default function InspectorModal({
                         <p className="text-xs font-bold text-white truncate" title={recPart.name}>
                           {recPart.name}
                         </p>
-                        <span className="text-xs font-bold text-emerald-400">
+                        <span className="text-xs font-semibold text-slate-200 tabular-nums">
                           ${recPart.price.toFixed(2)}
                         </span>
                       </div>
@@ -526,8 +522,8 @@ export default function InspectorModal({
 
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm">
-        <div className="relative w-full max-w-6xl h-[90vh] rounded-2xl bg-[#111318] border border-white/[0.1] shadow-[0_24px_90px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden text-slate-100">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.08] bg-[#14171d]">
+        <div className="relative w-full max-w-6xl h-[90vh] rounded-2xl bg-[#101217] border border-white/[0.1] shadow-[0_24px_90px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden text-slate-100">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.08] bg-[#13161d]">
             <div className="flex items-center gap-3">
               <h2 className="font-display text-base font-bold text-white">
                 Escolher {categoryMeta.label}
@@ -549,7 +545,7 @@ export default function InspectorModal({
                   }}
                   className={`rounded-lg px-2.5 py-1 text-xs font-medium transition cursor-pointer ${
                     cat.id === activeCategory
-                      ? 'bg-rose-600 text-white'
+                      ? 'bg-white text-slate-950 font-semibold'
                       : 'text-slate-400 hover:bg-white/[0.06] hover:text-white'
                   }`}
                 >
@@ -568,14 +564,14 @@ export default function InspectorModal({
           </div>
 
           <div className="flex-1 flex overflow-hidden">
-            <div className="hidden md:flex w-64 shrink-0 border-r border-white/[0.08] bg-[#0e1015] p-4 flex-col gap-5 overflow-y-auto">
-              <div className="rounded-xl bg-[#161920] border border-white/[0.08] p-3.5 space-y-3">
+            <div className="hidden md:flex w-64 shrink-0 border-r border-white/[0.08] bg-[#0d0f14] p-4 flex-col gap-5 overflow-y-auto">
+              <div className="rounded-xl bg-[#14171f] border border-white/[0.08] p-3.5 space-y-3">
                 <div className="flex items-center gap-2 text-xs font-bold text-white">
-                  <span className="h-2.5 w-2.5 rounded-sm bg-emerald-400" />
+                  <ShieldCheck className="h-3.5 w-3.5 text-slate-300" />
                   <span>Filtro Inteligente</span>
                 </div>
 
-                <label className="flex items-center gap-2 rounded-lg bg-[#111318] border border-white/[0.07] px-2.5 py-2 text-xs text-slate-200 cursor-pointer">
+                <label className="flex items-center gap-2 rounded-lg bg-[#0e1015] border border-white/[0.08] px-2.5 py-2 text-xs text-slate-200 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={compatFilter}
@@ -583,7 +579,7 @@ export default function InspectorModal({
                       setCompatFilter(e.target.checked);
                       setPage(1);
                     }}
-                    className="accent-emerald-500"
+                    className="accent-white"
                   />
                   <span>Mostrar apenas peças compatíveis</span>
                 </label>
@@ -593,7 +589,7 @@ export default function InspectorModal({
                     <span className="block text-[10px] text-slate-400">
                       Total Atual
                     </span>
-                    <span className="text-xs font-bold text-emerald-400">
+                    <span className="text-xs font-bold text-white tabular-nums">
                       ${Math.round(totalPrice)}
                     </span>
                   </div>
@@ -601,7 +597,7 @@ export default function InspectorModal({
                     <span className="block text-[10px] text-slate-400">
                       Consumo
                     </span>
-                    <span className="text-xs font-bold text-amber-400">
+                    <span className="text-xs font-bold text-slate-200 tabular-nums">
                       {compatibility.totalTdp}W
                     </span>
                   </div>
@@ -610,7 +606,7 @@ export default function InspectorModal({
 
               <div className="flex items-center justify-between text-xs font-semibold text-slate-300">
                 <span className="flex items-center gap-1.5">
-                  <SlidersHorizontal className="h-3.5 w-3.5" />
+                  <SlidersHorizontal className="h-3.5 w-3.5 text-slate-300" />
                   Filtros
                 </span>
                 <button
@@ -631,7 +627,7 @@ export default function InspectorModal({
               <div className="space-y-2">
                 <div className="flex justify-between text-xs">
                   <span className="text-slate-300 font-medium">Preço Máximo</span>
-                  <span className="text-slate-200 font-semibold">
+                  <span className="text-slate-200 font-semibold tabular-nums">
                     ${maxPriceFilter}
                   </span>
                 </div>
@@ -645,7 +641,7 @@ export default function InspectorModal({
                     setMaxPriceFilter(Number(e.target.value));
                     setPage(1);
                   }}
-                  className="w-full"
+                  className="w-full accent-white"
                 />
               </div>
 
@@ -664,8 +660,8 @@ export default function InspectorModal({
                       }}
                       className={`rounded-lg py-2 px-2 text-xs font-semibold border transition truncate cursor-pointer ${
                         selectedBrand === brand
-                          ? 'bg-sky-500/20 border-sky-400 text-sky-300'
-                          : 'bg-[#161920] border-white/[0.07] text-slate-300 hover:bg-[#1c2029]'
+                          ? 'bg-white/[0.14] border-white/[0.28] text-white'
+                          : 'bg-[#14171f] border-white/[0.07] text-slate-300 hover:bg-[#1a1e28]'
                       }`}
                       title={brand}
                     >
@@ -676,7 +672,7 @@ export default function InspectorModal({
               </div>
             </div>
 
-            <div className="flex-1 flex flex-col overflow-hidden bg-[#111318]">
+            <div className="flex-1 flex flex-col overflow-hidden bg-[#101217]">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-6 py-3.5 border-b border-white/[0.07]">
                 <div className="flex flex-wrap items-center gap-3 flex-1">
                   <div className="relative w-full sm:w-80">
@@ -689,11 +685,11 @@ export default function InspectorModal({
                         setPage(1);
                       }}
                       placeholder={`Buscar em ${categoryMeta.label}...`}
-                      className="w-full rounded-lg bg-[#181b22] border border-white/[0.1] pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-400"
+                      className="w-full rounded-lg bg-[#161922] border border-white/[0.1] pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-white/30"
                     />
                   </div>
 
-                  <label className="flex items-center gap-2 rounded-lg bg-[#181b22] border border-white/[0.1] px-3 py-2 text-xs font-medium text-slate-200 cursor-pointer select-none">
+                  <label className="flex items-center gap-2 rounded-lg bg-[#161922] border border-white/[0.1] px-3 py-2 text-xs font-medium text-slate-200 cursor-pointer select-none">
                     <input
                       type="checkbox"
                       checked={compatFilter}
@@ -701,7 +697,7 @@ export default function InspectorModal({
                         setCompatFilter(e.target.checked);
                         setPage(1);
                       }}
-                      className="accent-emerald-500"
+                      className="accent-white"
                     />
                     <span>Mostrar apenas peças compatíveis</span>
                   </label>
@@ -714,9 +710,9 @@ export default function InspectorModal({
                       onRemovePartFromBuild(activeCategory);
                       onClose();
                     }}
-                    className="flex items-center gap-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-600 border border-rose-500/30 px-3 py-1.5 text-xs font-semibold text-rose-300 hover:text-white transition cursor-pointer shrink-0"
+                    className="flex items-center gap-1.5 rounded-lg bg-white/[0.05] hover:bg-white/[0.12] border border-white/[0.1] px-3 py-1.5 text-xs font-medium text-slate-300 hover:text-white transition cursor-pointer shrink-0"
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <Trash2 className="h-3.5 w-3.5 text-current" />
                     <span>Deixar Slot Vazio</span>
                   </button>
                 )}
@@ -731,10 +727,10 @@ export default function InspectorModal({
                   return (
                     <div
                       key={part.id}
-                      className={`flex flex-col rounded-xl bg-[#161920] border transition overflow-hidden ${
+                      className={`flex flex-col rounded-xl bg-[#151821] border transition overflow-hidden ${
                         isEquipped
-                          ? 'border-emerald-400/70 shadow-[0_0_20px_rgba(16,185,129,0.15)]'
-                          : 'border-white/[0.08] hover:border-white/[0.2]'
+                          ? 'border-white/40 shadow-[0_0_20px_rgba(255,255,255,0.06)]'
+                          : 'border-white/[0.08] hover:border-white/[0.18]'
                       }`}
                     >
                       <button
@@ -748,13 +744,13 @@ export default function InspectorModal({
                           className="h-full w-full group-hover:scale-105 transition-transform duration-300"
                         />
                         {isEquipped && (
-                          <span className="absolute top-2 right-2 rounded bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shadow">
+                          <span className="absolute top-2 right-2 rounded bg-slate-900 px-2 py-0.5 text-[10px] font-bold text-white shadow">
                             EQUIPADO
                           </span>
                         )}
                         {!compat && (
-                          <span className="absolute top-2 left-2 rounded bg-rose-600 px-2 py-0.5 text-[10px] font-bold text-white shadow flex items-center gap-1">
-                            <AlertTriangle className="h-3 w-3" />
+                          <span className="absolute top-2 left-2 rounded bg-slate-900/90 px-2 py-0.5 text-[10px] font-bold text-white shadow flex items-center gap-1">
+                            <AlertTriangle className="h-3 w-3 text-white" />
                             Incompatível
                           </span>
                         )}
@@ -764,13 +760,13 @@ export default function InspectorModal({
                         <button
                           type="button"
                           onClick={() => onOpenPartDetails(activeCategory, part)}
-                          className="text-left text-sm font-bold text-white hover:text-sky-400 line-clamp-2 cursor-pointer"
+                          className="text-left text-sm font-bold text-white hover:text-slate-300 line-clamp-2 cursor-pointer"
                         >
                           {part.name}
                         </button>
 
                         <div className="flex items-center justify-between mt-1.5">
-                          <span className="text-sm font-bold text-emerald-400">
+                          <span className="text-sm font-bold text-white tabular-nums">
                             ${part.price.toFixed(2)}
                           </span>
                           <span className="text-xs text-slate-400 truncate max-w-[140px]">
@@ -798,18 +794,18 @@ export default function InspectorModal({
                             }}
                             className={`w-full flex items-center justify-center gap-1.5 rounded-lg py-2 px-3 text-xs font-semibold transition cursor-pointer ${
                               isEquipped
-                                ? 'bg-emerald-500/20 border border-emerald-400/40 text-emerald-300'
-                                : 'bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold'
+                                ? 'bg-white/[0.1] border border-white/[0.22] text-white'
+                                : 'bg-white hover:bg-slate-200 text-slate-950 font-semibold'
                             }`}
                           >
                             {isEquipped ? (
                               <>
-                                <Check className="h-3.5 w-3.5" />
+                                <Check className="h-3.5 w-3.5 text-white" />
                                 <span>Peça Selecionada</span>
                               </>
                             ) : (
                               <>
-                                <Plus className="h-3.5 w-3.5" />
+                                <Plus className="h-3.5 w-3.5 text-slate-950" />
                                 <span>Equipar no PC</span>
                               </>
                             )}
@@ -822,7 +818,7 @@ export default function InspectorModal({
               </div>
 
               {totalPages > 1 && (
-                <div className="px-6 py-3 border-t border-white/[0.08] bg-[#14171d] flex items-center justify-between text-xs">
+                <div className="px-6 py-3 border-t border-white/[0.08] bg-[#13161d] flex items-center justify-between text-xs">
                   <span className="text-slate-400">
                     Página {currentPage} de {totalPages} ({filteredParts.length} peças)
                   </span>
@@ -862,8 +858,8 @@ export default function InspectorModal({
 
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm">
-        <div className="relative w-full max-w-3xl max-h-[90vh] rounded-2xl bg-[#111318] border border-white/[0.12] shadow-[0_24px_90px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden text-slate-100">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.08] bg-[#14171d]">
+        <div className="relative w-full max-w-3xl max-h-[90vh] rounded-2xl bg-[#101217] border border-white/[0.12] shadow-[0_24px_90px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden text-slate-100">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.08] bg-[#13161d]">
             <div className="flex items-center gap-3">
               <button
                 type="button"
@@ -907,12 +903,12 @@ export default function InspectorModal({
                 </h3>
               </div>
 
-              <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[#161920] border border-white/[0.08] p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[#151821] border border-white/[0.08] p-4">
                 <div>
                   <span className="block text-xs text-slate-400">
                     Preço Estimado
                   </span>
-                  <span className="text-2xl font-bold text-emerald-400">
+                  <span className="text-2xl font-bold text-white tabular-nums">
                     ${part.price.toFixed(2)}
                   </span>
                 </div>
@@ -925,7 +921,7 @@ export default function InspectorModal({
                         onRemovePartFromBuild(activeCategory);
                         onClose();
                       }}
-                      className="flex items-center gap-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-600 border border-rose-500/30 px-3.5 py-2.5 text-xs font-bold text-rose-300 hover:text-white transition cursor-pointer"
+                      className="flex items-center gap-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.1] px-3.5 py-2.5 text-xs font-medium text-slate-300 hover:text-white transition cursor-pointer"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                       <span>Remover</span>
@@ -938,9 +934,9 @@ export default function InspectorModal({
                       onSelectPartForBuild(activeCategory, part);
                       onClose();
                     }}
-                    className="flex items-center gap-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 px-4 py-2.5 text-xs font-bold text-slate-950 transition cursor-pointer"
+                    className="flex items-center gap-1.5 rounded-lg bg-white hover:bg-slate-200 px-4 py-2.5 text-xs font-semibold text-slate-950 transition cursor-pointer"
                   >
-                    <ShoppingCart className="h-3.5 w-3.5" />
+                    <ShoppingCart className="h-3.5 w-3.5 text-slate-950" />
                     <span>
                       {isEquipped ? 'Já Equipado' : 'Equipar no PC'}
                     </span>
@@ -948,7 +944,7 @@ export default function InspectorModal({
                 </div>
               </div>
 
-              <div className="rounded-xl bg-[#161920] border border-white/[0.08] p-4 space-y-3">
+              <div className="rounded-xl bg-[#151821] border border-white/[0.08] p-4 space-y-3">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 border-b border-white/[0.08] pb-2">
                   Especificações Técnicas
                 </h4>
