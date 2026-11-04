@@ -1,4 +1,4 @@
-import React, { useRef, useState, useMemo } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   Cpu,
   HardDrive,
@@ -11,27 +11,22 @@ import {
   CheckCircle2,
   AlertTriangle,
   Camera,
-  Code2,
   RotateCw,
   RotateCcw,
   Maximize2,
   Upload,
-  Grid,
-  Sliders,
-  Plus,
-  Info,
-  Share2,
-  Tag,
-  Search,
-  Database,
-  RefreshCw,
-  Check,
+  Trash2,
+  ChevronDown,
+  Eye,
+  EyeOff,
+  SlidersHorizontal,
+  Sparkles,
 } from 'lucide-react';
 import {
   HARDWARE_CATEGORIES,
-  SNAP_POINTS,
   validateBuildCompatibility,
   getFallbackProductPhotoDataUri,
+  cleanProductImage,
 } from '../utils/textureGenerator';
 
 const CATEGORY_ICONS = {
@@ -45,196 +40,130 @@ const CATEGORY_ICONS = {
   psu: Zap,
 };
 
+function ProductThumbnail({ part, onClick }) {
+  const rawUrl = part?.imageUrl || part?.realPhotoUrl || '';
+  const fallbackUri = getFallbackProductPhotoDataUri(part);
+  const [resolvedSrc, setResolvedSrc] = useState(() => fallbackUri);
+
+  useEffect(() => {
+    let active = true;
+    cleanProductImage(rawUrl, part).then((uri) => {
+      if (active && uri) {
+        setResolvedSrc(uri);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [rawUrl, part]);
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{ width: '56px', height: '56px', backgroundColor: '#ffffff' }}
+      className="relative shrink-0 rounded-xl overflow-hidden border border-white/15 flex items-center justify-center cursor-pointer shadow-sm hover:scale-105 transition-transform"
+      title={`Ver detalhes de ${part?.name || ''}`}
+    >
+      <img
+        src={resolvedSrc || fallbackUri}
+        onError={(e) => {
+          e.currentTarget.onerror = null;
+          e.currentTarget.src = fallbackUri;
+        }}
+        alt={part?.name || 'Produto'}
+        style={{
+          objectFit: 'contain',
+          objectPosition: 'center',
+          padding: '4px',
+        }}
+        className="w-full h-full"
+      />
+    </button>
+  );
+}
+
 export default function SidebarControls({
   build,
-  catalogByCategory = {},
-  datasetStatus,
-  onRefreshDataset,
-  onSelectPart,
-  customGlbOverrides,
+  onRemovePart,
   onUploadCustomGlb,
   onOpenPartPicker,
   onOpenPartDetails,
   envPreset,
   setEnvPreset,
-  showBoundingLabels,
-  setShowBoundingLabels,
-  wireframe,
-  setWireframe,
   autoRotate,
   setAutoRotate,
   explodedView,
   setExplodedView,
+  showGlass = true,
+  setShowGlass,
   onSnapCamera,
   onCaptureScreenshot,
   screenshotToast,
-  onOpenInspector,
   onResetBuild,
-  stats,
   totalPrice,
   children,
 }) {
   const glbInputRef = useRef(null);
+  const dropdownRef = useRef(null);
   const [uploadTargetCategory, setUploadTargetCategory] = useState('gpu');
-  const [rightTab, setRightTab] = useState('parts');
+  const [viewMenuOpen, setViewMenuOpen] = useState(false);
   const [mobileDrawer, setMobileDrawer] = useState(false);
 
-  const [sidebarSearch, setSidebarSearch] = useState('');
-  const [sidebarCategoryFilter, setSidebarCategoryFilter] = useState('ALL');
-  const [sidebarBrandFilter, setSidebarBrandFilter] = useState('ALL');
-
   const compatibility = validateBuildCompatibility(build);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setViewMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleGlbFileChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     onUploadCustomGlb(uploadTargetCategory, file);
     e.target.value = '';
+    setViewMenuOpen(false);
   };
 
-  const topBrands = useMemo(() => {
-    const counts = new Map();
-    const targetCats =
-      sidebarCategoryFilter === 'ALL'
-        ? Object.keys(catalogByCategory)
-        : [sidebarCategoryFilter];
-
-    targetCats.forEach((cat) => {
-      (catalogByCategory[cat] || []).forEach((item) => {
-        if (item?.brand) {
-          counts.set(item.brand, (counts.get(item.brand) || 0) + 1);
-        }
-      });
-    });
-
-    const sorted = Array.from(counts.entries())
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 8)
-      .map(([brand]) => brand);
-
-    return ['ALL', ...sorted];
-  }, [catalogByCategory, sidebarCategoryFilter]);
-
-  const isFilteringCatalog =
-    sidebarSearch.trim().length > 0 ||
-    sidebarCategoryFilter !== 'ALL' ||
-    sidebarBrandFilter !== 'ALL';
-
-  const quickCatalogResults = useMemo(() => {
-    if (!isFilteringCatalog) return [];
-    const q = sidebarSearch.trim().toLowerCase();
-    const targetCats =
-      sidebarCategoryFilter === 'ALL'
-        ? HARDWARE_CATEGORIES.map((c) => c.id)
-        : [sidebarCategoryFilter];
-
-    const matches = [];
-    for (const catId of targetCats) {
-      const list = catalogByCategory[catId] || [];
-      for (const item of list) {
-        if (sidebarBrandFilter !== 'ALL' && item.brand !== sidebarBrandFilter) {
-          continue;
-        }
-        if (q) {
-          const specText = Object.values(item.specs || {})
-            .join(' ')
-            .toLowerCase();
-          if (
-            !item.name.toLowerCase().includes(q) &&
-            !item.brand.toLowerCase().includes(q) &&
-            !specText.includes(q)
-          ) {
-            continue;
-          }
-        }
-        matches.push(item);
-        if (matches.length >= 45) break;
-      }
-      if (matches.length >= 45) break;
-    }
-    return matches;
-  }, [
-    isFilteringCatalog,
-    sidebarSearch,
-    sidebarCategoryFilter,
-    sidebarBrandFilter,
-    catalogByCategory,
-  ]);
-
-  const visibleBuildCategories = useMemo(() => {
-    if (sidebarCategoryFilter === 'ALL') return HARDWARE_CATEGORIES;
-    return HARDWARE_CATEGORIES.filter((c) => c.id === sidebarCategoryFilter);
-  }, [sidebarCategoryFilter]);
+  const equippedCount = HARDWARE_CATEGORIES.filter((c) => Boolean(build[c.id])).length;
 
   return (
     <div className="flex flex-col w-screen h-screen bg-[#0b0c10] text-slate-100 overflow-hidden select-none">
-
       <header className="h-14 shrink-0 flex items-center justify-between px-4 lg:px-6 bg-[#111318] border-b border-white/[0.08] z-20">
-
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-600/20 border border-rose-500/40 text-rose-400">
-              <Box className="h-4 w-4" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-display text-sm font-bold tracking-wide text-white">
-                  VOXELCORES
-                </span>
-                <span className="rounded bg-white/[0.06] px-1.5 py-0.5 font-mono-tech text-[10px] text-slate-400">
-                  GITHUB DATASET CDN
-                </span>
-              </div>
-            </div>
+        <div className="flex items-center gap-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-600/20 border border-rose-500/40 text-rose-400">
+            <Box className="h-4 w-4" />
           </div>
-
-          <div className="hidden xl:flex items-center gap-2 pl-4 border-l border-white/[0.08] text-xs text-slate-400">
-            <Database className="h-3.5 w-3.5 text-sky-400" />
-            <span className="font-mono-tech text-[11px] text-slate-300">
-              docyx/pc-part-dataset
-            </span>
-            <span>•</span>
-            <span className="font-mono-tech text-[11px] text-emerald-400">
-              {datasetStatus?.loading
-                ? `Syncing (${datasetStatus.loadedCategories}/8)...`
-                : `${datasetStatus?.totalNormalizedCount?.toLocaleString() || 2500}+ Parts Cached (${datasetStatus?.source})`}
-            </span>
-          </div>
+          <span className="font-display text-sm font-bold tracking-wide text-white">
+            VOXELVAULT
+          </span>
         </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto py-1">
-
-          <div className="flex items-center gap-1.5 rounded-lg bg-[#181b22] border border-white/[0.08] px-3 py-1.5 text-xs">
-            <span className="h-2 w-2 rounded-full bg-emerald-400" />
-            <span className="font-mono-tech font-bold text-emerald-400">
-              ${totalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </span>
-          </div>
-
+        <div className="flex items-center gap-2.5 overflow-x-auto py-1">
           <div
             className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs ${
               compatibility.isCompatible
-                ? 'bg-[#181b22] border-white/[0.08] text-sky-400'
+                ? 'bg-[#181b22] border-white/[0.08] text-emerald-400'
                 : 'bg-rose-500/15 border-rose-500/50 text-rose-300'
             }`}
-            title={
-              compatibility.issues.length > 0
-                ? compatibility.issues.join(' | ')
-                : 'CPU Socket, RAM DDR5 & GPU Length 100% Compatíveis'
-            }
           >
             {compatibility.isCompatible ? (
               <>
                 <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
                 <span className="font-medium">
-                  Compatible ({build.cpu.specs.socket})
+                  Peças Compatíveis
                 </span>
               </>
             ) : (
               <>
                 <AlertTriangle className="h-3.5 w-3.5 text-rose-400" />
                 <span className="font-semibold">
-                  Socket Mismatch ({build.cpu.specs.socket} ≠ {build.motherboard.specs.socket})
+                  Incompatibilidade Detectada
                 </span>
               </>
             )}
@@ -242,37 +171,31 @@ export default function SidebarControls({
 
           <div className="hidden sm:flex items-center gap-1.5 rounded-lg bg-[#181b22] border border-white/[0.08] px-3 py-1.5 text-xs">
             <Zap className="h-3.5 w-3.5 text-amber-400" />
-            <span className="font-mono-tech font-semibold text-amber-300">
+            <span className="font-semibold text-amber-300">
               {compatibility.totalTdp}W
             </span>
-            <span className="text-slate-500 text-[11px]">
-              / {compatibility.psuWatts}W PSU
+            <span className="text-slate-400 text-[11px]">
+              / {compatibility.psuWatts}W
             </span>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           <button
+            type="button"
             onClick={onCaptureScreenshot}
             className="hidden sm:flex items-center gap-1.5 rounded-lg bg-[#181b22] hover:bg-[#222630] border border-white/[0.1] px-3 py-1.5 text-xs font-medium text-slate-200 transition cursor-pointer"
           >
             <Camera className="h-3.5 w-3.5 text-sky-400" />
-            <span>Screenshot HD</span>
+            <span>Capturar Foto</span>
           </button>
 
           <button
-            onClick={onOpenInspector}
-            className="flex items-center gap-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 px-3 py-1.5 text-xs font-semibold text-slate-950 transition cursor-pointer"
-          >
-            <Share2 className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Specs &amp; JSON</span>
-          </button>
-
-          <button
+            type="button"
             onClick={() => setMobileDrawer(!mobileDrawer)}
-            className="lg:hidden rounded-lg bg-[#181b22] border border-white/[0.1] px-2.5 py-1.5 text-xs font-medium text-white"
+            className="lg:hidden rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white cursor-pointer"
           >
-            {mobileDrawer ? '3D' : 'Parts'}
+            {mobileDrawer ? 'Ver 3D' : `Peças (${equippedCount}/8)`}
           </button>
         </div>
       </header>
@@ -284,6 +207,7 @@ export default function SidebarControls({
             <span>{compatibility.issues[0]}</span>
           </div>
           <button
+            type="button"
             onClick={() => onOpenPartPicker('motherboard')}
             className="rounded bg-rose-500/30 hover:bg-rose-500/50 border border-rose-400/40 px-2.5 py-0.5 text-[11px] font-semibold text-white cursor-pointer shrink-0"
           >
@@ -293,558 +217,339 @@ export default function SidebarControls({
       )}
 
       <div className="relative flex-1 flex overflow-hidden">
-
         <div className="relative flex-1 h-full flex flex-col bg-[#0c0e13] overflow-hidden">
-
-          <div className="pointer-events-none absolute top-3 left-3 right-3 z-10 flex flex-wrap items-center justify-between gap-2">
-
-            <div className="pointer-events-auto flex items-center gap-1 rounded-lg bg-[#14171f]/90 backdrop-blur-md border border-white/[0.08] p-1 shadow-lg">
-              {[
-                { id: 'iso', label: '3/4 Rig View' },
-                { id: 'side', label: 'Motherboard Sockets' },
-                { id: 'gpu', label: 'slot_pcie_x16' },
-                { id: 'cpu', label: 'socket_cpu & RAM' },
-              ].map((v) => (
+          <div className="pointer-events-none absolute top-3.5 left-4 right-4 z-20 flex items-center justify-between gap-2">
+            <div className="pointer-events-auto flex items-center gap-2" ref={dropdownRef}>
+              <div className="relative">
                 <button
-                  key={v.id}
-                  onClick={() => onSnapCamera(v.id)}
-                  className="rounded-md px-2.5 py-1 text-[11px] font-mono-tech text-slate-300 hover:bg-white/[0.08] hover:text-white transition cursor-pointer"
+                  type="button"
+                  onClick={() => setViewMenuOpen((prev) => !prev)}
+                  className="flex items-center gap-2 rounded-xl bg-[#14171f]/95 hover:bg-[#1c202b] backdrop-blur-md border border-white/[0.1] px-3.5 py-2 text-xs font-semibold text-white shadow-lg transition cursor-pointer"
                 >
-                  {v.label}
+                  <SlidersHorizontal className="h-3.5 w-3.5 text-sky-400" />
+                  <span>Visualização 3D</span>
+                  <ChevronDown
+                    className={`h-3.5 w-3.5 text-slate-400 transition-transform ${
+                      viewMenuOpen ? 'rotate-180' : ''
+                    }`}
+                  />
                 </button>
-              ))}
-            </div>
 
-            <div className="pointer-events-auto flex items-center gap-1.5 rounded-lg bg-[#14171f]/90 backdrop-blur-md border border-white/[0.08] p-1 shadow-lg">
-              <button
-                onClick={() => setShowBoundingLabels(!showBoundingLabels)}
-                className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-medium transition cursor-pointer ${
-                  showBoundingLabels
-                    ? 'bg-rose-500/20 text-rose-300 border border-rose-400/40'
-                    : 'text-slate-300 hover:bg-white/[0.08]'
-                }`}
-                title="Exibir/Ocultar etiquetas de caminho .glb nos BoundingBoxes"
-              >
-                <Tag className="h-3 w-3" />
-                <span>GLB Path Labels</span>
-              </button>
+                {viewMenuOpen && (
+                  <div className="absolute left-0 mt-2 w-72 rounded-2xl bg-[#14171f]/98 backdrop-blur-xl border border-white/[0.12] p-3.5 shadow-2xl space-y-4 z-30">
+                    <div className="space-y-1.5">
+                      <span className="block text-[11px] font-semibold text-slate-400">
+                        Ângulos de Câmera
+                      </span>
+                      <div className="grid grid-cols-2 gap-1.5">
+                        {[
+                          { id: 'iso', label: 'Visão Geral' },
+                          { id: 'side', label: 'Interior' },
+                          { id: 'gpu', label: 'Placa de Vídeo' },
+                          { id: 'cpu', label: 'Processador' },
+                        ].map((cam) => (
+                          <button
+                            key={cam.id}
+                            type="button"
+                            onClick={() => {
+                              onSnapCamera(cam.id);
+                              setViewMenuOpen(false);
+                            }}
+                            className="rounded-lg bg-[#1c202b] hover:bg-sky-500/20 border border-white/[0.07] hover:border-sky-400/40 px-2.5 py-1.5 text-xs font-medium text-slate-200 hover:text-white text-left transition cursor-pointer"
+                          >
+                            {cam.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5 pt-2 border-t border-white/[0.08]">
+                      <span className="block text-[11px] font-semibold text-slate-400">
+                        Opções da Cena
+                      </span>
+                      <div className="space-y-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setShowGlass(!showGlass)}
+                          className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-xs font-medium border transition cursor-pointer ${
+                            !showGlass
+                              ? 'bg-sky-500/20 border-sky-400/40 text-sky-300'
+                              : 'bg-[#1c202b] border-white/[0.07] text-slate-200 hover:text-white'
+                          }`}
+                        >
+                          <span className="flex items-center gap-2">
+                            {showGlass ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                            <span>{showGlass ? 'Remover Vidro do Gabinete' : 'Colocar Vidro do Gabinete'}</span>
+                          </span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setExplodedView(!explodedView)}
+                          className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-xs font-medium border transition cursor-pointer ${
+                            explodedView
+                              ? 'bg-sky-500/20 border-sky-400/40 text-sky-300'
+                              : 'bg-[#1c202b] border-white/[0.07] text-slate-200 hover:text-white'
+                          }`}
+                        >
+                          <span className="flex items-center gap-2">
+                            <Maximize2 className="h-3.5 w-3.5" />
+                            <span>Explodir Peças</span>
+                          </span>
+                          <span className="text-[10px] text-slate-400">
+                            {explodedView ? 'Ativo' : 'Desativado'}
+                          </span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setAutoRotate(!autoRotate)}
+                          className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-xs font-medium border transition cursor-pointer ${
+                            autoRotate
+                              ? 'bg-emerald-500/20 border-emerald-400/40 text-emerald-300'
+                              : 'bg-[#1c202b] border-white/[0.07] text-slate-200 hover:text-white'
+                          }`}
+                        >
+                          <span className="flex items-center gap-2">
+                            <RotateCw className={`h-3.5 w-3.5 ${autoRotate ? 'animate-spin' : ''}`} />
+                            <span>Girar 360°</span>
+                          </span>
+                          <span className="text-[10px] text-slate-400">
+                            {autoRotate ? 'Ativo' : 'Desativado'}
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5 pt-2 border-t border-white/[0.08]">
+                      <span className="block text-[11px] font-semibold text-slate-400">
+                        Iluminação do Estúdio
+                      </span>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {[
+                          { id: 'studio', label: 'Estúdio' },
+                          { id: 'city', label: 'Neutra' },
+                          { id: 'warehouse', label: 'Contraste' },
+                        ].map((env) => (
+                          <button
+                            key={env.id}
+                            type="button"
+                            onClick={() => setEnvPreset(env.id)}
+                            className={`rounded-lg py-1.5 px-2 text-xs font-medium border transition cursor-pointer ${
+                              envPreset === env.id
+                                ? 'bg-sky-500/20 border-sky-400 text-sky-300'
+                                : 'bg-[#1c202b] border-white/[0.07] text-slate-300 hover:text-white'
+                            }`}
+                          >
+                            {env.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 pt-2 border-t border-white/[0.08]">
+                      <span className="block text-[11px] font-semibold text-slate-400">
+                        Importar Modelo 3D (.GLB)
+                      </span>
+                      <select
+                        value={uploadTargetCategory}
+                        onChange={(e) => setUploadTargetCategory(e.target.value)}
+                        className="w-full rounded-lg bg-[#0e1015] border border-white/15 px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-sky-400"
+                      >
+                        {HARDWARE_CATEGORIES.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.label}
+                          </option>
+                        ))}
+                      </select>
+                      <input
+                        ref={glbInputRef}
+                        type="file"
+                        accept=".glb,.gltf"
+                        onChange={handleGlbFileChange}
+                        className="hidden"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => glbInputRef.current?.click()}
+                        className="w-full flex items-center justify-center gap-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 py-2 px-3 text-xs font-bold text-slate-950 transition cursor-pointer"
+                      >
+                        <Upload className="h-3.5 w-3.5" />
+                        <span>Carregar Arquivo .GLB</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
 
               <button
-                onClick={() => setExplodedView(!explodedView)}
-                className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-medium transition cursor-pointer ${
-                  explodedView
-                    ? 'bg-sky-500/20 text-sky-300 border border-sky-400/40'
-                    : 'text-slate-300 hover:bg-white/[0.08]'
+                type="button"
+                onClick={() => setShowGlass(!showGlass)}
+                className={`flex items-center gap-1.5 rounded-xl backdrop-blur-md border px-3.5 py-2 text-xs font-semibold shadow-lg transition cursor-pointer ${
+                  !showGlass
+                    ? 'bg-sky-500/20 border-sky-400/50 text-sky-300'
+                    : 'bg-[#14171f]/95 hover:bg-[#1c202b] border-white/[0.1] text-slate-200 hover:text-white'
                 }`}
               >
-                <Maximize2 className="h-3 w-3" />
-                <span>Explode Sockets</span>
-              </button>
-
-              <button
-                onClick={() => setAutoRotate(!autoRotate)}
-                className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-medium transition cursor-pointer ${
-                  autoRotate
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/40'
-                    : 'text-slate-300 hover:bg-white/[0.08]'
-                }`}
-              >
-                <RotateCw className={`h-3 w-3 ${autoRotate ? 'animate-spin' : ''}`} />
-                <span>360°</span>
-              </button>
-
-              <button
-                onClick={() => setWireframe(!wireframe)}
-                className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-medium transition cursor-pointer ${
-                  wireframe
-                    ? 'bg-amber-500/20 text-amber-300 border border-amber-400/40'
-                    : 'text-slate-300 hover:bg-white/[0.08]'
-                }`}
-              >
-                <Grid className="h-3 w-3" />
-                <span>Wireframe</span>
+                {showGlass ? (
+                  <>
+                    <EyeOff className="h-3.5 w-3.5 text-sky-400" />
+                    <span>Remover Vidro</span>
+                  </>
+                ) : (
+                  <>
+                    <Eye className="h-3.5 w-3.5 text-sky-400" />
+                    <span>Colocar Vidro</span>
+                  </>
+                )}
               </button>
             </div>
           </div>
 
           <div className="flex-1 w-full h-full">{children}</div>
 
-          <div className="pointer-events-none absolute bottom-3 left-4 z-10 flex flex-wrap items-center gap-4 text-[11px] font-mono-tech text-slate-400">
-            <span className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-emerald-400" />
-              {stats.fps} FPS • Studio PBR + N8AO Active
-            </span>
-            <span>HDRI: {envPreset.toUpperCase()}</span>
-          </div>
-
           {screenshotToast && (
             <div className="pointer-events-auto absolute bottom-4 right-4 z-20 flex items-center gap-2 rounded-lg bg-emerald-500/20 border border-emerald-400/40 px-3.5 py-2 text-xs font-medium text-emerald-200 shadow-lg">
               <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-              <span>PNG Transparente HD exportado com sucesso!</span>
+              <span>Imagem capturada com sucesso!</span>
             </div>
           )}
         </div>
 
         <aside
-          className={`fixed lg:static top-14 bottom-0 right-0 z-30 w-full sm:w-[430px] lg:w-[460px] shrink-0 bg-[#111318] border-l border-white/[0.08] flex flex-col transition-transform duration-300 ${
+          className={`fixed lg:static top-14 bottom-0 right-0 z-30 w-full sm:w-[420px] lg:w-[440px] shrink-0 bg-[#111318] border-l border-white/[0.08] flex flex-col transition-transform duration-300 ${
             mobileDrawer ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'
           }`}
         >
-
-          <div className="flex items-center justify-between border-b border-white/[0.08] px-4 pt-2.5">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => setRightTab('parts')}
-                className={`flex items-center gap-2 pb-2.5 text-xs font-semibold border-b-2 transition cursor-pointer ${
-                  rightTab === 'parts'
-                    ? 'border-white text-white'
-                    : 'border-transparent text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                <Database className="h-3.5 w-3.5 text-sky-400" />
-                <span>GitHub Catalog</span>
-              </button>
-
-              <button
-                onClick={() => setRightTab('sockets')}
-                className={`flex items-center gap-2 pb-2.5 text-xs font-semibold border-b-2 transition cursor-pointer ${
-                  rightTab === 'sockets'
-                    ? 'border-white text-white'
-                    : 'border-transparent text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                <Sliders className="h-3.5 w-3.5" />
-                <span>Sockets &amp; Upload .GLB</span>
-              </button>
+          <div className="flex items-center justify-between border-b border-white/[0.08] px-5 py-3.5 shrink-0">
+            <div>
+              <h2 className="text-sm font-bold text-white flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-rose-500" />
+                <span>Montador de PC</span>
+              </h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                {equippedCount} de 8 componentes selecionados
+              </p>
             </div>
 
-            <div className="flex items-center gap-2 pb-2">
-              <button
-                onClick={onRefreshDataset}
-                className="text-[11px] font-mono-tech text-sky-400 hover:text-sky-300 flex items-center gap-1 cursor-pointer"
-                title="Atualizar cache a partir do repositório docyx/pc-part-dataset no GitHub"
-              >
-                <RefreshCw
-                  className={`h-3 w-3 ${datasetStatus?.loading ? 'animate-spin' : ''}`}
-                />
-                <span>Sync CDN</span>
-              </button>
-              <span className="text-slate-700">|</span>
-              <button
-                onClick={onResetBuild}
-                className="text-[11px] font-mono-tech text-slate-400 hover:text-white flex items-center gap-1 cursor-pointer"
-              >
-                <RotateCcw className="h-3 w-3" />
-                <span>Reset</span>
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={onResetBuild}
+              className="flex items-center gap-1.5 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] px-2.5 py-1.5 text-xs font-medium text-slate-300 hover:text-white transition cursor-pointer"
+              title="Restaurar configuração padrão"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              <span>Restaurar</span>
+            </button>
           </div>
 
-          {rightTab === 'parts' ? (
-            <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
+            {HARDWARE_CATEGORIES.map((cat) => {
+              const Icon = CATEGORY_ICONS[cat.id] || Cpu;
+              const selectedPart = build[cat.id];
 
-              <div className="p-3.5 border-b border-white/[0.07] bg-[#14171f]/60 space-y-2.5 shrink-0">
-
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                  <input
-                    type="text"
-                    value={sidebarSearch}
-                    onChange={(e) => setSidebarSearch(e.target.value)}
-                    placeholder="Buscar peça no dataset (ex: 9800X3D, RTX 4080, AM5, Corsair)..."
-                    className="w-full rounded-lg bg-[#0d0f14] border border-white/[0.1] pl-9 pr-8 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-400"
-                  />
-                  {sidebarSearch && (
-                    <button
-                      onClick={() => setSidebarSearch('')}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono-tech text-slate-400 hover:text-white cursor-pointer"
-                    >
-                      LIMPAR
-                    </button>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-1 overflow-x-auto pb-0.5">
+              if (!selectedPart) {
+                return (
                   <button
-                    onClick={() => {
-                      setSidebarCategoryFilter('ALL');
-                      setSidebarBrandFilter('ALL');
-                    }}
-                    className={`shrink-0 rounded-md px-2 py-1 text-[10px] font-mono-tech font-semibold transition cursor-pointer ${
-                      sidebarCategoryFilter === 'ALL'
-                        ? 'bg-sky-500 text-slate-950'
-                        : 'bg-[#181b22] text-slate-400 hover:text-white border border-white/[0.06]'
-                    }`}
+                    key={cat.id}
+                    type="button"
+                    onClick={() => onOpenPartPicker(cat.id)}
+                    className="w-full rounded-xl border border-dashed border-white/20 hover:border-sky-400/60 bg-[#151821]/60 hover:bg-[#191d28] p-3.5 flex items-center justify-between text-left transition cursor-pointer group"
                   >
-                    ALL SLOTS
+                    <div className="flex items-center gap-3">
+                      <div className="h-11 w-11 rounded-xl bg-white/[0.04] group-hover:bg-sky-500/15 border border-white/[0.08] flex items-center justify-center text-slate-400 group-hover:text-sky-400 transition">
+                        <Icon className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <span className="block text-xs text-slate-400">
+                          {cat.label}
+                        </span>
+                        <span className="block text-[15px] font-semibold text-sky-400 group-hover:text-sky-300 mt-0.5">
+                          + Escolher {cat.label}
+                        </span>
+                      </div>
+                    </div>
+
+                    <span className="rounded-lg bg-sky-500/15 border border-sky-400/30 px-3 py-1.5 text-xs font-semibold text-sky-300 group-hover:bg-sky-500 group-hover:text-slate-950 transition">
+                      Adicionar
+                    </span>
                   </button>
-                  {HARDWARE_CATEGORIES.map((cat) => (
-                    <button
-                      key={cat.id}
-                      onClick={() => {
-                        setSidebarCategoryFilter(cat.id);
-                        setSidebarBrandFilter('ALL');
-                      }}
-                      className={`shrink-0 rounded-md px-2 py-1 text-[10px] font-mono-tech uppercase font-semibold transition cursor-pointer ${
-                        sidebarCategoryFilter === cat.id
-                          ? 'bg-sky-500 text-slate-950'
-                          : 'bg-[#181b22] text-slate-400 hover:text-white border border-white/[0.06]'
-                      }`}
-                    >
-                      {cat.id} ({(catalogByCategory[cat.id] || []).length})
-                    </button>
-                  ))}
-                </div>
+                );
+              }
 
-                <div className="flex items-center gap-1 overflow-x-auto pb-0.5">
-                  {topBrands.map((brand) => (
-                    <button
-                      key={brand}
-                      onClick={() => setSidebarBrandFilter(brand)}
-                      className={`shrink-0 rounded-md px-2 py-0.5 text-[10px] font-medium transition cursor-pointer ${
-                        sidebarBrandFilter === brand
-                          ? 'bg-rose-600 text-white'
-                          : 'bg-[#111318] text-slate-400 hover:text-slate-200 border border-white/[0.06]'
-                      }`}
-                    >
-                      {brand === 'ALL' ? 'Todas as Marcas' : brand}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex-1 overflow-y-auto p-3.5 space-y-3">
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between px-1">
-                    <span className="text-[10px] font-mono-tech uppercase tracking-wider text-slate-400">
-                      PEÇAS EQUIPADAS NO PC 3D ({visibleBuildCategories.length} SLOTS)
-                    </span>
-                    <span className="text-[10px] font-mono-tech text-emerald-400">
-                      Cache: {datasetStatus?.source || 'localStorage'}
-                    </span>
-                  </div>
-
-                  {visibleBuildCategories.map((cat) => {
-                    const Icon = CATEGORY_ICONS[cat.id] || Cpu;
-                    const selectedPart = build[cat.id];
-                    const hasCustomGlb = Boolean(customGlbOverrides[cat.id]);
-                    const fallbackImg = getFallbackProductPhotoDataUri(selectedPart);
-
-                    return (
-                      <div
-                        key={cat.id}
-                        className="group rounded-xl bg-[#161920] hover:bg-[#1c2029] border border-white/[0.07] hover:border-white/[0.15] p-2.5 transition"
-                      >
-                        <div className="flex items-center gap-3">
-
-                          <button
-                            onClick={() => onOpenPartDetails(cat.id, selectedPart)}
-                            style={{ backgroundColor: '#ffffff' }}
-                            className="relative h-16 w-20 shrink-0 rounded-lg overflow-hidden border border-white/15 cursor-pointer group/img flex items-center justify-center"
-                            title="Inspecionar ficha técnica real e caminho .GLB"
-                          >
-                            <img
-                              src={selectedPart.imageUrl || selectedPart.realPhotoUrl || fallbackImg}
-                              onError={(e) => {
-                                e.currentTarget.onerror = null;
-                                e.currentTarget.src = fallbackImg;
-                              }}
-                              alt={selectedPart.name}
-                              loading="lazy"
-                              style={{
-                                objectFit: 'contain',
-                                objectPosition: 'center',
-                                padding: '6px',
-                              }}
-                              className="h-full w-full group-hover/img:scale-105 transition-transform"
-                            />
-                            <span className="absolute bottom-0 inset-x-0 bg-slate-900/80 text-[8px] font-mono-tech text-center text-amber-300 py-0.5 truncate px-1">
-                              {cat.socketTarget}
-                            </span>
-                          </button>
-
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center justify-between gap-1">
-                              <span className="flex items-center gap-1.5 text-[10px] font-mono-tech uppercase tracking-wider text-slate-400">
-                                <Icon className="h-3 w-3 text-slate-400" />
-                                {cat.label}
-                              </span>
-                              <span className="font-mono-tech text-xs font-bold text-emerald-400">
-                                ${selectedPart.price.toFixed(2)}
-                              </span>
-                            </div>
-
-                            <button
-                              onClick={() => onOpenPartDetails(cat.id, selectedPart)}
-                              className="block text-left text-xs font-semibold text-white hover:text-sky-400 truncate w-full mt-0.5 cursor-pointer"
-                            >
-                              {selectedPart.name}
-                            </button>
-
-                            <p className="text-[10px] font-mono-tech text-slate-400 truncate mt-0.5">
-                              {selectedPart.specs.socket ||
-                                selectedPart.specs.vram ||
-                                selectedPart.specs.capacity ||
-                                selectedPart.specs.formFactor ||
-                                selectedPart.specs.coolerType ||
-                                `${selectedPart.specs.wattageCapacity}W`}{' '}
-                              •{' '}
-                              <span className="text-amber-300/90">
-                                {hasCustomGlb ? 'Custom .GLB' : selectedPart.brand}
-                              </span>
-                            </p>
-
-                            <div className="flex items-center justify-end gap-1.5 mt-1.5">
-                              <button
-                                onClick={() => onOpenPartDetails(cat.id, selectedPart)}
-                                className="rounded-md bg-white/[0.05] hover:bg-white/[0.12] p-1 text-slate-300 hover:text-white transition cursor-pointer"
-                                title="Especificações técnicas e coordenadas do Socket"
-                              >
-                                <Info className="h-3.5 w-3.5" />
-                              </button>
-                              <button
-                                onClick={() => onOpenPartPicker(cat.id)}
-                                className="flex items-center gap-1 rounded-md bg-rose-600/90 hover:bg-rose-500 px-2.5 py-1 text-[11px] font-semibold text-white transition cursor-pointer"
-                              >
-                                <Plus className="h-3 w-3" />
-                                <span>
-                                  Browse ({(catalogByCategory[cat.id] || []).length})
-                                </span>
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {isFilteringCatalog && (
-                  <div className="pt-2 border-t border-white/[0.08] space-y-2">
-                    <div className="flex items-center justify-between px-1">
-                      <span className="text-[10px] font-mono-tech uppercase tracking-wider text-sky-400 font-bold">
-                        RESULTADOS DO DATASET GITHUB ({quickCatalogResults.length})
-                      </span>
-                      <button
-                        onClick={() => {
-                          setSidebarSearch('');
-                          setSidebarCategoryFilter('ALL');
-                          setSidebarBrandFilter('ALL');
-                        }}
-                        className="text-[10px] font-mono-tech text-slate-400 hover:text-white cursor-pointer"
-                      >
-                        Resetar Filtros
-                      </button>
-                    </div>
-
-                    {quickCatalogResults.length === 0 ? (
-                      <div className="rounded-xl bg-[#161920] border border-white/[0.06] p-4 text-center text-xs text-slate-400">
-                        Nenhuma peça encontrada para "{sidebarSearch}".
-                      </div>
-                    ) : (
-                      quickCatalogResults.map((item) => {
-                        const isMounted = build[item.category]?.id === item.id;
-                        const fallbackImg = getFallbackProductPhotoDataUri(item);
-
-                        return (
-                          <div
-                            key={item.id}
-                            className={`rounded-xl border p-2.5 transition flex items-center gap-3 ${
-                              isMounted
-                                ? 'bg-emerald-950/20 border-emerald-500/50'
-                                : 'bg-[#14171f] hover:bg-[#1a1e28] border-white/[0.07]'
-                            }`}
-                          >
-                            <button
-                              onClick={() => onOpenPartDetails(item.category, item)}
-                              style={{ backgroundColor: '#ffffff' }}
-                              className="h-14 w-16 shrink-0 rounded-lg overflow-hidden border border-white/15 flex items-center justify-center cursor-pointer"
-                            >
-                              <img
-                                src={item.imageUrl || item.realPhotoUrl || fallbackImg}
-                                onError={(e) => {
-                                  e.currentTarget.onerror = null;
-                                  e.currentTarget.src = fallbackImg;
-                                }}
-                                alt={item.name}
-                                loading="lazy"
-                                style={{
-                                  objectFit: 'contain',
-                                  objectPosition: 'center',
-                                  padding: '6px',
-                                }}
-                                className="h-full w-full"
-                              />
-                            </button>
-
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center justify-between gap-1">
-                                <span className="text-[9px] font-mono-tech uppercase text-sky-400">
-                                  {item.category} • {item.brand}
-                                </span>
-                                <span className="font-mono-tech text-xs font-bold text-emerald-400">
-                                  ${item.price.toFixed(2)}
-                                </span>
-                              </div>
-                              <p className="text-xs font-semibold text-white truncate">
-                                {item.name}
-                              </p>
-                              <div className="flex items-center justify-between mt-1">
-                                <span className="text-[10px] font-mono-tech text-slate-400 truncate">
-                                  {item.specs?.socket ||
-                                    item.specs?.vram ||
-                                    item.specs?.capacity ||
-                                    item.specs?.coolerType ||
-                                    item.specs?.formFactor ||
-                                    ''}
-                                </span>
-                                <button
-                                  onClick={() => onSelectPart(item.category, item)}
-                                  className={`flex items-center gap-1 rounded px-2 py-0.5 text-[10px] font-semibold transition cursor-pointer ${
-                                    isMounted
-                                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                                      : 'bg-sky-500 hover:bg-sky-400 text-slate-950'
-                                  }`}
-                                >
-                                  {isMounted ? (
-                                    <>
-                                      <Check className="h-2.5 w-2.5" />
-                                      <span>Equipada</span>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Plus className="h-2.5 w-2.5" />
-                                      <span>Montar no 3D</span>
-                                    </>
-                                  )}
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          ) : (
-
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-
-              <div className="rounded-xl bg-[#161920] border border-sky-500/30 p-3.5 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="font-display text-xs font-bold text-white">
-                    Carregar Arquivo .GLB / .GLTF Local
-                  </span>
-                  <span className="font-mono-tech text-[10px] text-sky-400">
-                    GLTFLoader + Draco
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-400 leading-relaxed">
-                  Enquanto você não move os arquivos definitivos para{' '}
-                  <code className="text-amber-300">/public/models/</code>, você também pode selecionar um arquivo <code className="text-white">.glb</code> do seu computador para encaixar instantaneamente no socket escolhido:
-                </p>
-
-                <div className="space-y-2">
-                  <label className="block text-[10px] font-mono-tech uppercase text-slate-400">
-                    Slot / Categoria Alvo:
-                  </label>
-                  <select
-                    value={uploadTargetCategory}
-                    onChange={(e) => setUploadTargetCategory(e.target.value)}
-                    className="w-full rounded-lg bg-[#0e1015] border border-white/15 px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-400"
-                  >
-                    {HARDWARE_CATEGORIES.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.label} → [{c.socketTarget}] ({build[c.id].model3dPath})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <input
-                  ref={glbInputRef}
-                  type="file"
-                  accept=".glb,.gltf"
-                  onChange={handleGlbFileChange}
-                  className="hidden"
-                />
-                <button
-                  onClick={() => glbInputRef.current?.click()}
-                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-sky-500 hover:bg-sky-400 py-2.5 px-3 text-xs font-bold text-slate-950 transition cursor-pointer"
+              return (
+                <div
+                  key={cat.id}
+                  className="rounded-xl bg-[#161922] hover:bg-[#1b1f2a] border border-white/[0.08] p-3 transition"
                 >
-                  <Upload className="h-4 w-4" />
-                  <span>Selecionar Arquivo .GLB para este Socket</span>
-                </button>
-              </div>
+                  <div className="flex items-center gap-3.5">
+                    <ProductThumbnail
+                      part={selectedPart}
+                      onClick={() => onOpenPartDetails(cat.id, selectedPart)}
+                    />
 
-              <div className="rounded-xl bg-[#161920] border border-white/[0.07] p-3.5 space-y-2.5">
-                <label className="block font-mono-tech text-[10px] uppercase tracking-wider text-slate-400">
-                  HDRI Environment Map (Reflexos PBR nos .GLB)
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { id: 'studio', label: 'Studio Soft' },
-                    { id: 'city', label: 'City HDRI' },
-                    { id: 'warehouse', label: 'Warehouse' },
-                  ].map((env) => (
-                    <button
-                      key={env.id}
-                      onClick={() => setEnvPreset(env.id)}
-                      className={`rounded-lg py-2 px-2 text-xs font-medium border transition cursor-pointer ${
-                        envPreset === env.id
-                          ? 'bg-sky-500/20 border-sky-400 text-sky-300'
-                          : 'bg-[#111318] border-white/[0.07] text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      {env.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs text-slate-400 font-medium">
+                          {cat.label}
+                        </span>
+                        <span className="text-sm font-bold text-emerald-400 shrink-0">
+                          ${selectedPart.price.toFixed(2)}
+                        </span>
+                      </div>
 
-              <div className="rounded-xl bg-[#161920] border border-white/[0.07] p-3.5 space-y-2.5">
-                <span className="block font-mono-tech text-[10px] uppercase tracking-wider text-slate-400">
-                  Coordenadas de Encaixe (Vector3 Snap Points)
-                </span>
-                <div className="space-y-1.5 text-[11px] font-mono-tech">
-                  {Object.entries({
-                    ...SNAP_POINTS.case,
-                    ...SNAP_POINTS.motherboard,
-                  }).map(([socketKey, cfg]) => (
-                    <div
-                      key={socketKey}
-                      className="flex items-center justify-between rounded bg-[#0e1015] px-2.5 py-1.5 border border-white/[0.05]"
-                    >
-                      <span className="text-sky-400">{socketKey}</span>
-                      <span className="text-slate-300">
-                        [{cfg.position.join(', ')}]
-                      </span>
+                      <button
+                        type="button"
+                        onClick={() => onOpenPartDetails(cat.id, selectedPart)}
+                        style={{ fontSize: '15px' }}
+                        className="block text-left font-semibold text-white hover:text-sky-400 truncate w-full mt-0.5 cursor-pointer leading-snug"
+                        title={selectedPart.name}
+                      >
+                        {selectedPart.name}
+                      </button>
+
+                      <div className="flex items-center justify-end gap-2 mt-2">
+                        <button
+                          type="button"
+                          onClick={() => onOpenPartPicker(cat.id)}
+                          className="rounded-lg bg-white/[0.08] hover:bg-white/[0.15] border border-white/[0.1] px-3 py-1 text-xs font-semibold text-white transition cursor-pointer"
+                        >
+                          Trocar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onRemovePart(cat.id)}
+                          className="flex items-center gap-1 rounded-lg bg-rose-500/15 hover:bg-rose-600 border border-rose-500/30 hover:border-rose-500 px-2.5 py-1 text-xs font-semibold text-rose-400 hover:text-white transition cursor-pointer"
+                          title={`Remover ${cat.label} do PC 3D`}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          <span>Remover</span>
+                        </button>
+                      </div>
                     </div>
-                  ))}
+                  </div>
                 </div>
-              </div>
-            </div>
-          )}
+              );
+            })}
+          </div>
 
-          <div className="border-t border-white/[0.08] bg-[#0e1015] p-3.5 flex items-center justify-between">
+          <div className="p-4 border-t border-white/[0.08] bg-[#14171f] flex items-center justify-between shrink-0">
             <div>
-              <span className="block text-[10px] font-mono-tech text-slate-400">
-                TOTAL BUILD PRICE
+              <span className="block text-xs text-slate-400">
+                Valor Total do Setup
               </span>
-              <span className="font-display text-base font-bold text-emerald-400">
+              <span className="text-xl font-bold text-emerald-400">
                 ${totalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
 
             <button
-              onClick={onOpenInspector}
-              className="flex items-center gap-1.5 rounded-lg bg-white/[0.07] hover:bg-white/[0.12] border border-white/[0.1] px-3 py-2 text-xs font-medium text-white transition cursor-pointer"
+              type="button"
+              onClick={onCaptureScreenshot}
+              className="flex items-center gap-2 rounded-xl bg-rose-600 hover:bg-rose-500 px-4 py-2.5 text-xs font-bold text-white shadow-lg transition cursor-pointer"
             >
-              <Code2 className="h-3.5 w-3.5 text-sky-400" />
-              <span>Inspect JSON &amp; Paths</span>
+              <Camera className="h-4 w-4" />
+              <span>Salvar Imagem</span>
             </button>
           </div>
         </aside>

@@ -9,9 +9,7 @@ import {
 } from './utils/hardwareCatalogAdapter';
 
 export default function App() {
-
   const [build, setBuild] = useState(DEFAULT_BUILD);
-
   const [catalogByCategory, setCatalogByCategory] = useState(HARDWARE_CATALOG);
   const [datasetStatus, setDatasetStatus] = useState({
     loading: true,
@@ -32,6 +30,7 @@ export default function App() {
   const [wireframe, setWireframe] = useState(false);
   const [autoRotate, setAutoRotate] = useState(false);
   const [explodedView, setExplodedView] = useState(false);
+  const [showGlass, setShowGlass] = useState(true);
 
   const [cameraViewTrigger, setCameraViewTrigger] = useState({
     mode: 'iso',
@@ -126,6 +125,13 @@ export default function App() {
     }));
   }, []);
 
+  const handleRemovePart = useCallback((category) => {
+    setBuild((prev) => ({
+      ...prev,
+      [category]: null,
+    }));
+  }, []);
+
   const handleUploadCustomGlb = useCallback((category, file) => {
     const objectUrl = URL.createObjectURL(file);
     setCustomGlbOverrides((prev) => ({
@@ -140,6 +146,7 @@ export default function App() {
     setWireframe(false);
     setExplodedView(false);
     setShowBoundingLabels(false);
+    setShowGlass(true);
   }, []);
 
   const handleCaptureScreenshot = useCallback(() => {
@@ -148,7 +155,7 @@ export default function App() {
     if (!dataUrl) return;
 
     const link = document.createElement('a');
-    link.download = `voxelcores-gltf-build.png`;
+    link.download = `voxelcores-build.png`;
     link.href = dataUrl;
     document.body.appendChild(link);
     link.click();
@@ -170,6 +177,7 @@ export default function App() {
         datasetStatus={datasetStatus}
         onRefreshDataset={handleRefreshDataset}
         onSelectPart={handleSelectPart}
+        onRemovePart={handleRemovePart}
         customGlbOverrides={customGlbOverrides}
         onUploadCustomGlb={handleUploadCustomGlb}
         onOpenPartPicker={(category) =>
@@ -188,6 +196,8 @@ export default function App() {
         setAutoRotate={setAutoRotate}
         explodedView={explodedView}
         setExplodedView={setExplodedView}
+        showGlass={showGlass}
+        setShowGlass={setShowGlass}
         onSnapCamera={handleSnapCamera}
         onCaptureScreenshot={handleCaptureScreenshot}
         screenshotToast={screenshotToast}
@@ -206,6 +216,7 @@ export default function App() {
           wireframe={wireframe}
           autoRotate={autoRotate}
           explodedView={explodedView}
+          showGlass={showGlass}
           cameraViewTrigger={cameraViewTrigger}
           onStatsUpdate={setStats}
           screenshotHandlerRef={screenshotHandlerRef}
@@ -220,6 +231,7 @@ export default function App() {
           setModalState((prev) => ({ ...prev, mode: 'closed' }))
         }
         onSelectPartForBuild={handleSelectPart}
+        onRemovePartFromBuild={handleRemovePart}
         onOpenPartDetails={(category, item) =>
           setModalState({ mode: 'details', category, item })
         }

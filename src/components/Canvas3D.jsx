@@ -13,7 +13,6 @@ import CapeModel from './CapeModel';
 function StudioEnvironmentRig({ envPreset = 'studio' }) {
   return (
     <>
-
       <ambientLight intensity={0.4} color="#f8fafc" />
 
       <directionalLight
@@ -56,7 +55,6 @@ function StudioEnvironmentRig({ envPreset = 'studio' }) {
 
       <Suspense fallback={null}>
         <Environment preset={envPreset} environmentIntensity={1.15} resolution={512}>
-
           <Lightformer
             form="rect"
             intensity={2.8}
@@ -156,6 +154,7 @@ export default function Canvas3D({
   wireframe,
   autoRotate,
   explodedView,
+  showGlass = true,
   cameraViewTrigger,
   onStatsUpdate,
   screenshotHandlerRef,
@@ -220,6 +219,7 @@ export default function Canvas3D({
           showBoundingLabels={showBoundingLabels}
           wireframe={wireframe}
           explodedView={explodedView}
+          showGlass={showGlass}
         />
 
         <EffectComposer disableNormalPass={false} multisampling={4}>

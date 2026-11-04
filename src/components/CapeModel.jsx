@@ -7,6 +7,7 @@ import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import {
   SNAP_POINTS,
   createMotherboardPcbTexture,
+  createM2ArmorLaserTexture,
   createGpuBackplateTexture,
   createKrakenLcdTexture,
   createHardwareLabelTexture,
@@ -25,24 +26,22 @@ const gltfCache = new Map();
 
 function createCurvedBladeGeometry() {
   const shape = new THREE.Shape();
-  shape.moveTo(0.055, -0.012);
-  shape.quadraticCurveTo(0.125, -0.03, 0.196, -0.014);
-  shape.lineTo(0.199, 0.023);
-  shape.quadraticCurveTo(0.125, 0.034, 0.055, 0.012);
+  shape.moveTo(0.048, -0.018);
+  shape.quadraticCurveTo(0.108, 0.042, 0.178, 0.056);
+  shape.absarc(0, 0, 0.186, Math.atan2(0.056, 0.178), Math.atan2(-0.042, 0.181), true);
+  shape.quadraticCurveTo(0.118, -0.036, 0.048, -0.018);
   shape.closePath();
 
   const extrudeSettings = {
     steps: 1,
-    depth: 0.006,
+    depth: 0.007,
     bevelEnabled: true,
     bevelThickness: 0.002,
     bevelSize: 0.002,
     bevelSegments: 2,
   };
 
-  const geom = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-  geom.center();
-  return geom;
+  return new THREE.ExtrudeGeometry(shape, extrudeSettings);
 }
 
 function createChamferedFanFrameGeometry() {
@@ -77,13 +76,10 @@ function createChamferedFanFrameGeometry() {
 
 function createAsymmetricRamHeatsinkGeometry() {
   const shape = new THREE.Shape();
-
   shape.moveTo(-0.205, -0.048);
   shape.lineTo(0.205, -0.048);
-
   shape.lineTo(0.21, 0.018);
   shape.lineTo(0.155, 0.044);
-
   shape.lineTo(0.035, 0.032);
   shape.lineTo(-0.045, 0.048);
   shape.lineTo(-0.165, 0.046);
@@ -105,7 +101,7 @@ function createAsymmetricRamHeatsinkGeometry() {
 const sharedBladeGeometry = createCurvedBladeGeometry();
 const sharedFanFrameGeometry = createChamferedFanFrameGeometry();
 const sharedRamHeatsinkGeometry = createAsymmetricRamHeatsinkGeometry();
-const FAN_PITCH_35_RAD = (35 * Math.PI) / 180;
+const FAN_PITCH_30_RAD = (30 * Math.PI) / 180;
 
 function RealisticFan120({
   position = [0, 0, 0],
@@ -122,7 +118,6 @@ function RealisticFan120({
 }) {
   return (
     <group position={position} rotation={rotation} scale={scale}>
-
       <mesh
         geometry={sharedFanFrameGeometry}
         material={frameMat}
@@ -137,41 +132,28 @@ function RealisticFan120({
         [0.195, 0.195],
       ].map(([cx, cy], idx) => (
         <group key={idx} position={[cx, cy, 0]}>
-
           <RoundedBox args={[0.068, 0.068, 0.072]} radius={0.01} smoothness={2} material={rubberMat} />
-
           <mesh rotation={[Math.PI / 2, 0, 0]} material={hubMetalMat}>
             <cylinderGeometry args={[0.011, 0.011, 0.076, 12]} />
           </mesh>
         </group>
       ))}
 
-      {[0.6, 2.1, 3.7, 5.2].map((ang, idx) => (
-        <mesh
-          key={idx}
-          position={[Math.cos(ang) * 0.11, Math.sin(ang) * 0.11, -0.025]}
-          rotation={[0, 0, ang]}
-          material={frameMat}
-        >
-          <boxGeometry args={[0.19, 0.013, 0.008]} />
-        </mesh>
-      ))}
-
-      <mesh position={[0, 0, 0.028]} material={diffuserMat}>
-        <torusGeometry args={[0.208, 0.009, 16, 48]} />
+      <mesh position={[0, 0, 0.024]} material={diffuserMat}>
+        <torusGeometry args={[0.21, 0.0045, 16, 64]} />
       </mesh>
 
       <group ref={(el) => onRegisterFan(fanIndex, el)}>
         <mesh rotation={[Math.PI / 2, 0, 0]} material={frameMat}>
-          <cylinderGeometry args={[0.068, 0.068, 0.056, 32]} />
+          <cylinderGeometry args={[0.066, 0.066, 0.056, 32]} />
         </mesh>
 
         <mesh position={[0, 0, 0.029]} material={hubMetalMat}>
-          <ringGeometry args={[0.052, 0.066, 32]} />
+          <ringGeometry args={[0.05, 0.065, 32]} />
         </mesh>
 
         <mesh position={[0, 0, 0.0295]} material={hubStickerMat}>
-          <circleGeometry args={[0.052, 32]} />
+          <circleGeometry args={[0.05, 32]} />
         </mesh>
 
         {Array.from({ length: 9 }).map((_, idx) => {
@@ -180,8 +162,8 @@ function RealisticFan120({
             <group key={idx} rotation={[0, 0, angle]}>
               <mesh
                 geometry={sharedBladeGeometry}
-                position={[0.125, 0, 0.004]}
-                rotation={[FAN_PITCH_35_RAD, 0.14, 0]}
+                position={[0, 0, -0.004]}
+                rotation={[FAN_PITCH_30_RAD, 0, 0]}
                 material={bladeMat}
                 castShadow
                 receiveShadow
@@ -227,20 +209,20 @@ function HoseAlignmentClip({ posA, posB, material, trimMat }) {
 function HighDetailPbrFallback({
   part,
   wireframe,
+  showGlass = true,
   onRegisterFan,
   materials,
 }) {
   const cat = part?.category;
 
   const pcbTex = useMemo(
-    () =>
-      cat === 'motherboard'
-        ? createMotherboardPcbTexture(
-            part?.pcbColor || '#0c0e12',
-            part?.accentColor || '#f59e0b'
-          )
-        : null,
-    [cat, part?.pcbColor, part?.accentColor]
+    () => (cat === 'motherboard' ? createMotherboardPcbTexture('#0d0f12') : null),
+    [cat]
+  );
+
+  const m2ArmorTex = useMemo(
+    () => (cat === 'motherboard' ? createM2ArmorLaserTexture() : null),
+    [cat]
   );
 
   const gpuBackplateTex = useMemo(
@@ -271,23 +253,30 @@ function HighDetailPbrFallback({
     [cat, part?.brand, part?.specs?.wattageCapacity]
   );
 
+  if (!part) return null;
+
   if (cat === 'case') {
     const chassisMat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(part.chassisColor || '#14171f'),
-      metalness: 0.86,
-      roughness: 0.3,
+      color: new THREE.Color(part.chassisColor || '#12151c'),
+      metalness: 0.84,
+      roughness: 0.32,
       wireframe,
     });
     const interiorMat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(part.interiorColor || '#0f1218'),
-      metalness: 0.78,
-      roughness: 0.34,
+      color: new THREE.Color(part.interiorColor || '#0d1016'),
+      metalness: 0.25,
+      roughness: 0.65,
+      wireframe,
+    });
+    const darkBorderMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color('#090b0f'),
+      metalness: 0.5,
+      roughness: 0.4,
       wireframe,
     });
 
     return (
       <group name="Fallback_HYTE_Y70_Case">
-
         <RoundedBox
           position={[0, -1.3, 0]}
           args={[2.2, 0.075, 1.38]}
@@ -354,7 +343,6 @@ function HighDetailPbrFallback({
         ))}
 
         <group position={SNAP_POINTS.case.mount_side_fan_bracket?.position || [0.76, 0.04, -0.22]} name="Anchor_Side_Fan_Bracket">
-
           <RoundedBox
             position={[0, -0.04, -0.042]}
             args={[0.62, 2.52, 0.032]}
@@ -387,6 +375,7 @@ function HighDetailPbrFallback({
               smoothness={2}
               material={chassisMat}
               castShadow
+              receiveShadow
             />
           ))}
 
@@ -437,7 +426,6 @@ function HighDetailPbrFallback({
           rotation={[0, Math.PI / 2, 0]}
           name="Anchor_Rear_Exhaust_Fan"
         >
-
           {[-0.24, 0.24].map((offset, idx) => (
             <React.Fragment key={`rear_frame_${idx}`}>
               <RoundedBox
@@ -457,12 +445,6 @@ function HighDetailPbrFallback({
                 castShadow
               />
             </React.Fragment>
-          ))}
-
-          {[-0.16, -0.08, 0, 0.08, 0.16].map((gy, idx) => (
-            <mesh key={`grill_${idx}`} position={[0, gy, -0.032]} material={interiorMat}>
-              <boxGeometry args={[0.44, 0.01, 0.008]} />
-            </mesh>
           ))}
 
           <RealisticFan120
@@ -485,7 +467,6 @@ function HighDetailPbrFallback({
           rotation={[-Math.PI / 2, 0, 0]}
           name="Anchor_Bottom_Fan_Bracket"
         >
-
           {[-0.25, 0.25].map((ry, idx) => (
             <RoundedBox
               key={`bot_rail_${idx}`}
@@ -526,61 +507,65 @@ function HighDetailPbrFallback({
           ))}
         </group>
 
-        <group position={[1.08, 0, 0]}>
-          <mesh material={materials.glassTransmissionMat}>
-            <boxGeometry args={[0.022, 2.52, 1.34]} />
-          </mesh>
+        {showGlass && (
+          <>
+            <group position={[1.08, 0, 0]} name="Right_Tempered_Glass_Panel">
+              <mesh material={materials.glassTransmissionMat} renderOrder={10}>
+                <boxGeometry args={[0.014, 2.48, 1.32]} />
+              </mesh>
+              <mesh position={[0, 1.245, 0]} material={darkBorderMat}>
+                <boxGeometry args={[0.02, 0.038, 1.35]} />
+              </mesh>
+              <mesh position={[0, -1.245, 0]} material={darkBorderMat}>
+                <boxGeometry args={[0.02, 0.038, 1.35]} />
+              </mesh>
+              <mesh position={[0, 0, -0.665]} material={darkBorderMat}>
+                <boxGeometry args={[0.02, 2.52, 0.028]} />
+              </mesh>
+              <mesh position={[0, 0, 0.675]} material={darkBorderMat}>
+                <boxGeometry args={[0.018, 2.52, 0.016]} />
+              </mesh>
+            </group>
 
-          <mesh position={[0, 0, 0.67]} material={materials.glassEdgeMat}>
-            <boxGeometry args={[0.024, 2.52, 0.008]} />
-          </mesh>
-          <mesh position={[0, 1.24, 0]} material={chassisMat}>
-            <boxGeometry args={[0.032, 0.06, 1.36]} />
-          </mesh>
-          <mesh position={[0, -1.24, 0]} material={chassisMat}>
-            <boxGeometry args={[0.032, 0.06, 1.36]} />
-          </mesh>
-        </group>
-
-        <group position={[0, 0, 0.69]}>
-          <mesh material={materials.glassTransmissionMat}>
-            <boxGeometry args={[2.16, 2.52, 0.022]} />
-          </mesh>
-
-          <mesh position={[1.075, 0, 0]} material={materials.glassEdgeMat}>
-            <boxGeometry args={[0.01, 2.52, 0.025]} />
-          </mesh>
-          <mesh position={[-1.075, 0, 0]} material={materials.glassEdgeMat}>
-            <boxGeometry args={[0.01, 2.52, 0.025]} />
-          </mesh>
-          <mesh position={[0, 1.24, 0]} material={chassisMat}>
-            <boxGeometry args={[2.18, 0.06, 0.03]} />
-          </mesh>
-          <mesh position={[0, -1.24, 0]} material={chassisMat}>
-            <boxGeometry args={[2.18, 0.06, 0.03]} />
-          </mesh>
-        </group>
+            <group position={[0, 0, 0.69]} name="Front_Tempered_Glass_Panel">
+              <mesh material={materials.glassTransmissionMat} renderOrder={10}>
+                <boxGeometry args={[2.14, 2.48, 0.014]} />
+              </mesh>
+              <mesh position={[0, 1.245, 0]} material={darkBorderMat}>
+                <boxGeometry args={[2.18, 0.038, 0.02]} />
+              </mesh>
+              <mesh position={[0, -1.245, 0]} material={darkBorderMat}>
+                <boxGeometry args={[2.18, 0.038, 0.02]} />
+              </mesh>
+              <mesh position={[-1.075, 0, 0]} material={darkBorderMat}>
+                <boxGeometry args={[0.028, 2.52, 0.02]} />
+              </mesh>
+              <mesh position={[1.075, 0, 0]} material={darkBorderMat}>
+                <boxGeometry args={[0.018, 2.52, 0.02]} />
+              </mesh>
+            </group>
+          </>
+        )}
       </group>
     );
   }
 
   if (cat === 'motherboard') {
-    const vrmMat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(part.vrmColor || '#262b36'),
-      metalness: 0.9,
-      roughness: 0.28,
+    const vrmDarkMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color('#1c2029'),
+      metalness: 0.88,
+      roughness: 0.26,
       wireframe,
     });
-    const tufAccentMat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(part.accentColor || '#f59e0b'),
-      metalness: 0.65,
-      roughness: 0.3,
+    const dimmSlotMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color('#0f1218'),
+      metalness: 0.35,
+      roughness: 0.55,
       wireframe,
     });
 
     return (
-      <group name="Fallback_ASUS_TUF_B650M_Motherboard">
-
+      <group name="Fallback_B650M_Motherboard">
         <RoundedBox
           args={[1.26, 1.54, 0.036]}
           radius={0.008}
@@ -590,79 +575,83 @@ function HighDetailPbrFallback({
         >
           <meshStandardMaterial
             map={pcbTex}
-            metalness={0.35}
-            roughness={0.42}
+            color="#0d0f12"
+            metalness={0.28}
+            roughness={0.58}
             wireframe={wireframe}
           />
         </RoundedBox>
 
-        <group position={[-0.48, 0.34, 0.072]}>
+        <group position={[-0.47, 0.32, 0.074]} name="VRM_Heatsink_Left">
           <RoundedBox
-            args={[0.245, 0.78, 0.105]}
+            args={[0.255, 0.82, 0.11]}
             radius={0.012}
             smoothness={3}
-            material={vrmMat}
+            material={vrmDarkMat}
             castShadow
             receiveShadow
           />
-
-          {Array.from({ length: 9 }).map((_, idx) => (
-            <RoundedBox
-              key={idx}
-              position={[0.058, -0.32 + idx * 0.08, 0.056]}
-              args={[0.115, 0.044, 0.028]}
-              radius={0.004}
-              smoothness={2}
-              material={materials.brushedAluminumMat}
-              castShadow
-            />
-          ))}
-
-          <mesh position={[-0.045, 0.14, 0.056]} material={tufAccentMat}>
-            <boxGeometry args={[0.065, 0.36, 0.008]} />
-          </mesh>
-          <mesh position={[-0.045, -0.22, 0.056]} material={tufAccentMat}>
-            <boxGeometry args={[0.065, 0.12, 0.008]} />
-          </mesh>
-        </group>
-
-        <group position={[-0.06, 0.65, 0.068]}>
           <RoundedBox
-            args={[0.56, 0.155, 0.088]}
-            radius={0.01}
-            smoothness={3}
-            material={vrmMat}
+            position={[-0.035, 0.04, 0.056]}
+            args={[0.14, 0.74, 0.012]}
+            radius={0.004}
+            smoothness={2}
+            material={materials.brushedAluminumMat}
             castShadow
-            receiveShadow
           />
-          {Array.from({ length: 12 }).map((_, idx) => (
+          {Array.from({ length: 10 }).map((_, idx) => (
             <RoundedBox
               key={idx}
-              position={[-0.24 + idx * 0.044, 0, 0.048]}
-              args={[0.022, 0.145, 0.024]}
+              position={[0.068, -0.34 + idx * 0.075, 0.056]}
+              args={[0.095, 0.038, 0.024]}
               radius={0.003}
               smoothness={2}
               material={materials.brushedAluminumMat}
               castShadow
             />
           ))}
-          <mesh position={[0, 0.042, 0.048]} material={tufAccentMat}>
-            <boxGeometry args={[0.42, 0.02, 0.008]} />
-          </mesh>
+        </group>
+
+        <group position={[-0.06, 0.65, 0.068]} name="VRM_Heatsink_Top">
+          <RoundedBox
+            args={[0.58, 0.165, 0.092]}
+            radius={0.01}
+            smoothness={3}
+            material={vrmDarkMat}
+            castShadow
+            receiveShadow
+          />
+          <RoundedBox
+            position={[0, 0.025, 0.048]}
+            args={[0.52, 0.065, 0.01]}
+            radius={0.003}
+            smoothness={2}
+            material={materials.brushedAluminumMat}
+            castShadow
+          />
+          {Array.from({ length: 12 }).map((_, idx) => (
+            <RoundedBox
+              key={idx}
+              position={[-0.24 + idx * 0.044, -0.035, 0.048]}
+              args={[0.022, 0.075, 0.02]}
+              radius={0.003}
+              smoothness={2}
+              material={materials.brushedAluminumMat}
+              castShadow
+            />
+          ))}
         </group>
 
         {Array.from({ length: 10 }).map((_, idx) => (
           <group key={`vrm_top_${idx}`}>
-
             <RoundedBox
               position={[-0.28 + idx * 0.046, 0.535, 0.034]}
               args={[0.036, 0.036, 0.03]}
               radius={0.004}
               smoothness={2}
-              material={vrmMat}
+              material={vrmDarkMat}
               castShadow
             />
-
             <mesh
               position={[-0.28 + idx * 0.046, 0.492, 0.035]}
               rotation={[Math.PI / 2, 0, 0]}
@@ -677,15 +666,15 @@ function HighDetailPbrFallback({
         {Array.from({ length: 7 }).map((_, idx) => (
           <group key={`vrm_left_${idx}`}>
             <RoundedBox
-              position={[-0.32, 0.14 + idx * 0.05, 0.034]}
+              position={[-0.31, 0.12 + idx * 0.052, 0.034]}
               args={[0.036, 0.036, 0.03]}
               radius={0.004}
               smoothness={2}
-              material={vrmMat}
+              material={vrmDarkMat}
               castShadow
             />
             <mesh
-              position={[-0.275, 0.14 + idx * 0.05, 0.035]}
+              position={[-0.265, 0.12 + idx * 0.052, 0.035]}
               rotation={[Math.PI / 2, 0, 0]}
               material={materials.nickelMat}
               castShadow
@@ -695,108 +684,105 @@ function HighDetailPbrFallback({
           </group>
         ))}
 
-        {[-0.64, -0.58, -0.52, -0.46, -0.4].map((yPos, idx) => (
-          <mesh
-            key={`aud_cap_${idx}`}
-            position={[-0.56, yPos, 0.035]}
-            rotation={[Math.PI / 2, 0, 0]}
-            material={materials.copperMat}
-            castShadow
-          >
-            <cylinderGeometry args={[0.016, 0.016, 0.036, 16]} />
-          </mesh>
+        {[0, 1, 2, 3].map((slotIdx) => {
+          const sx = 0.22 + slotIdx * 0.06;
+          return (
+            <group key={`dimm_${slotIdx}`} position={[sx, 0.34, 0.036]}>
+              <mesh material={dimmSlotMat} castShadow>
+                <boxGeometry args={[0.022, 0.44, 0.034]} />
+              </mesh>
+              <mesh position={[0, 0.232, 0.012]} material={materials.brushedAluminumMat}>
+                <boxGeometry args={[0.026, 0.024, 0.036]} />
+              </mesh>
+              <mesh position={[0, -0.232, 0.012]} material={materials.brushedAluminumMat}>
+                <boxGeometry args={[0.026, 0.024, 0.036]} />
+              </mesh>
+            </group>
+          );
+        })}
+
+        {[-0.18, -0.62].map((py, idx) => (
+          <group key={`pcie_${idx}`} position={[-0.06, py, 0.038]}>
+            <RoundedBox
+              args={[0.69, 0.042, 0.042]}
+              radius={0.005}
+              smoothness={2}
+              material={idx === 0 ? materials.nickelMat : vrmDarkMat}
+              castShadow
+            />
+            <mesh position={[0, 0, 0.006]} material={dimmSlotMat}>
+              <boxGeometry args={[0.65, 0.018, 0.034]} />
+            </mesh>
+            <mesh position={[0.355, 0, 0.01]} material={materials.brushedAluminumMat}>
+              <boxGeometry args={[0.032, 0.048, 0.032]} />
+            </mesh>
+          </group>
         ))}
 
-        <group position={[-0.28, -0.62, 0.028]}>
+        <group position={[0.02, -0.41, 0.046]} name="Lower_M2_And_Chipset_Armor">
+          <RoundedBox
+            position={[-0.1, 0.05, 0]}
+            args={[0.72, 0.22, 0.042]}
+            radius={0.006}
+            smoothness={3}
+            castShadow
+            receiveShadow
+          >
+            <meshStandardMaterial
+              map={m2ArmorTex}
+              metalness={0.85}
+              roughness={0.28}
+              wireframe={wireframe}
+            />
+          </RoundedBox>
 
-          <mesh rotation={[Math.PI / 2, 0, 0]} material={vrmMat} castShadow>
-            <cylinderGeometry args={[0.056, 0.056, 0.018, 28]} />
+          <RoundedBox
+            position={[0.36, -0.04, 0.008]}
+            args={[0.38, 0.42, 0.052]}
+            radius={0.008}
+            smoothness={3}
+            material={vrmDarkMat}
+            castShadow
+            receiveShadow
+          />
+          <RoundedBox
+            position={[0.36, -0.04, 0.036]}
+            args={[0.32, 0.34, 0.008]}
+            radius={0.004}
+            smoothness={2}
+            material={materials.brushedAluminumMat}
+            castShadow
+          />
+
+          <RoundedBox
+            position={[-0.14, -0.11, -0.004]}
+            args={[0.64, 0.14, 0.036]}
+            radius={0.005}
+            smoothness={2}
+            material={materials.brushedAluminumMat}
+            castShadow
+            receiveShadow
+          />
+        </group>
+
+        <group position={[-0.36, -0.62, 0.028]}>
+          <mesh rotation={[Math.PI / 2, 0, 0]} material={vrmDarkMat} castShadow>
+            <cylinderGeometry args={[0.054, 0.054, 0.018, 28]} />
           </mesh>
-
           <mesh
             position={[0, 0, 0.006]}
             rotation={[Math.PI / 2, 0, 0]}
             material={materials.nickelMat}
             castShadow
           >
-            <cylinderGeometry args={[0.047, 0.047, 0.015, 28]} />
-          </mesh>
-
-          <mesh position={[0.042, 0, 0.015]} material={materials.brushedAluminumMat}>
-            <boxGeometry args={[0.02, 0.024, 0.006]} />
+            <cylinderGeometry args={[0.045, 0.045, 0.015, 28]} />
           </mesh>
         </group>
 
-        {[0, 1, 2, 3].map((slotIdx) => {
-          const sx = 0.22 + slotIdx * 0.06;
-          return (
-            <group key={`dimm_${slotIdx}`} position={[sx, 0.34, 0.036]}>
-              <mesh material={vrmMat} castShadow>
-                <boxGeometry args={[0.022, 0.44, 0.032]} />
-              </mesh>
-              <mesh position={[0, 0.23, 0.012]} material={materials.brushedAluminumMat}>
-                <boxGeometry args={[0.026, 0.022, 0.034]} />
-              </mesh>
-              <mesh position={[0, -0.23, 0.012]} material={materials.brushedAluminumMat}>
-                <boxGeometry args={[0.026, 0.022, 0.034]} />
-              </mesh>
-            </group>
-          );
-        })}
-
-        {[-0.18, -0.54].map((py, idx) => (
-          <group key={`pcie_${idx}`} position={[-0.06, py, 0.038]}>
-
-            <RoundedBox
-              args={[0.69, 0.042, 0.042]}
-              radius={0.005}
-              smoothness={2}
-              material={materials.nickelMat}
-              castShadow
-            />
-
-            <mesh position={[0, 0, 0.006]} material={vrmMat}>
-              <boxGeometry args={[0.65, 0.018, 0.034]} />
-            </mesh>
-
-            <mesh position={[0.355, 0, 0.01]} material={tufAccentMat}>
-              <boxGeometry args={[0.032, 0.048, 0.032]} />
-            </mesh>
-          </group>
-        ))}
-
-        <group position={[-0.08, -0.36, 0.044]}>
-          <RoundedBox
-            args={[0.56, 0.16, 0.042]}
-            radius={0.006}
-            smoothness={2}
-            material={vrmMat}
-            castShadow
-          />
-          {[-0.04, 0, 0.04].map((ry, rIdx) => (
-            <mesh key={rIdx} position={[0, ry, 0.022]} material={materials.brushedAluminumMat}>
-              <boxGeometry args={[0.5, 0.012, 0.005]} />
-            </mesh>
-          ))}
-        </group>
-
-        <group position={[0.28, -0.44, 0.05]}>
-          <RoundedBox
-            args={[0.38, 0.34, 0.054]}
-            radius={0.008}
-            smoothness={3}
-            material={vrmMat}
-            castShadow
-          />
-          <mesh position={[0, 0, 0.029]} material={tufAccentMat}>
-            <boxGeometry args={[0.28, 0.028, 0.006]} />
-          </mesh>
-        </group>
-
-        <mesh position={[0.56, 0.22, 0.046]} material={vrmMat} castShadow>
+        <mesh position={[0.56, 0.22, 0.046]} material={dimmSlotMat} castShadow>
           <boxGeometry args={[0.055, 0.3, 0.062]} />
         </mesh>
-        <mesh position={[-0.48, 0.72, 0.046]} material={vrmMat} castShadow>
+        <mesh position={[-0.48, 0.72, 0.046]} material={dimmSlotMat} castShadow>
           <boxGeometry args={[0.16, 0.05, 0.052]} />
         </mesh>
       </group>
@@ -806,7 +792,6 @@ function HighDetailPbrFallback({
   if (cat === 'cpu') {
     return (
       <group name="Fallback_AM5_LGA_CPU">
-
         <RoundedBox
           args={[0.33, 0.35, 0.022]}
           radius={0.004}
@@ -817,12 +802,10 @@ function HighDetailPbrFallback({
         <mesh position={[0.18, 0, 0.01]} material={materials.nickelMat}>
           <cylinderGeometry args={[0.006, 0.006, 0.36, 12]} />
         </mesh>
-
         <mesh position={[0, 0, 0.016]}>
           <boxGeometry args={[0.27, 0.27, 0.012]} />
           <meshStandardMaterial color="#0f766e" roughness={0.35} metalness={0.4} wireframe={wireframe} />
         </mesh>
-
         <RoundedBox
           position={[0, 0, 0.03]}
           args={part.brand === 'Intel' ? [0.21, 0.26, 0.02] : [0.23, 0.23, 0.02]}
@@ -849,18 +832,18 @@ function HighDetailPbrFallback({
         <group position={[0, 0, 0.08]} name="Fallback_Noctua_Air_Cooler">
           {[-0.14, 0.14].map((tx, tIdx) => (
             <group key={tIdx} position={[tx, 0, 0]}>
-              {Array.from({ length: 20 }).map((_, fIdx) => (
+              {Array.from({ length: 24 }).map((_, fIdx) => (
                 <mesh
                   key={fIdx}
-                  position={[0, -0.19 + fIdx * 0.02, 0]}
-                  material={bodyMat}
+                  position={[0, -0.19 + fIdx * 0.016, 0]}
+                  material={materials.nickelMat}
                   castShadow
                 >
-                  <boxGeometry args={[0.14, 0.007, 0.36]} />
+                  <boxGeometry args={[0.14, 0.005, 0.36]} />
                 </mesh>
               ))}
               {[-0.12, -0.04, 0.04, 0.12].map((zOff, hIdx) => (
-                <mesh key={hIdx} position={[0, 0, zOff]} material={materials.copperMat}>
+                <mesh key={hIdx} position={[0, 0, zOff]} material={materials.nickelMat}>
                   <cylinderGeometry args={[0.014, 0.014, 0.45, 14]} />
                 </mesh>
               ))}
@@ -898,7 +881,6 @@ function HighDetailPbrFallback({
 
     return (
       <group name="Fallback_NZXT_Kraken_360">
-
         <mesh rotation={[Math.PI / 2, 0, 0]} material={bodyMat} castShadow receiveShadow>
           <cylinderGeometry args={[0.162, 0.174, 0.145, 40]} />
         </mesh>
@@ -970,25 +952,25 @@ function HighDetailPbrFallback({
 
   if (cat === 'gpu') {
     const shroudMat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(part.shroudColor || '#1a1e26'),
-      metalness: 0.86,
+      color: new THREE.Color(part.shroudColor || '#151820'),
+      metalness: 0.85,
       roughness: 0.28,
       wireframe,
     });
     const trimMat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(part.trimColor || '#64748b'),
+      color: new THREE.Color(part.trimColor || '#475569'),
       metalness: 0.92,
-      roughness: 0.24,
+      roughness: 0.22,
       wireframe,
     });
-    const gpuLen = 1.24;
+    const gpuLen = 1.26;
+    const finCount = 68;
 
     return (
-      <group name="Fallback_ROG_Strix_RTX_4070_ThreeLayer">
-
+      <group name="Fallback_TriSlot_GPU">
         <RoundedBox
-          position={[0, 0.098, 0]}
-          args={[gpuLen * 0.99, 0.015, 0.48]}
+          position={[-0.14, 0.106, 0]}
+          args={[gpuLen * 0.74, 0.016, 0.49]}
           radius={0.004}
           smoothness={2}
           castShadow
@@ -996,49 +978,85 @@ function HighDetailPbrFallback({
         >
           <meshStandardMaterial
             map={gpuBackplateTex}
-            metalness={0.9}
+            metalness={0.88}
             roughness={0.26}
             wireframe={wireframe}
           />
         </RoundedBox>
 
-        <group position={[0, 0.012, 0]}>
-          {Array.from({ length: 56 }).map((_, fIdx) => (
+        <RoundedBox
+          position={[0.48, 0.106, -0.17]}
+          args={[0.28, 0.016, 0.15]}
+          radius={0.003}
+          smoothness={2}
+          material={shroudMat}
+          castShadow
+        />
+        <RoundedBox
+          position={[0.48, 0.106, 0.17]}
+          args={[0.28, 0.016, 0.15]}
+          radius={0.003}
+          smoothness={2}
+          material={shroudMat}
+          castShadow
+        />
+        {[-0.08, 0, 0.08].map((zBar, idx) => (
+          <mesh
+            key={`bp_vent_${idx}`}
+            position={[0.46 + idx * 0.04, 0.106, zBar]}
+            rotation={[0, 0.45, 0]}
+            material={trimMat}
+          >
+            <boxGeometry args={[0.022, 0.016, 0.22]} />
+          </mesh>
+        ))}
+
+        <group position={[0, 0.012, 0]} name="Dense_Aluminum_Fins_68">
+          {Array.from({ length: finCount }).map((_, fIdx) => (
             <mesh
               key={`fin_${fIdx}`}
-              position={[-gpuLen * 0.465 + (fIdx / 55) * (gpuLen * 0.93), 0, 0]}
+              position={[-gpuLen * 0.475 + (fIdx / (finCount - 1)) * (gpuLen * 0.95), 0, 0]}
               material={materials.nickelMat}
               castShadow
               receiveShadow
             >
-              <boxGeometry args={[0.006, 0.115, 0.468]} />
+              <boxGeometry args={[0.0046, 0.135, 0.475]} />
             </mesh>
           ))}
         </group>
 
-        {[-0.16, -0.08, 0, 0.08, 0.16].map((zOff, idx) => (
-          <mesh
-            key={`hp_${idx}`}
-            position={[0.02, 0.012, zOff]}
-            rotation={[0, 0, Math.PI / 2]}
-            material={materials.copperMat}
-            castShadow
-          >
-            <cylinderGeometry args={[0.0125, 0.0125, gpuLen * 0.995, 16]} />
-          </mesh>
+        {[-0.036, 0.008, 0.052].map((yOff, idx) => (
+          <group key={`chrome_hp_${idx}`}>
+            <mesh
+              position={[0.01, yOff, 0.238]}
+              rotation={[0, 0, Math.PI / 2]}
+              material={materials.chromePipeMat}
+              castShadow
+            >
+              <cylinderGeometry args={[0.013, 0.013, gpuLen * 0.96, 20]} />
+            </mesh>
+            <mesh
+              position={[0.01, yOff, -0.06 + idx * 0.08]}
+              rotation={[0, 0, Math.PI / 2]}
+              material={materials.chromePipeMat}
+              castShadow
+            >
+              <cylinderGeometry args={[0.013, 0.013, gpuLen * 0.98, 20]} />
+            </mesh>
+          </group>
         ))}
 
         <RoundedBox
-          position={[0, 0.066, 0.235]}
-          args={[gpuLen, 0.052, 0.032]}
+          position={[0, 0.078, 0.244]}
+          args={[gpuLen, 0.044, 0.028]}
           radius={0.006}
           smoothness={2}
           material={shroudMat}
           castShadow
         />
         <RoundedBox
-          position={[0, -0.056, 0.235]}
-          args={[gpuLen, 0.044, 0.032]}
+          position={[0, -0.064, 0.244]}
+          args={[gpuLen, 0.042, 0.028]}
           radius={0.006}
           smoothness={2}
           material={shroudMat}
@@ -1046,9 +1064,9 @@ function HighDetailPbrFallback({
         />
 
         <RoundedBox
-          position={[0, -0.068, 0]}
-          args={[gpuLen, 0.042, 0.48]}
-          radius={0.008}
+          position={[0, -0.078, 0]}
+          args={[gpuLen, 0.05, 0.49]}
+          radius={0.01}
           smoothness={3}
           material={shroudMat}
           castShadow
@@ -1057,10 +1075,10 @@ function HighDetailPbrFallback({
 
         {[-0.42, -0.14, 0.14, 0.42].map((xPos, idx) => (
           <RoundedBox
-            key={`claw_${idx}`}
-            position={[xPos, 0.01, 0.244]}
+            key={`chamfer_accent_${idx}`}
+            position={[xPos, -0.068, 0.248]}
             rotation={[0, 0, 0.35]}
-            args={[0.036, 0.15, 0.016]}
+            args={[0.036, 0.068, 0.016]}
             radius={0.003}
             smoothness={2}
             material={trimMat}
@@ -1068,15 +1086,20 @@ function HighDetailPbrFallback({
           />
         ))}
 
-        <mesh position={[-0.12, 0.068, 0.253]} material={materials.diffuserBarMat}>
-          <boxGeometry args={[gpuLen * 0.62, 0.018, 0.008]} />
-        </mesh>
-        <mesh position={[gpuLen * 0.495, 0.01, 0]} material={materials.diffuserBarMat}>
-          <boxGeometry args={[0.012, 0.125, 0.44]} />
-        </mesh>
+        <group position={[-0.14, 0.078, 0.258]} name="Illuminated_Side_Logo">
+          <RoundedBox
+            args={[0.48, 0.032, 0.008]}
+            radius={0.003}
+            smoothness={2}
+            material={shroudMat}
+          />
+          <mesh position={[0, 0, 0.003]} material={materials.diffuserBarMat}>
+            <boxGeometry args={[0.44, 0.02, 0.006]} />
+          </mesh>
+        </group>
 
         <RoundedBox
-          position={[0.34, 0.065, 0.24]}
+          position={[0.34, 0.074, 0.24]}
           args={[0.09, 0.045, 0.045]}
           radius={0.004}
           smoothness={2}
@@ -1084,7 +1107,7 @@ function HighDetailPbrFallback({
         />
         <BraidedTube
           points={[
-            [0.34, 0.04, 0.26],
+            [0.34, 0.05, 0.26],
             [0.34, -0.14, 0.31],
             [0.3, -0.35, 0.1],
             [0.26, -0.45, -0.14],
@@ -1095,7 +1118,7 @@ function HighDetailPbrFallback({
 
         <RoundedBox
           position={[-gpuLen / 2 - 0.015, -0.02, 0]}
-          args={[0.026, 0.24, 0.46]}
+          args={[0.026, 0.26, 0.47]}
           radius={0.003}
           smoothness={2}
           material={materials.nickelMat}
@@ -1104,9 +1127,9 @@ function HighDetailPbrFallback({
         {[-0.36, 0, 0.36].map((xNorm, idx) => (
           <RealisticFan120
             key={`gpu_f_${idx}`}
-            position={[xNorm * gpuLen * 0.9, -0.09, 0]}
+            position={[xNorm * gpuLen * 0.9, -0.104, 0]}
             rotation={[Math.PI / 2, 0, 0]}
-            scale={0.62}
+            scale={0.68}
             frameMat={shroudMat}
             rubberMat={materials.rubberMat}
             bladeMat={materials.fanBladeMat}
@@ -1130,7 +1153,6 @@ function HighDetailPbrFallback({
     });
     return (
       <group name="Fallback_Asymmetric_DDR5_Stick">
-
         <mesh
           geometry={sharedRamHeatsinkGeometry}
           rotation={[0, Math.PI / 2, Math.PI / 2]}
@@ -1138,7 +1160,6 @@ function HighDetailPbrFallback({
           castShadow
           receiveShadow
         />
-
         <RoundedBox
           position={[0.016, 0.01, -0.004]}
           args={[0.004, 0.36, 0.038]}
@@ -1146,7 +1167,6 @@ function HighDetailPbrFallback({
           smoothness={2}
           material={materials.brushedAluminumMat}
         />
-
         <RoundedBox
           position={[0, 0, 0.056]}
           args={[0.03, 0.422, 0.02]}
@@ -1161,7 +1181,6 @@ function HighDetailPbrFallback({
   if (cat === 'storage') {
     return (
       <group name="Fallback_Samsung_990_PRO_Integrated_Heatsink_SSD">
-
         <mesh position={[0, 0, -0.01]} castShadow>
           <boxGeometry args={[0.48, 0.125, 0.008]} />
           <meshStandardMaterial color="#0f172a" metalness={0.45} roughness={0.38} wireframe={wireframe} />
@@ -1169,7 +1188,6 @@ function HighDetailPbrFallback({
         <mesh position={[-0.235, 0, -0.01]} material={materials.copperMat}>
           <boxGeometry args={[0.016, 0.11, 0.01]} />
         </mesh>
-
         <RoundedBox
           position={[0, 0, 0.008]}
           args={[0.45, 0.122, 0.028]}
@@ -1179,13 +1197,11 @@ function HighDetailPbrFallback({
           castShadow
           receiveShadow
         />
-
         {[-0.16, -0.1, 0.1, 0.16].map((gx, idx) => (
           <mesh key={idx} position={[gx, 0, 0.023]} material={materials.nickelMat}>
             <boxGeometry args={[0.018, 0.118, 0.004]} />
           </mesh>
         ))}
-
         <mesh position={[0, 0, 0.024]}>
           <planeGeometry args={[0.38, 0.106]} />
           <meshStandardMaterial
@@ -1239,6 +1255,7 @@ function GltfSocketPart({
   customOverrideUrl,
   showBoundingLabels = false,
   wireframeMode = false,
+  showGlass = true,
   onRegisterFan,
   materials,
   children,
@@ -1347,34 +1364,34 @@ function GltfSocketPart({
 
   return (
     <group position={socketPos} rotation={socketRot} name={`Socket_${socketName}`}>
-      <group position={partOffsetPos} rotation={partOffsetRot} scale={partScale}>
-        {loadState.status === 'loaded' && loadState.scene ? (
-          <primitive object={loadState.scene} />
-        ) : (
-          <HighDetailPbrFallback
-            part={part}
-            wireframe={wireframeMode}
-            onRegisterFan={onRegisterFan}
-            materials={materials}
-          />
-        )}
+      {part && (
+        <group position={partOffsetPos} rotation={partOffsetRot} scale={partScale}>
+          {loadState.status === 'loaded' && loadState.scene ? (
+            <primitive object={loadState.scene} />
+          ) : (
+            <HighDetailPbrFallback
+              part={part}
+              wireframe={wireframeMode}
+              showGlass={showGlass}
+              onRegisterFan={onRegisterFan}
+              materials={materials}
+            />
+          )}
 
-        {showBoundingLabels && part && (
-          <Html position={[0, 0, 0]} center distanceFactor={4.2} zIndexRange={[10, 0]}>
-            <div className="pointer-events-none select-none rounded-lg bg-[#0d1017]/95 border border-sky-500/50 px-2.5 py-1.5 shadow-xl text-left min-w-[175px] backdrop-blur-md">
-              <span className="font-mono-tech text-[9px] uppercase tracking-wider text-sky-400 font-bold block">
-                [{socketName}] {loadState.status === 'loaded' ? 'GLB ACTIVE' : 'PBR FALLBACK'}
-              </span>
-              <p className="text-[10px] font-semibold text-white truncate">
-                {part.name}
-              </p>
-              <p className="font-mono-tech text-[9px] text-amber-300 truncate">
-                public{targetUrl}
-              </p>
-            </div>
-          </Html>
-        )}
-      </group>
+          {showBoundingLabels && (
+            <Html position={[0, 0, 0]} center distanceFactor={4.2} zIndexRange={[10, 0]}>
+              <div className="pointer-events-none select-none rounded-lg bg-[#0d1017]/95 border border-sky-500/50 px-2.5 py-1.5 shadow-xl text-left min-w-[175px] backdrop-blur-md">
+                <span className="font-mono-tech text-[9px] uppercase tracking-wider text-sky-400 font-bold block">
+                  [{socketName}]
+                </span>
+                <p className="text-[10px] font-semibold text-white truncate">
+                  {part.name}
+                </p>
+              </div>
+            </Html>
+          )}
+        </group>
+      )}
 
       {children}
     </group>
@@ -1387,6 +1404,7 @@ export default function CapeModel({
   showBoundingLabels = false,
   wireframe = false,
   explodedView = false,
+  showGlass = true,
 }) {
   const fanRefs = useRef([]);
   const caseSnaps = SNAP_POINTS.case;
@@ -1403,77 +1421,58 @@ export default function CapeModel({
 
   const materials = useMemo(() => {
     return {
-
       glassTransmissionMat: new THREE.MeshPhysicalMaterial({
-        color: new THREE.Color('#f8fafc'),
+        color: 0xffffff,
         transparent: true,
-        opacity: wireframe ? 0.25 : 1.0,
-        transmission: wireframe ? 0 : 0.95,
-        roughness: 0.05,
-        metalness: 0.0,
-        ior: 1.5,
-        thickness: 0.06,
-        reflectivity: 0.65,
-        clearcoat: 1.0,
-        clearcoatRoughness: 0.05,
-        attenuationColor: new THREE.Color('#e2e8f0'),
-        attenuationDistance: 2.2,
-        depthWrite: false,
-        wireframe,
-      }),
-      glassEdgeMat: new THREE.MeshPhysicalMaterial({
-        color: new THREE.Color('#e2e8f0'),
-        transparent: true,
-        opacity: 0.42,
-        roughness: 0.08,
-        metalness: 0.2,
-        clearcoat: 1.0,
-        wireframe,
-      }),
-
-      mirrorGlassCapMat: new THREE.MeshPhysicalMaterial({
-        color: new THREE.Color('#ffffff'),
-        transparent: true,
-        opacity: 0.22,
-        roughness: 0.03,
-        metalness: 0.15,
-        ior: 1.52,
-        clearcoat: 1.0,
-        clearcoatRoughness: 0.02,
+        opacity: wireframe ? 0.22 : 0.1,
+        roughness: 0.02,
+        metalness: 0.1,
         reflectivity: 0.9,
         depthWrite: false,
         wireframe,
       }),
-
+      mirrorGlassCapMat: new THREE.MeshPhysicalMaterial({
+        color: new THREE.Color('#ffffff'),
+        transparent: true,
+        opacity: 0.18,
+        roughness: 0.02,
+        metalness: 0.1,
+        reflectivity: 0.9,
+        depthWrite: false,
+        wireframe,
+      }),
       nickelMat: new THREE.MeshStandardMaterial({
-        color: new THREE.Color('#d1d5db'),
+        color: new THREE.Color('#d8dee9'),
         metalness: 0.92,
-        roughness: 0.26,
+        roughness: 0.22,
+        wireframe,
+      }),
+      chromePipeMat: new THREE.MeshStandardMaterial({
+        color: new THREE.Color('#f1f5f9'),
+        metalness: 0.96,
+        roughness: 0.12,
         wireframe,
       }),
       brushedAluminumMat: new THREE.MeshPhysicalMaterial({
         color: new THREE.Color('#94a3b8'),
         metalness: 0.88,
-        roughness: 0.28,
+        roughness: 0.26,
         clearcoat: 0.25,
         clearcoatRoughness: 0.3,
         wireframe,
       }),
-
       copperMat: new THREE.MeshStandardMaterial({
         color: new THREE.Color('#d97706'),
         metalness: 0.92,
         roughness: 0.25,
         wireframe,
       }),
-
       rubberMat: new THREE.MeshStandardMaterial({
         color: new THREE.Color('#0b0d12'),
         metalness: 0.08,
         roughness: 0.78,
         wireframe,
       }),
-
       braidedSleeveMat: new THREE.MeshStandardMaterial({
         map: braidedSleeveTex,
         bumpMap: braidedSleeveTex,
@@ -1482,46 +1481,34 @@ export default function CapeModel({
         roughness: 0.48,
         wireframe,
       }),
-
       fanBladeMat: new THREE.MeshPhysicalMaterial({
-        color: new THREE.Color('#334155'),
-        transparent: true,
-        opacity: 0.92,
-        roughness: 0.26,
-        metalness: 0.45,
-        clearcoat: 0.35,
+        color: new THREE.Color('#27303f'),
+        roughness: 0.28,
+        metalness: 0.42,
+        clearcoat: 0.25,
         wireframe,
       }),
-
       fanHubStickerMat: new THREE.MeshStandardMaterial({
         map: fanHubStickerTex,
         metalness: 0.8,
         roughness: 0.25,
         wireframe,
       }),
-
       diffuserRingMat: new THREE.MeshPhysicalMaterial({
         map: softRgbGradTex,
         emissiveMap: softRgbGradTex,
         emissive: new THREE.Color('#38bdf8'),
-        emissiveIntensity: 0.42,
-        transparent: true,
-        opacity: 0.78,
-        transmission: 0.35,
-        roughness: 0.32,
+        emissiveIntensity: 0.85,
+        roughness: 0.2,
         metalness: 0.1,
         wireframe,
       }),
-
       diffuserBarMat: new THREE.MeshPhysicalMaterial({
         map: softRgbGradTex,
         emissiveMap: softRgbGradTex,
         emissive: new THREE.Color('#ffffff'),
-        emissiveIntensity: 0.48,
-        transparent: true,
-        opacity: 0.85,
-        transmission: 0.3,
-        roughness: 0.28,
+        emissiveIntensity: 0.75,
+        roughness: 0.2,
         metalness: 0.1,
         wireframe,
       }),
@@ -1556,14 +1543,14 @@ export default function CapeModel({
   };
 
   const ramSticksCount = build.ram?.specs?.sticks || 2;
-  const populatedRamSlots =
-    ramSticksCount === 4
+  const populatedRamSlots = build.ram
+    ? ramSticksCount === 4
       ? ['slot_ram_1', 'slot_ram_2', 'slot_ram_3', 'slot_ram_4']
-      : ['slot_ram_2', 'slot_ram_4'];
+      : ['slot_ram_2', 'slot_ram_4']
+    : [];
 
   return (
     <group name="PC_Socket_Hierarchy_Root">
-
       <GltfSocketPart
         part={build.case}
         socketName="root_chassis"
@@ -1571,10 +1558,10 @@ export default function CapeModel({
         customOverrideUrl={customGlbOverrides.case}
         showBoundingLabels={showBoundingLabels}
         wireframeMode={wireframe}
+        showGlass={showGlass}
         onRegisterFan={registerFan}
         materials={materials}
       >
-
         <GltfSocketPart
           part={build.psu}
           socketName="mount_psu"
@@ -1596,7 +1583,6 @@ export default function CapeModel({
           onRegisterFan={registerFan}
           materials={materials}
         >
-
           <GltfSocketPart
             part={build.cpu}
             socketName="socket_cpu"

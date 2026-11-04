@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   X,
   Search,
@@ -7,33 +7,63 @@ import {
   ArrowLeft,
   ShoppingCart,
   SlidersHorizontal,
-  Copy,
   AlertTriangle,
-  ExternalLink,
-  FolderOpen,
-  Database,
   ChevronLeft,
   ChevronRight,
+  Trash2,
 } from 'lucide-react';
 import {
   HARDWARE_CATEGORIES,
   HARDWARE_CATALOG,
   validateBuildCompatibility,
   getFallbackProductPhotoDataUri,
+  cleanProductImage,
 } from '../utils/textureGenerator';
-import {
-  GITHUB_DATASET_BASE_URL,
-  DATASET_ENDPOINTS,
-} from '../utils/hardwareCatalogAdapter';
 
 const PAGE_SIZE = 24;
+
+function CleanModalImage({ part, className = 'h-full w-full' }) {
+  const rawUrl = part?.imageUrl || part?.realPhotoUrl || '';
+  const fallbackUri = getFallbackProductPhotoDataUri(part);
+  const [resolvedSrc, setResolvedSrc] = useState(() => fallbackUri);
+
+  useEffect(() => {
+    let active = true;
+    cleanProductImage(rawUrl, part).then((uri) => {
+      if (active && uri) {
+        setResolvedSrc(uri);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [rawUrl, part]);
+
+  return (
+    <img
+      src={resolvedSrc || fallbackUri}
+      onError={(e) => {
+        e.currentTarget.onerror = null;
+        e.currentTarget.src = fallbackUri;
+      }}
+      alt={part?.name || 'Produto'}
+      loading="lazy"
+      style={{
+        objectFit: 'contain',
+        objectPosition: 'center',
+        padding: '8px',
+      }}
+      className={className}
+    />
+  );
+}
 
 export default function InspectorModal({
   modalState,
   catalogByCategory = HARDWARE_CATALOG,
-  datasetStatus,
   onClose,
   onSelectPartForBuild,
+  onRemovePartFromBuild,
   onOpenPartDetails,
   onBackToPicker,
   build,
@@ -44,7 +74,6 @@ export default function InspectorModal({
   const [compatFilter, setCompatFilter] = useState(false);
   const [maxPriceFilter, setMaxPriceFilter] = useState(3000);
   const [page, setPage] = useState(1);
-  const [copied, setCopied] = useState(false);
 
   const isOpen = modalState?.mode && modalState.mode !== 'closed';
   const activeCategory = modalState?.category || 'cpu';
@@ -134,23 +163,17 @@ export default function InspectorModal({
 
   if (modalState.mode === 'picker') {
     const currentlyEquipped = build[activeCategory];
-    const endpointFile = DATASET_ENDPOINTS[activeCategory] || 'cpu.json';
 
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm">
         <div className="relative w-full max-w-6xl h-[90vh] rounded-2xl bg-[#111318] border border-white/[0.1] shadow-[0_24px_90px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden text-slate-100">
-
           <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.08] bg-[#14171d]">
             <div className="flex items-center gap-3">
               <h2 className="font-display text-base font-bold text-white">
-                {categoryMeta.label}
+                Escolher {categoryMeta.label}
               </h2>
-              <span className="rounded-md bg-white/[0.06] px-2 py-0.5 font-mono-tech text-xs text-sky-400">
-                Socket: {categoryMeta.socketTarget}
-              </span>
-              <span className="hidden sm:inline-flex items-center gap-1 rounded-md bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 font-mono-tech text-[10px] text-emerald-300">
-                <Database className="h-3 w-3" />
-                {endpointFile} ({allCategoryParts.length} models)
+              <span className="rounded-md bg-white/[0.06] px-2.5 py-0.5 text-xs text-slate-300">
+                {filteredParts.length} opções disponíveis
               </span>
             </div>
 
@@ -158,6 +181,7 @@ export default function InspectorModal({
               {HARDWARE_CATEGORIES.map((cat) => (
                 <button
                   key={cat.id}
+                  type="button"
                   onClick={() => {
                     setSelectedBrand('ALL');
                     setPage(1);
@@ -169,12 +193,13 @@ export default function InspectorModal({
                       : 'text-slate-400 hover:bg-white/[0.06] hover:text-white'
                   }`}
                 >
-                  {cat.id.toUpperCase()}
+                  {cat.label}
                 </button>
               ))}
             </div>
 
             <button
+              type="button"
               onClick={onClose}
               className="rounded-lg bg-white/[0.05] hover:bg-white/[0.12] p-1.5 text-slate-400 hover:text-white transition cursor-pointer"
             >
@@ -183,12 +208,11 @@ export default function InspectorModal({
           </div>
 
           <div className="flex-1 flex overflow-hidden">
-
             <div className="hidden md:flex w-64 shrink-0 border-r border-white/[0.08] bg-[#0e1015] p-4 flex-col gap-5 overflow-y-auto">
               <div className="rounded-xl bg-[#161920] border border-white/[0.08] p-3.5 space-y-3">
                 <div className="flex items-center gap-2 text-xs font-bold text-white">
                   <span className="h-2.5 w-2.5 rounded-sm bg-rose-500" />
-                  <span>COMPATIBILITY FILTER</span>
+                  <span>Compatibilidade</span>
                 </div>
 
                 <label className="flex items-center gap-2 rounded-lg bg-[#111318] border border-white/[0.07] px-2.5 py-2 text-xs text-slate-200 cursor-pointer">
@@ -201,23 +225,23 @@ export default function InspectorModal({
                     }}
                     className="accent-rose-500"
                   />
-                  <span>Only Compatible Sockets</span>
+                  <span>Apenas compatíveis</span>
                 </label>
 
                 <div className="grid grid-cols-2 gap-2 pt-1 border-t border-white/[0.07] text-center">
                   <div>
-                    <span className="block text-[9px] font-mono-tech text-slate-400">
-                      SETUP PRICE
+                    <span className="block text-[10px] text-slate-400">
+                      Total Atual
                     </span>
-                    <span className="font-mono-tech text-xs font-bold text-emerald-400">
+                    <span className="text-xs font-bold text-emerald-400">
                       ${Math.round(totalPrice)}
                     </span>
                   </div>
                   <div>
-                    <span className="block text-[9px] font-mono-tech text-slate-400">
-                      TOTAL TDP
+                    <span className="block text-[10px] text-slate-400">
+                      Consumo
                     </span>
-                    <span className="font-mono-tech text-xs font-bold text-amber-400">
+                    <span className="text-xs font-bold text-amber-400">
                       {compatibility.totalTdp}W
                     </span>
                   </div>
@@ -227,9 +251,10 @@ export default function InspectorModal({
               <div className="flex items-center justify-between text-xs font-semibold text-slate-300">
                 <span className="flex items-center gap-1.5">
                   <SlidersHorizontal className="h-3.5 w-3.5" />
-                  Filters
+                  Filtros
                 </span>
                 <button
+                  type="button"
                   onClick={() => {
                     setSelectedBrand('ALL');
                     setMaxPriceFilter(3000);
@@ -239,14 +264,14 @@ export default function InspectorModal({
                   }}
                   className="text-[11px] text-slate-400 hover:text-white cursor-pointer"
                 >
-                  Reset
+                  Limpar
                 </button>
               </div>
 
               <div className="space-y-2">
                 <div className="flex justify-between text-xs">
-                  <span className="text-slate-300 font-medium">Max Price</span>
-                  <span className="font-mono-tech text-slate-200">
+                  <span className="text-slate-300 font-medium">Preço Máximo</span>
+                  <span className="text-slate-200 font-semibold">
                     ${maxPriceFilter}
                   </span>
                 </div>
@@ -266,12 +291,13 @@ export default function InspectorModal({
 
               <div className="space-y-2">
                 <span className="block text-xs font-medium text-slate-300">
-                  Manufacturer ({availableBrands.length - 1})
+                  Marca
                 </span>
                 <div className="grid grid-cols-2 gap-1.5">
                   {availableBrands.map((brand) => (
                     <button
                       key={brand}
+                      type="button"
                       onClick={() => {
                         setSelectedBrand(brand);
                         setPage(1);
@@ -283,7 +309,7 @@ export default function InspectorModal({
                       }`}
                       title={brand}
                     >
-                      {brand}
+                      {brand === 'ALL' ? 'Todas' : brand}
                     </button>
                   ))}
                 </div>
@@ -292,21 +318,7 @@ export default function InspectorModal({
 
             <div className="flex-1 flex flex-col overflow-hidden bg-[#111318]">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-6 py-3.5 border-b border-white/[0.07]">
-                <div>
-                  <p className="text-sm font-semibold text-white">
-                    Showing {filteredParts.length} hardware models from GitHub CDN ({endpointFile})
-                  </p>
-                  <p className="text-[11px] text-slate-400 truncate max-w-xl">
-                    Source:{' '}
-                    <code className="text-sky-400">
-                      {GITHUB_DATASET_BASE_URL}
-                      {endpointFile}
-                    </code>{' '}
-                    • Cache: <code className="text-emerald-400">{datasetStatus?.source || 'localStorage'}</code>
-                  </p>
-                </div>
-
-                <div className="relative w-full sm:w-72">
+                <div className="relative w-full sm:w-96">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
                   <input
                     type="text"
@@ -315,10 +327,24 @@ export default function InspectorModal({
                       setSearchQuery(e.target.value);
                       setPage(1);
                     }}
-                    placeholder="Search model, socket, VRAM, brand..."
-                    className="w-full rounded-lg bg-[#181b22] border border-white/[0.1] pl-9 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-400"
+                    placeholder={`Buscar em ${categoryMeta.label}...`}
+                    className="w-full rounded-lg bg-[#181b22] border border-white/[0.1] pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-400"
                   />
                 </div>
+
+                {currentlyEquipped && onRemovePartFromBuild && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onRemovePartFromBuild(activeCategory);
+                      onClose();
+                    }}
+                    className="flex items-center gap-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-600 border border-rose-500/30 px-3 py-1.5 text-xs font-semibold text-rose-300 hover:text-white transition cursor-pointer shrink-0"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    <span>Deixar Slot Vazio</span>
+                  </button>
+                )}
               </div>
 
               <div className="flex-1 overflow-y-auto p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 content-start">
@@ -326,7 +352,6 @@ export default function InspectorModal({
                   const isEquipped = currentlyEquipped?.id === part.id;
                   const compat = isPartCompatibleWithBuild(part);
                   const specEntries = Object.entries(part.specs || {}).slice(0, 4);
-                  const fallbackImg = getFallbackProductPhotoDataUri(part);
 
                   return (
                     <div
@@ -337,53 +362,43 @@ export default function InspectorModal({
                           : 'border-white/[0.08] hover:border-white/[0.2]'
                       }`}
                     >
-
                       <button
+                        type="button"
                         onClick={() => onOpenPartDetails(activeCategory, part)}
                         style={{ backgroundColor: '#ffffff' }}
                         className="relative h-44 w-full flex items-center justify-center cursor-pointer group overflow-hidden"
                       >
-                        <img
-                          src={part.imageUrl || part.realPhotoUrl || fallbackImg}
-                          onError={(e) => {
-                            e.currentTarget.onerror = null;
-                            e.currentTarget.src = fallbackImg;
-                          }}
-                          alt={part.name}
-                          loading="lazy"
-                          style={{
-                            objectFit: 'contain',
-                            objectPosition: 'center',
-                            padding: '6px',
-                          }}
+                        <CleanModalImage
+                          part={part}
                           className="h-full w-full group-hover:scale-105 transition-transform duration-300"
                         />
                         {isEquipped && (
                           <span className="absolute top-2 right-2 rounded bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shadow">
-                            MOUNTED
+                            EQUIPADO
                           </span>
                         )}
                         {!compat && (
                           <span className="absolute top-2 left-2 rounded bg-rose-600 px-2 py-0.5 text-[10px] font-bold text-white shadow flex items-center gap-1">
                             <AlertTriangle className="h-3 w-3" />
-                            Socket Mismatch
+                            Incompatível
                           </span>
                         )}
                       </button>
 
                       <div className="flex-1 p-4 flex flex-col">
                         <button
+                          type="button"
                           onClick={() => onOpenPartDetails(activeCategory, part)}
-                          className="text-left font-display text-xs font-bold text-white hover:text-sky-400 line-clamp-2 cursor-pointer"
+                          className="text-left text-sm font-bold text-white hover:text-sky-400 line-clamp-2 cursor-pointer"
                         >
                           {part.name}
                         </button>
 
-                        <div className="flex items-center justify-between mt-1">
-                          <span className="font-mono-tech text-xs font-bold text-emerald-400">
+                        <div className="flex items-center justify-between mt-1.5">
+                          <span className="text-sm font-bold text-emerald-400">
                             ${part.price.toFixed(2)}
                           </span>
-                          <span className="font-mono-tech text-[10px] text-amber-300 truncate max-w-[160px]">
+                          <span className="text-xs text-slate-400 truncate max-w-[140px]">
                             {part.brand}
                           </span>
                         </div>
@@ -392,7 +407,7 @@ export default function InspectorModal({
                           {specEntries.map(([k, v]) => (
                             <div key={k} className="flex justify-between gap-2">
                               <span className="text-slate-400 capitalize">{k}:</span>
-                              <span className="font-mono-tech text-slate-200 truncate">
+                              <span className="text-slate-200 font-medium truncate">
                                 {Array.isArray(v) ? v.join(', ') : String(v)}
                               </span>
                             </div>
@@ -401,6 +416,7 @@ export default function InspectorModal({
 
                         <div className="mt-auto pt-3">
                           <button
+                            type="button"
                             onClick={() => {
                               onSelectPartForBuild(activeCategory, part);
                               onClose();
@@ -408,18 +424,18 @@ export default function InspectorModal({
                             className={`w-full flex items-center justify-center gap-1.5 rounded-lg py-2 px-3 text-xs font-semibold transition cursor-pointer ${
                               isEquipped
                                 ? 'bg-emerald-500/20 border border-emerald-400/40 text-emerald-300'
-                                : 'bg-[#222631] hover:bg-sky-500 hover:text-slate-950 text-slate-200 border border-white/[0.08]'
+                                : 'bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold'
                             }`}
                           >
                             {isEquipped ? (
                               <>
                                 <Check className="h-3.5 w-3.5" />
-                                <span>Installed in Socket</span>
+                                <span>Peça Selecionada</span>
                               </>
                             ) : (
                               <>
                                 <Plus className="h-3.5 w-3.5" />
-                                <span>Mount in 3D Socket</span>
+                                <span>Equipar no PC</span>
                               </>
                             )}
                           </button>
@@ -432,24 +448,26 @@ export default function InspectorModal({
 
               {totalPages > 1 && (
                 <div className="px-6 py-3 border-t border-white/[0.08] bg-[#14171d] flex items-center justify-between text-xs">
-                  <span className="font-mono-tech text-slate-400">
-                    Page {currentPage} of {totalPages} ({filteredParts.length} parts)
+                  <span className="text-slate-400">
+                    Página {currentPage} de {totalPages} ({filteredParts.length} peças)
                   </span>
                   <div className="flex items-center gap-2">
                     <button
+                      type="button"
                       disabled={currentPage <= 1}
                       onClick={() => setPage((p) => Math.max(1, p - 1))}
                       className="flex items-center gap-1 rounded-lg bg-[#181b22] disabled:opacity-40 hover:bg-white/[0.08] border border-white/[0.1] px-3 py-1.5 text-slate-200 cursor-pointer"
                     >
                       <ChevronLeft className="h-3.5 w-3.5" />
-                      <span>Prev</span>
+                      <span>Anterior</span>
                     </button>
                     <button
+                      type="button"
                       disabled={currentPage >= totalPages}
                       onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                       className="flex items-center gap-1 rounded-lg bg-[#181b22] disabled:opacity-40 hover:bg-white/[0.08] border border-white/[0.1] px-3 py-1.5 text-slate-200 cursor-pointer"
                     >
-                      <span>Next</span>
+                      <span>Próxima</span>
                       <ChevronRight className="h-3.5 w-3.5" />
                     </button>
                   </div>
@@ -466,26 +484,27 @@ export default function InspectorModal({
     const part = modalState.item;
     const isEquipped = build[activeCategory]?.id === part.id;
     const specEntries = Object.entries(part.specs || {});
-    const fallbackImg = getFallbackProductPhotoDataUri(part);
 
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm">
-        <div className="relative w-full max-w-4xl max-h-[90vh] rounded-2xl bg-[#111318] border border-white/[0.12] shadow-[0_24px_90px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden text-slate-100">
+        <div className="relative w-full max-w-3xl max-h-[90vh] rounded-2xl bg-[#111318] border border-white/[0.12] shadow-[0_24px_90px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden text-slate-100">
           <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.08] bg-[#14171d]">
             <div className="flex items-center gap-3">
               <button
+                type="button"
                 onClick={() => onBackToPicker(activeCategory)}
                 className="flex items-center gap-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] px-2.5 py-1 text-xs text-slate-300 hover:text-white transition cursor-pointer"
               >
                 <ArrowLeft className="h-3.5 w-3.5" />
-                <span>Back to GitHub Catalog</span>
+                <span>Voltar para a Lista</span>
               </button>
               <span className="font-display text-sm font-bold text-white">
-                Hardware Technical Sheet
+                Detalhes do Produto
               </span>
             </div>
 
             <button
+              type="button"
               onClick={onClose}
               className="rounded-lg bg-white/[0.05] hover:bg-white/[0.12] p-1.5 text-slate-400 hover:text-white transition cursor-pointer"
             >
@@ -499,48 +518,14 @@ export default function InspectorModal({
                 style={{ backgroundColor: '#ffffff' }}
                 className="rounded-xl overflow-hidden border border-white/10 h-60 flex items-center justify-center"
               >
-                <img
-                  src={part.imageUrl || part.realPhotoUrl || fallbackImg}
-                  onError={(e) => {
-                    e.currentTarget.onerror = null;
-                    e.currentTarget.src = fallbackImg;
-                  }}
-                  alt={part.name}
-                  style={{
-                    objectFit: 'contain',
-                    objectPosition: 'center',
-                    padding: '6px',
-                  }}
-                  className="h-full w-full"
-                />
-              </div>
-
-              <div className="rounded-xl bg-[#161920] border border-amber-500/30 p-4 space-y-2 text-xs">
-                <div className="flex items-center gap-2 text-amber-300 font-mono-tech font-bold">
-                  <FolderOpen className="h-4 w-4" />
-                  <span>3D GLTF / SOCKET ADAPTER CONFIG</span>
-                </div>
-                <div className="font-mono-tech text-[11px] space-y-1 text-slate-300">
-                  <p>
-                    <span className="text-slate-500">model3dPath:</span>{' '}
-                    <span className="text-amber-300">/public{part.model3dPath}</span>
-                  </p>
-                  <p>
-                    <span className="text-slate-500">mountOffset.position:</span>{' '}
-                    [{part.mountOffset.position.join(', ')}]
-                  </p>
-                  <p>
-                    <span className="text-slate-500">mountOffset.scale:</span> [
-                    {part.mountOffset.scale.join(', ')}]
-                  </p>
-                </div>
+                <CleanModalImage part={part} />
               </div>
             </div>
 
             <div className="md:col-span-7 space-y-5">
               <div>
-                <span className="inline-block rounded bg-white/[0.08] px-2 py-0.5 font-mono-tech text-[10px] uppercase text-slate-300">
-                  {part.category.toUpperCase()} • {part.brand} • ID: {part.id}
+                <span className="inline-block rounded bg-white/[0.08] px-2.5 py-0.5 text-xs text-slate-300">
+                  {part.brand}
                 </span>
                 <h3 className="font-display text-xl font-bold text-white mt-1.5">
                   {part.name}
@@ -549,67 +534,58 @@ export default function InspectorModal({
 
               <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[#161920] border border-white/[0.08] p-4">
                 <div>
-                  <span className="block text-[10px] text-slate-400">
-                    Dataset Reference Price
+                  <span className="block text-xs text-slate-400">
+                    Preço Estimado
                   </span>
-                  <span className="font-mono-tech text-2xl font-bold text-emerald-400">
+                  <span className="text-2xl font-bold text-emerald-400">
                     ${part.price.toFixed(2)}
                   </span>
                 </div>
 
-                <button
-                  onClick={() => {
-                    onSelectPartForBuild(activeCategory, part);
-                    onClose();
-                  }}
-                  className="flex items-center gap-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 px-4 py-2.5 text-xs font-bold text-slate-950 transition cursor-pointer"
-                >
-                  <ShoppingCart className="h-3.5 w-3.5" />
-                  <span>
-                    {isEquipped ? 'Mounted in 3D Socket' : 'Mount in 3D Socket'}
-                  </span>
-                </button>
+                <div className="flex items-center gap-2">
+                  {isEquipped && onRemovePartFromBuild && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onRemovePartFromBuild(activeCategory);
+                        onClose();
+                      }}
+                      className="flex items-center gap-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-600 border border-rose-500/30 px-3.5 py-2.5 text-xs font-bold text-rose-300 hover:text-white transition cursor-pointer"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      <span>Remover</span>
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelectPartForBuild(activeCategory, part);
+                      onClose();
+                    }}
+                    className="flex items-center gap-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 px-4 py-2.5 text-xs font-bold text-slate-950 transition cursor-pointer"
+                  >
+                    <ShoppingCart className="h-3.5 w-3.5" />
+                    <span>
+                      {isEquipped ? 'Já Equipado' : 'Equipar no PC'}
+                    </span>
+                  </button>
+                </div>
               </div>
 
               <div className="rounded-xl bg-[#161920] border border-white/[0.08] p-4 space-y-3">
-                <h4 className="font-mono-tech text-[11px] uppercase tracking-wider text-slate-400 border-b border-white/[0.08] pb-2">
-                  NORMALIZED SPECIFICATIONS (hardwareCatalogAdapter)
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 border-b border-white/[0.08] pb-2">
+                  Especificações Técnicas
                 </h4>
 
                 <div className="grid grid-cols-2 gap-3 text-xs">
                   {specEntries.map(([label, val]) => (
                     <div key={label} className="border-b border-white/[0.05] pb-2">
-                      <span className="block text-[10px] text-slate-400 uppercase font-mono-tech">
+                      <span className="block text-[11px] text-slate-400 capitalize">
                         {label}
                       </span>
                       <span className="font-semibold text-white mt-0.5 block">
                         {Array.isArray(val) ? val.join(', ') : String(val)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="rounded-xl bg-[#161920] border border-white/[0.08] overflow-hidden">
-                <div className="grid grid-cols-12 px-4 py-2 bg-[#0e1015] border-b border-white/[0.07] text-[10px] font-mono-tech uppercase text-slate-400">
-                  <span className="col-span-5">MERCHANT</span>
-                  <span className="col-span-3">SHIPPING</span>
-                  <span className="col-span-4 text-right">PRICE</span>
-                </div>
-                <div className="divide-y divide-white/[0.06] text-xs">
-                  {(part.merchants || []).map((m, idx) => (
-                    <div
-                      key={idx}
-                      className="grid grid-cols-12 items-center px-4 py-2.5"
-                    >
-                      <span className="col-span-5 font-bold text-white">
-                        {m.name}
-                      </span>
-                      <span className="col-span-3 text-slate-400 text-[11px]">
-                        {m.shipping}
-                      </span>
-                      <span className="col-span-4 text-right font-mono-tech font-bold text-emerald-400">
-                        ${m.price.toFixed(2)}
                       </span>
                     </div>
                   ))}
@@ -622,98 +598,5 @@ export default function InspectorModal({
     );
   }
 
-  const buildManifestJson = JSON.stringify(
-    Object.fromEntries(
-      HARDWARE_CATEGORIES.map((c) => [
-        c.id,
-        {
-          id: build[c.id].id,
-          name: build[c.id].name,
-          brand: build[c.id].brand,
-          socketTarget: c.socketTarget,
-          model3dPath: `/public${build[c.id].model3dPath}`,
-          specs: build[c.id].specs,
-        },
-      ])
-    ),
-    null,
-    2
-  );
-
-  const handleCopy = () => {
-    navigator.clipboard?.writeText(buildManifestJson);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="relative w-full max-w-3xl max-h-[88vh] rounded-2xl bg-[#111318] border border-white/[0.12] p-6 shadow-2xl flex flex-col overflow-hidden text-slate-100">
-        <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
-          <div>
-            <h3 className="font-display text-base font-bold text-white">
-              Active 3D Socket Build &amp; GitHub Dataset Manifest
-            </h3>
-            <p className="text-xs text-slate-400">
-              Normalized from <code className="text-sky-400">docyx/pc-part-dataset</code> via <code className="text-amber-300">hardwareCatalogAdapter.js</code>
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className="rounded-lg bg-white/[0.06] hover:bg-white/[0.12] p-1.5 text-slate-300 cursor-pointer"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto my-4 space-y-4">
-          <div className="rounded-xl bg-[#161920] border border-white/[0.08] divide-y divide-white/[0.06] text-xs">
-            {HARDWARE_CATEGORIES.map((cat) => {
-              const item = build[cat.id];
-              return (
-                <div
-                  key={cat.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-2.5 gap-1"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span className="w-28 shrink-0 font-mono-tech text-[10px] uppercase text-sky-400">
-                      [{cat.socketTarget}]
-                    </span>
-                    <button
-                      onClick={() => onOpenPartDetails(cat.id, item)}
-                      className="font-semibold text-white hover:text-sky-400 truncate flex items-center gap-1 cursor-pointer"
-                    >
-                      <span>{item.name}</span>
-                      <ExternalLink className="h-3 w-3 text-slate-500" />
-                    </button>
-                  </div>
-                  <span className="font-mono-tech text-[11px] text-amber-300 shrink-0">
-                    /public{item.model3dPath}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="rounded-xl bg-[#0e1015] border border-white/[0.08] overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-2 bg-[#161920] border-b border-white/[0.07]">
-              <span className="font-mono-tech text-[11px] text-slate-300">
-                Active Socket &amp; GLTF Configuration JSON
-              </span>
-              <button
-                onClick={handleCopy}
-                className="flex items-center gap-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 px-3 py-1 text-xs font-bold text-slate-950 transition cursor-pointer"
-              >
-                {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                <span>{copied ? 'Copied!' : 'Copy JSON'}</span>
-              </button>
-            </div>
-            <pre className="p-4 text-[11px] font-mono-tech text-slate-300 overflow-x-auto">
-              <code>{buildManifestJson}</code>
-            </pre>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  return null;
 }
