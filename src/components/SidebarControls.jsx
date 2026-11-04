@@ -28,6 +28,8 @@ import {
 import {
   HARDWARE_CATEGORIES,
   RGB_PRESETS,
+  CURRENCIES,
+  formatCurrency,
   validateBuildCompatibility,
 } from '../utils/textureGenerator';
 import {
@@ -104,6 +106,8 @@ export default function SidebarControls({
   screenshotToast,
   onResetBuild,
   totalPrice,
+  currency = 'BRL',
+  setCurrency,
   children,
 }) {
   const glbInputRef = useRef(null);
@@ -357,6 +361,24 @@ export default function SidebarControls({
         </div>
 
         <div className="flex items-center gap-2">
+          <div className="flex items-center rounded-xl bg-[#161920] border border-white/[0.1] p-0.5">
+            {Object.values(CURRENCIES).map((curr) => (
+              <button
+                key={curr.code}
+                type="button"
+                onClick={() => setCurrency && setCurrency(curr.code)}
+                className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition cursor-pointer ${
+                  currency === curr.code
+                    ? 'bg-white text-slate-950 shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+                title={`Moeda: ${curr.code} (${curr.symbol})`}
+              >
+                {curr.code}
+              </button>
+            ))}
+          </div>
+
           <button
             type="button"
             onClick={onCaptureScreenshot}
@@ -680,7 +702,7 @@ export default function SidebarControls({
                           {cat.label}
                         </span>
                         <span className="text-sm font-semibold text-slate-100 tabular-nums shrink-0">
-                          ${selectedPart.price.toFixed(2)}
+                          {formatCurrency(selectedPart.price, currency)}
                         </span>
                       </div>
 
@@ -725,7 +747,7 @@ export default function SidebarControls({
                 Valor Total do Setup
               </span>
               <span className="text-xl font-bold text-white tabular-nums">
-                ${totalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {formatCurrency(totalPrice, currency)}
               </span>
             </div>
 

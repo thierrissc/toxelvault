@@ -21,6 +21,8 @@ import {
 import {
   HARDWARE_CATEGORIES,
   HARDWARE_CATALOG,
+  CURRENCIES,
+  formatCurrency,
   validateBuildCompatibility,
   recommendOptimalBuild,
 } from '../utils/textureGenerator';
@@ -93,6 +95,8 @@ export default function InspectorModal({
   onBackToPicker,
   build,
   totalPrice,
+  currency = 'BRL',
+  setCurrency,
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBrand, setSelectedBrand] = useState('ALL');
@@ -239,13 +243,31 @@ export default function InspectorModal({
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-lg bg-white/[0.05] hover:bg-white/[0.12] p-1.5 text-slate-400 hover:text-white transition cursor-pointer"
-            >
-              <X className="h-4 w-4" />
-            </button>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center rounded-xl bg-[#161922] border border-white/[0.1] p-0.5">
+                {Object.values(CURRENCIES).map((curr) => (
+                  <button
+                    key={curr.code}
+                    type="button"
+                    onClick={() => setCurrency && setCurrency(curr.code)}
+                    className={`rounded-lg px-2 py-1 text-xs font-semibold transition cursor-pointer ${
+                      currency === curr.code
+                        ? 'bg-white text-slate-950'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {curr.code}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={onClose}
+                className="rounded-lg bg-white/[0.05] hover:bg-white/[0.12] p-1.5 text-slate-400 hover:text-white transition cursor-pointer"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
           </div>
 
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
@@ -286,32 +308,35 @@ export default function InspectorModal({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                {(compatibility.checks || []).map((chk) => (
-                  <div
-                    key={chk.id}
-                    className={`rounded-xl p-3.5 border ${
-                      chk.ok
-                        ? 'bg-[#0e1015] border-white/[0.08]'
-                        : 'bg-white/[0.06] border-white/[0.25]'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-bold text-white">
-                        {chk.label}
-                      </span>
-                      {chk.ok ? (
-                        <span className="rounded bg-white/[0.08] px-1.5 py-0.5 text-[10px] font-bold text-slate-200">
-                          OK
+                {(compatibility.checks || []).map((chk) => {
+                  const isOk = chk.status === 'ok' || chk.ok;
+                  return (
+                    <div
+                      key={chk.id}
+                      className={`rounded-xl p-3.5 border ${
+                        isOk
+                          ? 'bg-[#0e1015] border-white/[0.08]'
+                          : 'bg-white/[0.06] border-white/[0.25]'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-bold text-white">
+                          {chk.label}
                         </span>
-                      ) : (
-                        <span className="rounded bg-white text-slate-950 px-1.5 py-0.5 text-[10px] font-bold">
-                          CONFLITO
-                        </span>
-                      )}
+                        {isOk ? (
+                          <span className="rounded bg-white/[0.08] px-1.5 py-0.5 text-[10px] font-bold text-slate-200">
+                            OK
+                          </span>
+                        ) : (
+                          <span className="rounded bg-white text-slate-950 px-1.5 py-0.5 text-[10px] font-bold">
+                            CONFLITO
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-400">{chk.detail}</p>
                     </div>
-                    <p className="text-xs text-slate-400">{chk.detail}</p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {(compatibility.issues.length > 0 ||
@@ -384,7 +409,7 @@ export default function InspectorModal({
                 >
                   <Sparkles className="h-4 w-4 text-slate-950" />
                   <span>
-                    Aplicar Build no PC 3D (${recommendation.totalPrice.toFixed(2)})
+                    Aplicar Build no PC 3D ({formatCurrency(recommendation.totalPrice, currency)})
                   </span>
                 </button>
               </div>
@@ -418,7 +443,7 @@ export default function InspectorModal({
                           <IconComp className="h-4 w-4" />
                         </span>
                         <span className="text-xs font-semibold text-slate-300 tabular-nums">
-                          Alvo ~${obj.recommendedBudget}
+                          Alvo ~{formatCurrency(obj.recommendedBudget, currency, { decimals: 0 })}
                         </span>
                       </div>
                       <div className="text-sm font-bold text-white">
@@ -440,7 +465,7 @@ export default function InspectorModal({
                       Orçamento Máximo Desejado
                     </span>
                     <span className="text-sm font-bold text-white tabular-nums">
-                      ${assistantBudget}
+                      {formatCurrency(assistantBudget, currency, { decimals: 0 })}
                     </span>
                   </div>
                   <input
@@ -453,9 +478,9 @@ export default function InspectorModal({
                     className="w-full accent-white"
                   />
                   <div className="flex justify-between text-[10px] text-slate-500">
-                    <span>$900 (Entrada)</span>
-                    <span>$2200 (1440p Ultra)</span>
-                    <span>$4200 (4K Entusiasta)</span>
+                    <span>{formatCurrency(900, currency, { decimals: 0 })} (Entrada)</span>
+                    <span>{formatCurrency(2200, currency, { decimals: 0 })} (1440p Ultra)</span>
+                    <span>{formatCurrency(4200, currency, { decimals: 0 })} (4K Entusiasta)</span>
                   </div>
                 </div>
 
@@ -465,7 +490,7 @@ export default function InspectorModal({
                       Total da Recomendação
                     </span>
                     <span className="text-lg font-bold text-white tabular-nums">
-                      ${recommendation.totalPrice.toFixed(2)}
+                      {formatCurrency(recommendation.totalPrice, currency)}
                     </span>
                   </div>
                   <div>
@@ -503,7 +528,7 @@ export default function InspectorModal({
                           {recPart.name}
                         </p>
                         <span className="text-xs font-semibold text-slate-200 tabular-nums">
-                          ${recPart.price.toFixed(2)}
+                          {formatCurrency(recPart.price, currency)}
                         </span>
                       </div>
                     </div>
@@ -554,13 +579,31 @@ export default function InspectorModal({
               ))}
             </div>
 
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-lg bg-white/[0.05] hover:bg-white/[0.12] p-1.5 text-slate-400 hover:text-white transition cursor-pointer"
-            >
-              <X className="h-4 w-4" />
-            </button>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center rounded-xl bg-[#161922] border border-white/[0.1] p-0.5">
+                {Object.values(CURRENCIES).map((curr) => (
+                  <button
+                    key={curr.code}
+                    type="button"
+                    onClick={() => setCurrency && setCurrency(curr.code)}
+                    className={`rounded-lg px-2 py-1 text-xs font-semibold transition cursor-pointer ${
+                      currency === curr.code
+                        ? 'bg-white text-slate-950'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {curr.code}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={onClose}
+                className="rounded-lg bg-white/[0.05] hover:bg-white/[0.12] p-1.5 text-slate-400 hover:text-white transition cursor-pointer"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
           </div>
 
           <div className="flex-1 flex overflow-hidden">
@@ -590,7 +633,7 @@ export default function InspectorModal({
                       Total Atual
                     </span>
                     <span className="text-xs font-bold text-white tabular-nums">
-                      ${Math.round(totalPrice)}
+                      {formatCurrency(totalPrice, currency, { decimals: 0 })}
                     </span>
                   </div>
                   <div>
@@ -628,7 +671,7 @@ export default function InspectorModal({
                 <div className="flex justify-between text-xs">
                   <span className="text-slate-300 font-medium">Preço Máximo</span>
                   <span className="text-slate-200 font-semibold tabular-nums">
-                    ${maxPriceFilter}
+                    {formatCurrency(maxPriceFilter, currency, { decimals: 0 })}
                   </span>
                 </div>
                 <input
@@ -767,7 +810,7 @@ export default function InspectorModal({
 
                         <div className="flex items-center justify-between mt-1.5">
                           <span className="text-sm font-bold text-white tabular-nums">
-                            ${part.price.toFixed(2)}
+                            {formatCurrency(part.price, currency)}
                           </span>
                           <span className="text-xs text-slate-400 truncate max-w-[140px]">
                             {part.brand}
@@ -874,13 +917,31 @@ export default function InspectorModal({
               </span>
             </div>
 
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-lg bg-white/[0.05] hover:bg-white/[0.12] p-1.5 text-slate-400 hover:text-white transition cursor-pointer"
-            >
-              <X className="h-4 w-4" />
-            </button>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center rounded-xl bg-[#161922] border border-white/[0.1] p-0.5">
+                {Object.values(CURRENCIES).map((curr) => (
+                  <button
+                    key={curr.code}
+                    type="button"
+                    onClick={() => setCurrency && setCurrency(curr.code)}
+                    className={`rounded-lg px-2 py-1 text-xs font-semibold transition cursor-pointer ${
+                      currency === curr.code
+                        ? 'bg-white text-slate-950'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {curr.code}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={onClose}
+                className="rounded-lg bg-white/[0.05] hover:bg-white/[0.12] p-1.5 text-slate-400 hover:text-white transition cursor-pointer"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
           </div>
 
           <div className="flex-1 overflow-y-auto p-6 grid grid-cols-1 md:grid-cols-12 gap-6">
@@ -909,7 +970,7 @@ export default function InspectorModal({
                     Preço Estimado
                   </span>
                   <span className="text-2xl font-bold text-white tabular-nums">
-                    ${part.price.toFixed(2)}
+                    {formatCurrency(part.price, currency)}
                   </span>
                 </div>
 

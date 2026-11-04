@@ -10,6 +10,42 @@ export const HARDWARE_CATALOG = HARDWARE_CATEGORIES.reduce((acc, cat) => {
   return acc;
 }, {});
 
+export const CURRENCIES = {
+  BRL: {
+    code: 'BRL',
+    symbol: 'R$',
+    label: 'BRL',
+    rate: 5.75,
+    locale: 'pt-BR',
+  },
+  USD: {
+    code: 'USD',
+    symbol: '$',
+    label: 'USD',
+    rate: 1.0,
+    locale: 'en-US',
+  },
+  EUR: {
+    code: 'EUR',
+    symbol: '€',
+    label: 'EUR',
+    rate: 0.92,
+    locale: 'de-DE',
+  },
+};
+
+export function formatCurrency(usdAmount, currencyCode = 'BRL', options = {}) {
+  const cfg = CURRENCIES[currencyCode] || CURRENCIES.BRL;
+  const converted = (Number(usdAmount) || 0) * cfg.rate;
+  const decimals = options.decimals !== undefined ? options.decimals : 2;
+  return new Intl.NumberFormat(cfg.locale, {
+    style: 'currency',
+    currency: cfg.code,
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  }).format(converted);
+}
+
 export const RGB_PRESETS = [
   { id: 'cyan', label: 'Ciano', color: '#00f2fe' },
   { id: 'cyberpunk', label: 'Roxo Cyberpunk', color: '#a855f7' },

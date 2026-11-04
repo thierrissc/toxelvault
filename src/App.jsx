@@ -37,6 +37,7 @@ export default function App() {
   const [showGlass, setShowGlass] = useState(true);
   const [isPcOn, setIsPcOn] = useState(true);
   const [rgbConfig, setRgbConfig] = useState(DEFAULT_RGB_CONFIG);
+  const [currency, setCurrency] = useState('BRL');
 
   const [cameraViewTrigger, setCameraViewTrigger] = useState({
     mode: 'iso',
@@ -223,6 +224,8 @@ export default function App() {
         onResetBuild={handleResetBuild}
         stats={stats}
         totalPrice={totalPrice}
+        currency={currency}
+        setCurrency={setCurrency}
       >
         <Canvas3D
           build={build}
@@ -259,6 +262,8 @@ export default function App() {
         }
         build={build}
         totalPrice={totalPrice}
+        currency={currency}
+        setCurrency={setCurrency}
         stats={stats}
       />
     </>
