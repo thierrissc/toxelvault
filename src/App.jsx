@@ -167,7 +167,7 @@ export default function App() {
     if (!dataUrl) return;
 
     const link = document.createElement('a');
-    link.download = `toxelvault-3d-build.png`;
+    link.download = `toxelvault-build.png`;
     link.href = dataUrl;
     document.body.appendChild(link);
     link.click();

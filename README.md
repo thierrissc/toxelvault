@@ -8,7 +8,7 @@
 
 <br />
 
-# ToxelVault 3D
+# ToxelVault - Montador de Hardware 3D
 
 Simulador e configurador interativo de hardware em 3D com verificacao de compatibilidade, calculo de consumo e visualizacao das pecas em tempo real no navegador.
 
@@ -18,7 +18,7 @@ Simulador e configurador interativo de hardware em 3D com verificacao de compati
 
 ## Sobre
 
-**ToxelVault 3D** e uma aplicacao web para montagem e visualizacao de computadores em 3D. Desenvolvida com React, Three.js (`@react-three/fiber` e `@react-three/drei`) e Tailwind CSS, permite escolher componentes reais, conferir o encaixe nos slots da placa-mae e do gabinete e inspecionar o setup sob qualquer angulo.
+**ToxelVault** e uma aplicacao web para montagem e visualizacao de computadores em 3D. Desenvolvida com React, Three.js (`@react-three/fiber` e `@react-three/drei`) e Tailwind CSS, permite escolher componentes reais, conferir o encaixe nos slots da placa-mae e do gabinete e inspecionar o setup sob qualquer angulo.
 
 Pensada para entusiastas de hardware, gamers e estudantes que precisam de uma ferramenta visual, direta e funcional para planejar e testar configuracoes de PC.
 
@@ -27,8 +27,8 @@ Pensada para entusiastas de hardware, gamers e estudantes que precisam de uma fe
 ## Como Usar
 
 ```bash
-git clone https://github.com/thierrissc/toxelvault-3d.git
-cd toxelvault-3d
+git clone https://github.com/thierrissc/toxelvault.git
+cd toxelvault
 npm install
 npm run dev
 ```
@@ -38,7 +38,7 @@ npm run dev
 ## Estrutura
 
 ```text
-toxelvault-3d/
+toxelvault/
 ├── index.html
 ├── package.json
 ├── vite.config.js
