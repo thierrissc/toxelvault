@@ -1,12 +1,30 @@
-import React, { useState, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import Canvas3D from './components/Canvas3D';
 import SidebarControls from './components/SidebarControls';
 import InspectorModal from './components/InspectorModal';
-import { DEFAULT_BUILD } from './utils/textureGenerator';
+import { DEFAULT_BUILD, HARDWARE_CATALOG } from './utils/textureGenerator';
+import {
+  preloadAllHardwareCategories,
+  clearHardwareDatasetCache,
+} from './utils/hardwareCatalogAdapter';
 
 export default function App() {
-  // Active PC Hardware Build populated from partsCatalog.json
+  // Active PC Hardware Build populated from the GitHub Open-Source Dataset / Adapter
   const [build, setBuild] = useState(DEFAULT_BUILD);
+
+  // Full normalized catalog per category fetched from docyx/pc-part-dataset via GitHub CDN
+  const [catalogByCategory, setCatalogByCategory] = useState(HARDWARE_CATALOG);
+  const [datasetStatus, setDatasetStatus] = useState({
+    loading: true,
+    source: 'github-cdn',
+    loadedCategories: 0,
+    totalCategories: 8,
+    totalNormalizedCount: Object.values(HARDWARE_CATALOG).reduce(
+      (acc, list) => acc + list.length,
+      0
+    ),
+    totalRawRecords: 0,
+  });
 
   // Optional local .GLB ObjectURL overrides uploaded directly in browser per category
   const [customGlbOverrides, setCustomGlbOverrides] = useState({});
@@ -42,6 +60,65 @@ export default function App() {
 
   const screenshotHandlerRef = useRef(null);
 
+  // Load Open-Source Hardware Dataset from GitHub Raw CDN (or instant local cache)
+  const handleRefreshDataset = useCallback(async () => {
+    setDatasetStatus((prev) => ({ ...prev, loading: true }));
+    await clearHardwareDatasetCache();
+
+    const result = await preloadAllHardwareCategories({
+      forceRefresh: true,
+      onProgress: ({ loadedCount, totalCategories, source }) => {
+        setDatasetStatus((prev) => ({
+          ...prev,
+          loadedCategories: loadedCount,
+          totalCategories,
+          source,
+        }));
+      },
+    });
+
+    setCatalogByCategory(result.catalogByCat);
+    setDatasetStatus({
+      loading: false,
+      source: result.source || 'github-cdn',
+      loadedCategories: 8,
+      totalCategories: 8,
+      totalNormalizedCount: result.totalNormalizedCount,
+      totalRawRecords: result.totalRawRecords,
+    });
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    preloadAllHardwareCategories({
+      forceRefresh: false,
+      onProgress: ({ loadedCount, totalCategories, source }) => {
+        if (!isMounted) return;
+        setDatasetStatus((prev) => ({
+          ...prev,
+          loadedCategories: loadedCount,
+          totalCategories,
+          source,
+        }));
+      },
+    }).then((result) => {
+      if (!isMounted) return;
+      setCatalogByCategory(result.catalogByCat);
+      setDatasetStatus({
+        loading: false,
+        source: result.source || 'github-cdn',
+        loadedCategories: 8,
+        totalCategories: 8,
+        totalNormalizedCount: result.totalNormalizedCount,
+        totalRawRecords: result.totalRawRecords,
+      });
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   // Total Build Price
   const totalPrice = useMemo(() => {
     return Object.values(build).reduce(
@@ -50,7 +127,7 @@ export default function App() {
     );
   }, [build]);
 
-  // Select a part from partsCatalog.json and snap its .glb to the corresponding socket
+  // Select a part from the catalog and snap its 3D model to the corresponding socket
   const handleSelectPart = useCallback((category, part) => {
     setBuild((prev) => ({
       ...prev,
@@ -101,6 +178,10 @@ export default function App() {
     <>
       <SidebarControls
         build={build}
+        catalogByCategory={catalogByCategory}
+        datasetStatus={datasetStatus}
+        onRefreshDataset={handleRefreshDataset}
+        onSelectPart={handleSelectPart}
         customGlbOverrides={customGlbOverrides}
         onUploadCustomGlb={handleUploadCustomGlb}
         onOpenPartPicker={(category) =>
@@ -145,6 +226,8 @@ export default function App() {
 
       <InspectorModal
         modalState={modalState}
+        catalogByCategory={catalogByCategory}
+        datasetStatus={datasetStatus}
         onClose={() =>
           setModalState((prev) => ({ ...prev, mode: 'closed' }))
         }

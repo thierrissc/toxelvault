@@ -11,6 +11,9 @@ import {
   AlertTriangle,
   ExternalLink,
   FolderOpen,
+  Database,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import {
   HARDWARE_CATEGORIES,
@@ -18,9 +21,17 @@ import {
   validateBuildCompatibility,
   getFallbackProductPhotoDataUri,
 } from '../utils/textureGenerator';
+import {
+  GITHUB_DATASET_BASE_URL,
+  DATASET_ENDPOINTS,
+} from '../utils/hardwareCatalogAdapter';
+
+const PAGE_SIZE = 24;
 
 export default function InspectorModal({
   modalState, // { mode: 'closed' | 'picker' | 'details' | 'manifest', category: 'cpu', item: null }
+  catalogByCategory = HARDWARE_CATALOG,
+  datasetStatus,
   onClose,
   onSelectPartForBuild,
   onOpenPartDetails,
@@ -31,7 +42,8 @@ export default function InspectorModal({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBrand, setSelectedBrand] = useState('ALL');
   const [compatFilter, setCompatFilter] = useState(false);
-  const [maxPriceFilter, setMaxPriceFilter] = useState(2500);
+  const [maxPriceFilter, setMaxPriceFilter] = useState(3000);
+  const [page, setPage] = useState(1);
   const [copied, setCopied] = useState(false);
 
   const isOpen = modalState?.mode && modalState.mode !== 'closed';
@@ -41,13 +53,20 @@ export default function InspectorModal({
     HARDWARE_CATEGORIES[0];
 
   const allCategoryParts = useMemo(
-    () => HARDWARE_CATALOG[activeCategory] || [],
-    [activeCategory]
+    () => catalogByCategory[activeCategory] || HARDWARE_CATALOG[activeCategory] || [],
+    [catalogByCategory, activeCategory]
   );
 
   const availableBrands = useMemo(() => {
-    const set = new Set(allCategoryParts.map((p) => p.brand));
-    return ['ALL', ...Array.from(set)];
+    const counts = new Map();
+    allCategoryParts.forEach((p) => {
+      if (p.brand) counts.set(p.brand, (counts.get(p.brand) || 0) + 1);
+    });
+    const top = Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 14)
+      .map(([brand]) => brand);
+    return ['ALL', ...top];
   }, [allCategoryParts]);
 
   // Check if a candidate part is socket-compatible with the current build
@@ -68,13 +87,19 @@ export default function InspectorModal({
   );
 
   const filteredParts = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
     return allCategoryParts.filter((part) => {
-      if (
-        searchQuery &&
-        !part.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-        !part.brand.toLowerCase().includes(searchQuery.toLowerCase())
-      ) {
-        return false;
+      if (q) {
+        const specText = Object.values(part.specs || {})
+          .join(' ')
+          .toLowerCase();
+        if (
+          !part.name.toLowerCase().includes(q) &&
+          !part.brand.toLowerCase().includes(q) &&
+          !specText.includes(q)
+        ) {
+          return false;
+        }
       }
       if (selectedBrand !== 'ALL' && part.brand !== selectedBrand) {
         return false;
@@ -96,19 +121,28 @@ export default function InspectorModal({
     isPartCompatibleWithBuild,
   ]);
 
+  const totalPages = Math.max(1, Math.ceil(filteredParts.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+
+  const paginatedParts = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredParts.slice(start, start + PAGE_SIZE);
+  }, [filteredParts, currentPage]);
+
   if (!isOpen) return null;
 
   const compatibility = validateBuildCompatibility(build);
 
   // =========================================================================
-  // MODE 1: PART PICKER MODAL (Reads realPhotoUrl, model3dPath & specs from partsCatalog.json)
+  // MODE 1: PART PICKER MODAL (GitHub Open-Source Dataset via Adapter + Pagination)
   // =========================================================================
   if (modalState.mode === 'picker') {
     const currentlyEquipped = build[activeCategory];
+    const endpointFile = DATASET_ENDPOINTS[activeCategory] || 'cpu.json';
 
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm">
-        <div className="relative w-full max-w-6xl h-[88vh] rounded-2xl bg-[#111318] border border-white/[0.1] shadow-[0_24px_90px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden text-slate-100">
+        <div className="relative w-full max-w-6xl h-[90vh] rounded-2xl bg-[#111318] border border-white/[0.1] shadow-[0_24px_90px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden text-slate-100">
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.08] bg-[#14171d]">
             <div className="flex items-center gap-3">
@@ -118,6 +152,10 @@ export default function InspectorModal({
               <span className="rounded-md bg-white/[0.06] px-2 py-0.5 font-mono-tech text-xs text-sky-400">
                 Socket: {categoryMeta.socketTarget}
               </span>
+              <span className="hidden sm:inline-flex items-center gap-1 rounded-md bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 font-mono-tech text-[10px] text-emerald-300">
+                <Database className="h-3 w-3" />
+                {endpointFile} ({allCategoryParts.length} models)
+              </span>
             </div>
 
             <div className="hidden lg:flex items-center gap-1">
@@ -126,6 +164,7 @@ export default function InspectorModal({
                   key={cat.id}
                   onClick={() => {
                     setSelectedBrand('ALL');
+                    setPage(1);
                     onBackToPicker(cat.id);
                   }}
                   className={`rounded-lg px-2.5 py-1 text-xs font-medium transition cursor-pointer ${
@@ -160,7 +199,10 @@ export default function InspectorModal({
                   <input
                     type="checkbox"
                     checked={compatFilter}
-                    onChange={(e) => setCompatFilter(e.target.checked)}
+                    onChange={(e) => {
+                      setCompatFilter(e.target.checked);
+                      setPage(1);
+                    }}
                     className="accent-rose-500"
                   />
                   <span>Only Compatible Sockets</span>
@@ -194,9 +236,10 @@ export default function InspectorModal({
                 <button
                   onClick={() => {
                     setSelectedBrand('ALL');
-                    setMaxPriceFilter(2500);
+                    setMaxPriceFilter(3000);
                     setCompatFilter(false);
                     setSearchQuery('');
+                    setPage(1);
                   }}
                   className="text-[11px] text-slate-400 hover:text-white cursor-pointer"
                 >
@@ -213,29 +256,36 @@ export default function InspectorModal({
                 </div>
                 <input
                   type="range"
-                  min="100"
-                  max="2500"
+                  min="50"
+                  max="3000"
                   step="50"
                   value={maxPriceFilter}
-                  onChange={(e) => setMaxPriceFilter(Number(e.target.value))}
+                  onChange={(e) => {
+                    setMaxPriceFilter(Number(e.target.value));
+                    setPage(1);
+                  }}
                   className="w-full"
                 />
               </div>
 
               <div className="space-y-2">
                 <span className="block text-xs font-medium text-slate-300">
-                  Manufacturer
+                  Manufacturer ({availableBrands.length - 1})
                 </span>
                 <div className="grid grid-cols-2 gap-1.5">
                   {availableBrands.map((brand) => (
                     <button
                       key={brand}
-                      onClick={() => setSelectedBrand(brand)}
-                      className={`rounded-lg py-2 px-2 text-xs font-semibold border transition cursor-pointer ${
+                      onClick={() => {
+                        setSelectedBrand(brand);
+                        setPage(1);
+                      }}
+                      className={`rounded-lg py-2 px-2 text-xs font-semibold border transition truncate cursor-pointer ${
                         selectedBrand === brand
                           ? 'bg-sky-500/20 border-sky-400 text-sky-300'
                           : 'bg-[#161920] border-white/[0.07] text-slate-300 hover:bg-[#1c2029]'
                       }`}
+                      title={brand}
                     >
                       {brand}
                     </button>
@@ -249,30 +299,39 @@ export default function InspectorModal({
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-6 py-3.5 border-b border-white/[0.07]">
                 <div>
                   <p className="text-sm font-semibold text-white">
-                    Showing {filteredParts.length} real hardware models from partsCatalog.json
+                    Showing {filteredParts.length} hardware models from GitHub CDN ({endpointFile})
                   </p>
-                  <p className="text-[11px] text-slate-400">
-                    Selecting a part loads its <code className="text-amber-300">model3dPath</code> into socket <code className="text-sky-300">{categoryMeta.socketTarget}</code>
+                  <p className="text-[11px] text-slate-400 truncate max-w-xl">
+                    Source:{' '}
+                    <code className="text-sky-400">
+                      {GITHUB_DATASET_BASE_URL}
+                      {endpointFile}
+                    </code>{' '}
+                    • Cache: <code className="text-emerald-400">{datasetStatus?.source || 'localStorage'}</code>
                   </p>
                 </div>
 
-                <div className="relative w-full sm:w-64">
+                <div className="relative w-full sm:w-72">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
                   <input
                     type="text"
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search model or brand..."
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setPage(1);
+                    }}
+                    placeholder="Search model, socket, VRAM, brand..."
                     className="w-full rounded-lg bg-[#181b22] border border-white/[0.1] pl-9 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-400"
                   />
                 </div>
               </div>
 
               <div className="flex-1 overflow-y-auto p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 content-start">
-                {filteredParts.map((part) => {
+                {paginatedParts.map((part) => {
                   const isEquipped = currentlyEquipped?.id === part.id;
                   const compat = isPartCompatibleWithBuild(part);
                   const specEntries = Object.entries(part.specs || {}).slice(0, 4);
+                  const fallbackImg = getFallbackProductPhotoDataUri(part);
 
                   return (
                     <div
@@ -290,7 +349,11 @@ export default function InspectorModal({
                         className="relative h-44 w-full flex items-center justify-center cursor-pointer group overflow-hidden"
                       >
                         <img
-                          src={getFallbackProductPhotoDataUri(part)}
+                          src={part.imageUrl || fallbackImg}
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = fallbackImg;
+                          }}
                           alt={part.name}
                           loading="lazy"
                           style={{
@@ -328,7 +391,7 @@ export default function InspectorModal({
                             ${part.price.toFixed(2)}
                           </span>
                           <span className="font-mono-tech text-[10px] text-amber-300 truncate max-w-[160px]">
-                            {part.model3dPath}
+                            {part.brand}
                           </span>
                         </div>
 
@@ -363,7 +426,7 @@ export default function InspectorModal({
                             ) : (
                               <>
                                 <Plus className="h-3.5 w-3.5" />
-                                <span>Load .GLB into Socket</span>
+                                <span>Mount in 3D Socket</span>
                               </>
                             )}
                           </button>
@@ -373,6 +436,33 @@ export default function InspectorModal({
                   );
                 })}
               </div>
+
+              {/* Pagination Footer */}
+              {totalPages > 1 && (
+                <div className="px-6 py-3 border-t border-white/[0.08] bg-[#14171d] flex items-center justify-between text-xs">
+                  <span className="font-mono-tech text-slate-400">
+                    Page {currentPage} of {totalPages} ({filteredParts.length} parts)
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      disabled={currentPage <= 1}
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      className="flex items-center gap-1 rounded-lg bg-[#181b22] disabled:opacity-40 hover:bg-white/[0.08] border border-white/[0.1] px-3 py-1.5 text-slate-200 cursor-pointer"
+                    >
+                      <ChevronLeft className="h-3.5 w-3.5" />
+                      <span>Prev</span>
+                    </button>
+                    <button
+                      disabled={currentPage >= totalPages}
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                      className="flex items-center gap-1 rounded-lg bg-[#181b22] disabled:opacity-40 hover:bg-white/[0.08] border border-white/[0.1] px-3 py-1.5 text-slate-200 cursor-pointer"
+                    >
+                      <span>Next</span>
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -387,6 +477,7 @@ export default function InspectorModal({
     const part = modalState.item;
     const isEquipped = build[activeCategory]?.id === part.id;
     const specEntries = Object.entries(part.specs || {});
+    const fallbackImg = getFallbackProductPhotoDataUri(part);
 
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm">
@@ -398,7 +489,7 @@ export default function InspectorModal({
                 className="flex items-center gap-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] px-2.5 py-1 text-xs text-slate-300 hover:text-white transition cursor-pointer"
               >
                 <ArrowLeft className="h-3.5 w-3.5" />
-                <span>Back to Catalog</span>
+                <span>Back to GitHub Catalog</span>
               </button>
               <span className="font-display text-sm font-bold text-white">
                 Hardware Technical Sheet
@@ -420,7 +511,11 @@ export default function InspectorModal({
                 className="rounded-xl overflow-hidden border border-white/10 h-60 flex items-center justify-center"
               >
                 <img
-                  src={getFallbackProductPhotoDataUri(part)}
+                  src={part.imageUrl || fallbackImg}
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = fallbackImg;
+                  }}
                   alt={part.name}
                   style={{
                     objectFit: 'contain',
@@ -436,7 +531,7 @@ export default function InspectorModal({
               <div className="rounded-xl bg-[#161920] border border-amber-500/30 p-4 space-y-2 text-xs">
                 <div className="flex items-center gap-2 text-amber-300 font-mono-tech font-bold">
                   <FolderOpen className="h-4 w-4" />
-                  <span>3D GLTF / GLB ASSET CONFIG</span>
+                  <span>3D GLTF / SOCKET ADAPTER CONFIG</span>
                 </div>
                 <div className="font-mono-tech text-[11px] space-y-1 text-slate-300">
                   <p>
@@ -468,7 +563,7 @@ export default function InspectorModal({
               <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[#161920] border border-white/[0.08] p-4">
                 <div>
                   <span className="block text-[10px] text-slate-400">
-                    Market Price
+                    Dataset Reference Price
                   </span>
                   <span className="font-mono-tech text-2xl font-bold text-emerald-400">
                     ${part.price.toFixed(2)}
@@ -492,7 +587,7 @@ export default function InspectorModal({
               {/* True Specifications Grid */}
               <div className="rounded-xl bg-[#161920] border border-white/[0.08] p-4 space-y-3">
                 <h4 className="font-mono-tech text-[11px] uppercase tracking-wider text-slate-400 border-b border-white/[0.08] pb-2">
-                  TRUE TECHNICAL SPECIFICATIONS (partsCatalog.json)
+                  NORMALIZED SPECIFICATIONS (hardwareCatalogAdapter)
                 </h4>
 
                 <div className="grid grid-cols-2 gap-3 text-xs">
@@ -552,6 +647,7 @@ export default function InspectorModal({
         {
           id: build[c.id].id,
           name: build[c.id].name,
+          brand: build[c.id].brand,
           socketTarget: c.socketTarget,
           model3dPath: `/public${build[c.id].model3dPath}`,
           specs: build[c.id].specs,
@@ -574,10 +670,10 @@ export default function InspectorModal({
         <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
           <div>
             <h3 className="font-display text-base font-bold text-white">
-              Active 3D Socket Build &amp; Required .GLB Paths
+              Active 3D Socket Build &amp; GitHub Dataset Manifest
             </h3>
             <p className="text-xs text-slate-400">
-              Place your real <code className="text-amber-300">.glb</code> files in the paths listed below or upload them via the right sidebar
+              Normalized from <code className="text-sky-400">docyx/pc-part-dataset</code> via <code className="text-amber-300">hardwareCatalogAdapter.js</code>
             </p>
           </div>
           <button
