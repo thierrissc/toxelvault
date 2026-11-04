@@ -9,15 +9,16 @@ import {
 import { EffectComposer, N8AO } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import CapeModel from './CapeModel';
+import { DEFAULT_RGB_CONFIG } from '../utils/textureGenerator';
 
-function StudioEnvironmentRig({ envPreset = 'studio' }) {
+function StudioEnvironmentRig({ envPreset = 'studio', isPcOn = true }) {
   return (
     <>
-      <ambientLight intensity={0.4} color="#f8fafc" />
+      <ambientLight intensity={isPcOn ? 0.35 : 0.25} color="#f8fafc" />
 
       <directionalLight
-        position={[4.2, 6.2, 5.2]}
-        intensity={2.4}
+        position={[6.5, 9.0, 7.5]}
+        intensity={isPcOn ? 2.1 : 1.5}
         color="#ffffff"
         castShadow
         shadow-mapSize={[2048, 2048]}
@@ -25,69 +26,63 @@ function StudioEnvironmentRig({ envPreset = 'studio' }) {
       />
 
       <spotLight
-        position={[-4.8, 3.8, -3.6]}
+        position={[-7.0, 5.5, -5.2]}
         angle={0.65}
         penumbra={0.85}
-        intensity={4.2}
+        intensity={3.6}
         color="#38bdf8"
-        distance={14}
+        distance={20}
       />
       <directionalLight
-        position={[-4.2, 2.4, 2.8]}
-        intensity={1.35}
+        position={[-6.0, 3.8, 4.2]}
+        intensity={1.2}
         color="#7dd3fc"
       />
 
       <spotLight
-        position={[4.6, -1.8, -3.4]}
+        position={[6.8, -2.5, -5.0]}
         angle={0.7}
         penumbra={0.9}
-        intensity={3.6}
+        intensity={3.2}
         color="#fb923c"
-        distance={14}
-      />
-      <pointLight
-        position={[2.8, -1.2, 2.6]}
-        intensity={1.1}
-        color="#fde68a"
-        distance={8}
+        distance={20}
       />
 
       <Suspense fallback={null}>
-        <Environment preset={envPreset} environmentIntensity={1.15} resolution={512}>
+        <Environment preset={envPreset} environmentIntensity={isPcOn ? 1.05 : 0.75} resolution={512}>
           <Lightformer
             form="rect"
-            intensity={2.8}
+            intensity={2.4}
             color="#ffffff"
-            scale={[6, 3, 1]}
-            position={[0, 4.5, 0]}
+            scale={[9, 4.5, 1]}
+            position={[0, 7.0, 0]}
             rotation={[Math.PI / 2, 0, 0]}
           />
 
           <Lightformer
             form="rect"
-            intensity={2.2}
+            intensity={2.0}
             color="#bae6fd"
-            scale={[4, 5, 1]}
-            position={[-4.5, 1.0, -1.5]}
+            scale={[6, 7, 1]}
+            position={[-7.0, 1.5, -2.5]}
             rotation={[0, Math.PI / 2.2, 0]}
           />
 
           <Lightformer
             form="rect"
-            intensity={1.9}
+            intensity={1.7}
             color="#fed7aa"
-            scale={[4, 5, 1]}
-            position={[4.5, 0.5, -1.5]}
+            scale={[6, 7, 1]}
+            position={[7.0, 0.8, -2.5]}
             rotation={[0, -Math.PI / 2.2, 0]}
           />
 
           <Lightformer
             form="rect"
-            intensity={1.4}
+            intensity={1.2}
             color="#f8fafc"
-            scale={[2.5, 4, 1]}
-            position={[1.8, 1.2, 4.2]}
+            scale={[4, 6, 1]}
+            position={[2.8, 1.8, 6.5]}
             target={[0, 0, 0]}
           />
         </Environment>
@@ -155,6 +150,8 @@ export default function Canvas3D({
   autoRotate,
   explodedView,
   showGlass = true,
+  isPcOn = true,
+  rgbConfig = DEFAULT_RGB_CONFIG,
   cameraViewTrigger,
   onStatsUpdate,
   screenshotHandlerRef,
@@ -168,24 +165,24 @@ export default function Canvas3D({
 
     switch (cameraViewTrigger.mode) {
       case 'side':
-        cam.position.set(-0.08, 0.12, 3.45);
-        controls.target.set(-0.08, 0.05, 0);
+        cam.position.set(-0.15, 0.2, 6.2);
+        controls.target.set(-0.15, 0.05, 0);
         break;
       case 'gpu':
-        cam.position.set(0.25, -0.05, 2.25);
-        controls.target.set(-0.2, -0.02, 0.1);
+        cam.position.set(0.35, -0.15, 4.2);
+        controls.target.set(-0.1, -0.2, 0.35);
         break;
       case 'cpu':
-        cam.position.set(0.2, 0.52, 2.05);
-        controls.target.set(-0.18, 0.42, -0.05);
+        cam.position.set(0.25, 0.95, 3.8);
+        controls.target.set(-0.45, 0.78, -0.1);
         break;
       case 'front':
-        cam.position.set(3.25, 0.2, 1.75);
+        cam.position.set(5.8, 0.3, 3.2);
         controls.target.set(0, 0.05, 0);
         break;
       default:
-        cam.position.set(2.35, 0.85, 3.25);
-        controls.target.set(0, 0.02, 0);
+        cam.position.set(4.3, 1.45, 5.65);
+        controls.target.set(0, 0.05, 0);
         break;
     }
     controls.update();
@@ -205,13 +202,13 @@ export default function Canvas3D({
           powerPreference: 'high-performance',
         }}
         camera={{
-          position: [2.35, 0.85, 3.25],
+          position: [4.3, 1.45, 5.65],
           fov: 40,
           near: 0.1,
-          far: 100,
+          far: 120,
         }}
       >
-        <StudioEnvironmentRig envPreset={envPreset} />
+        <StudioEnvironmentRig envPreset={envPreset} isPcOn={isPcOn} />
 
         <CapeModel
           build={build}
@@ -220,11 +217,13 @@ export default function Canvas3D({
           wireframe={wireframe}
           explodedView={explodedView}
           showGlass={showGlass}
+          isPcOn={isPcOn}
+          rgbConfig={rgbConfig}
         />
 
         <EffectComposer disableNormalPass={false} multisampling={4}>
           <N8AO
-            aoRadius={0.32}
+            aoRadius={0.45}
             distanceFalloff={0.85}
             intensity={2.4}
             color="#030407"
@@ -233,11 +232,11 @@ export default function Canvas3D({
         </EffectComposer>
 
         <ContactShadows
-          position={[0, -1.42, 0]}
-          opacity={0.75}
-          scale={8.0}
-          blur={2.1}
-          far={4.5}
+          position={[0, -2.35, 0]}
+          opacity={0.78}
+          scale={14.0}
+          blur={2.2}
+          far={6.5}
           color="#000000"
         />
 
@@ -245,13 +244,13 @@ export default function Canvas3D({
           ref={controlsRef}
           enableDamping
           dampingFactor={0.06}
-          minDistance={1.4}
-          maxDistance={6.5}
+          minDistance={2.2}
+          maxDistance={12.0}
           minPolarAngle={Math.PI * 0.1}
           maxPolarAngle={Math.PI * 0.85}
           autoRotate={autoRotate}
           autoRotateSpeed={1.1}
-          target={[0, 0.02, 0]}
+          target={[0, 0.05, 0]}
         />
 
         <SceneBridge

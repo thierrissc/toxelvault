@@ -21,13 +21,19 @@ import {
   EyeOff,
   SlidersHorizontal,
   Sparkles,
+  Palette,
+  Power,
+  Wand2,
 } from 'lucide-react';
 import {
   HARDWARE_CATEGORIES,
+  RGB_PRESETS,
   validateBuildCompatibility,
-  getFallbackProductPhotoDataUri,
-  cleanProductImage,
 } from '../utils/textureGenerator';
+import {
+  resolveRealProductPhoto,
+  REAL_PRODUCT_IMAGE_DICTIONARY,
+} from '../utils/hardwareCatalogAdapter';
 
 const CATEGORY_ICONS = {
   case: Box,
@@ -41,21 +47,10 @@ const CATEGORY_ICONS = {
 };
 
 function ProductThumbnail({ part, onClick }) {
-  const rawUrl = part?.imageUrl || part?.realPhotoUrl || '';
-  const fallbackUri = getFallbackProductPhotoDataUri(part);
-  const [resolvedSrc, setResolvedSrc] = useState(() => fallbackUri);
-
-  useEffect(() => {
-    let active = true;
-    cleanProductImage(rawUrl, part).then((uri) => {
-      if (active && uri) {
-        setResolvedSrc(uri);
-      }
-    });
-    return () => {
-      active = false;
-    };
-  }, [rawUrl, part]);
+  const primaryUrl = resolveRealProductPhoto(part);
+  const categoryBackupUrl =
+    REAL_PRODUCT_IMAGE_DICTIONARY.byCategory[part?.category] ||
+    REAL_PRODUCT_IMAGE_DICTIONARY.byCategory.cpu;
 
   return (
     <button
@@ -66,13 +61,15 @@ function ProductThumbnail({ part, onClick }) {
       title={`Ver detalhes de ${part?.name || ''}`}
     >
       <img
-        src={resolvedSrc || fallbackUri}
+        src={primaryUrl}
         onError={(e) => {
-          e.currentTarget.onerror = null;
-          e.currentTarget.src = fallbackUri;
+          if (e.currentTarget.src !== categoryBackupUrl) {
+            e.currentTarget.src = categoryBackupUrl;
+          }
         }}
         alt={part?.name || 'Produto'}
         style={{
+          backgroundColor: '#ffffff',
           objectFit: 'contain',
           objectPosition: 'center',
           padding: '4px',
@@ -89,6 +86,7 @@ export default function SidebarControls({
   onUploadCustomGlb,
   onOpenPartPicker,
   onOpenPartDetails,
+  onOpenAssistant,
   envPreset,
   setEnvPreset,
   autoRotate,
@@ -97,6 +95,10 @@ export default function SidebarControls({
   setExplodedView,
   showGlass = true,
   setShowGlass,
+  isPcOn = true,
+  setIsPcOn,
+  rgbConfig,
+  setRgbConfig,
   onSnapCamera,
   onCaptureScreenshot,
   screenshotToast,
@@ -106,8 +108,11 @@ export default function SidebarControls({
 }) {
   const glbInputRef = useRef(null);
   const dropdownRef = useRef(null);
+  const rgbMenuRef = useRef(null);
+
   const [uploadTargetCategory, setUploadTargetCategory] = useState('gpu');
   const [viewMenuOpen, setViewMenuOpen] = useState(false);
+  const [rgbMenuOpen, setRgbMenuOpen] = useState(false);
   const [mobileDrawer, setMobileDrawer] = useState(false);
 
   const compatibility = validateBuildCompatibility(build);
@@ -116,6 +121,9 @@ export default function SidebarControls({
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setViewMenuOpen(false);
+      }
+      if (rgbMenuRef.current && !rgbMenuRef.current.contains(e.target)) {
+        setRgbMenuOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -130,61 +138,240 @@ export default function SidebarControls({
     setViewMenuOpen(false);
   };
 
+  const handleGlobalColorChange = (hex) => {
+    setRgbConfig((prev) => ({
+      ...prev,
+      mode: prev.mode === 'off' ? 'static' : prev.mode,
+      globalColor: hex,
+      groups: prev.syncAll
+        ? { fans: hex, ram: hex, gpu: hex, cooler: hex }
+        : prev.groups,
+    }));
+  };
+
+  const handleGroupColorChange = (groupKey, hex) => {
+    setRgbConfig((prev) => ({
+      ...prev,
+      syncAll: false,
+      mode: prev.mode === 'off' ? 'static' : prev.mode,
+      groups: {
+        ...prev.groups,
+        [groupKey]: hex,
+      },
+    }));
+  };
+
   const equippedCount = HARDWARE_CATEGORIES.filter((c) => Boolean(build[c.id])).length;
 
   return (
     <div className="flex flex-col w-screen h-screen bg-[#0b0c10] text-slate-100 overflow-hidden select-none">
-      <header className="h-14 shrink-0 flex items-center justify-between px-4 lg:px-6 bg-[#111318] border-b border-white/[0.08] z-20">
+      <header className="h-14 shrink-0 flex items-center justify-between px-4 lg:px-6 bg-[#111318] border-b border-white/[0.08] z-30">
         <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-600/20 border border-rose-500/40 text-rose-400">
-            <Box className="h-4 w-4" />
-          </div>
+          <img
+            src="/logo.png"
+            alt="VoxelVault Logo"
+            className="w-9 h-9 rounded-lg object-contain"
+          />
           <span className="font-display text-sm font-bold tracking-wide text-white">
             VOXELVAULT
           </span>
         </div>
 
-        <div className="flex items-center gap-2.5 overflow-x-auto py-1">
-          <div
-            className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs ${
-              compatibility.isCompatible
-                ? 'bg-[#181b22] border-white/[0.08] text-emerald-400'
-                : 'bg-rose-500/15 border-rose-500/50 text-rose-300'
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsPcOn(!isPcOn)}
+            className={`flex items-center gap-1.5 rounded-xl border px-3.5 py-1.5 text-xs font-bold transition cursor-pointer shadow ${
+              isPcOn
+                ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-300 shadow-emerald-500/10'
+                : 'bg-[#181b22] border-white/[0.1] text-slate-400 hover:text-white'
             }`}
           >
-            {compatibility.isCompatible ? (
-              <>
-                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
-                <span className="font-medium">
-                  Peças Compatíveis
-                </span>
-              </>
-            ) : (
-              <>
-                <AlertTriangle className="h-3.5 w-3.5 text-rose-400" />
-                <span className="font-semibold">
-                  Incompatibilidade Detectada
-                </span>
-              </>
+            <Power className={`h-3.5 w-3.5 ${isPcOn ? 'text-emerald-400' : 'text-slate-500'}`} />
+            <span>⚡ PC {isPcOn ? 'Ligado' : 'Desligado'}</span>
+          </button>
+
+          <div className="relative" ref={rgbMenuRef}>
+            <button
+              type="button"
+              onClick={() => setRgbMenuOpen((prev) => !prev)}
+              className="flex items-center gap-2 rounded-xl bg-[#181b22] hover:bg-[#222631] border border-white/[0.12] px-3 py-1.5 text-xs font-semibold text-white transition cursor-pointer"
+            >
+              <Palette className="h-3.5 w-3.5 text-sky-400" />
+              <span className="hidden sm:inline">Controlador RGB</span>
+              <span
+                className="h-3 w-3 rounded-full border border-white/40"
+                style={{
+                  background:
+                    rgbConfig?.mode === 'rainbow'
+                      ? 'linear-gradient(135deg, #00f2fe, #a855f7, #ef4444)'
+                      : rgbConfig?.globalColor || '#00f2fe',
+                }}
+              />
+              <ChevronDown className="h-3 w-3 text-slate-400" />
+            </button>
+
+            {rgbMenuOpen && (
+              <div className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-80 rounded-2xl bg-[#14171f]/98 backdrop-blur-xl border border-white/[0.14] p-4 shadow-2xl space-y-4 z-50">
+                <div className="flex items-center justify-between border-b border-white/[0.08] pb-2.5">
+                  <span className="text-xs font-bold text-white flex items-center gap-2">
+                    <Palette className="h-4 w-4 text-sky-400" />
+                    Controlador RGB / ARGB
+                  </span>
+                  <span className="text-[11px] text-slate-400">
+                    {isPcOn ? 'Ativo' : 'PC Desligado'}
+                  </span>
+                </div>
+
+                <div className="space-y-1.5">
+                  <span className="block text-[11px] font-semibold text-slate-400">
+                    Modo de Iluminação
+                  </span>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {[
+                      { id: 'static', label: 'Estático' },
+                      { id: 'breathing', label: 'Respiração' },
+                      { id: 'rainbow', label: 'Arco-Íris' },
+                      { id: 'off', label: 'Desligado' },
+                    ].map((m) => (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() =>
+                          setRgbConfig((prev) => ({ ...prev, mode: m.id }))
+                        }
+                        className={`rounded-lg py-1.5 px-2.5 text-xs font-semibold border transition cursor-pointer ${
+                          rgbConfig?.mode === m.id
+                            ? 'bg-sky-500/20 border-sky-400 text-sky-300'
+                            : 'bg-[#1c202b] border-white/[0.08] text-slate-300 hover:text-white'
+                        }`}
+                      >
+                        {m.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2 pt-2 border-t border-white/[0.08]">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-semibold text-slate-400">
+                      Cor Global &amp; Presets
+                    </span>
+                    <label className="flex items-center gap-1.5 text-[11px] text-slate-300 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(rgbConfig?.syncAll)}
+                        onChange={(e) =>
+                          setRgbConfig((prev) => ({
+                            ...prev,
+                            syncAll: e.target.checked,
+                          }))
+                        }
+                        className="accent-sky-400"
+                      />
+                      <span>Sincronizar Tudo</span>
+                    </label>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={rgbConfig?.globalColor || '#00f2fe'}
+                      onChange={(e) => handleGlobalColorChange(e.target.value)}
+                      className="h-8 w-10 rounded cursor-pointer bg-transparent border border-white/20"
+                    />
+                    <div className="flex flex-wrap gap-1.5 flex-1">
+                      {RGB_PRESETS.map((preset) => (
+                        <button
+                          key={preset.id}
+                          type="button"
+                          onClick={() => handleGlobalColorChange(preset.color)}
+                          className="flex items-center gap-1.5 rounded-lg bg-[#1c202b] hover:bg-white/[0.1] border border-white/[0.08] px-2 py-1 text-[11px] text-slate-200 transition cursor-pointer"
+                        >
+                          <span
+                            className="h-2.5 w-2.5 rounded-full"
+                            style={{ backgroundColor: preset.color }}
+                          />
+                          <span>{preset.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2 pt-2 border-t border-white/[0.08]">
+                  <span className="block text-[11px] font-semibold text-slate-400">
+                    Cor Individual por Grupo
+                  </span>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { key: 'fans', label: 'Ventoinhas (Fans)' },
+                      { key: 'ram', label: 'Memória RAM' },
+                      { key: 'gpu', label: 'Placa de Vídeo' },
+                      { key: 'cooler', label: 'Water Cooler' },
+                    ].map((grp) => (
+                      <label
+                        key={grp.key}
+                        className="flex items-center justify-between rounded-lg bg-[#1c202b] border border-white/[0.07] px-2.5 py-1.5 text-xs text-slate-200 cursor-pointer"
+                      >
+                        <span className="truncate pr-1">{grp.label}</span>
+                        <input
+                          type="color"
+                          value={
+                            rgbConfig?.syncAll
+                              ? rgbConfig?.globalColor || '#00f2fe'
+                              : rgbConfig?.groups?.[grp.key] || '#00f2fe'
+                          }
+                          onChange={(e) =>
+                            handleGroupColorChange(grp.key, e.target.value)
+                          }
+                          className="h-5 w-6 rounded cursor-pointer bg-transparent border-0 shrink-0"
+                        />
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
             )}
           </div>
 
-          <div className="hidden sm:flex items-center gap-1.5 rounded-lg bg-[#181b22] border border-white/[0.08] px-3 py-1.5 text-xs">
-            <Zap className="h-3.5 w-3.5 text-amber-400" />
-            <span className="font-semibold text-amber-300">
-              {compatibility.totalTdp}W
+          <button
+            type="button"
+            onClick={onOpenAssistant}
+            className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
+              compatibility.isCompatible && compatibility.warnings.length === 0
+                ? 'bg-[#181b22] hover:bg-[#222631] border-white/[0.1] text-emerald-400'
+                : compatibility.isCompatible
+                ? 'bg-amber-500/15 border-amber-500/40 text-amber-300'
+                : 'bg-rose-500/20 border-rose-500/50 text-rose-300'
+            }`}
+            title="Abrir Assistente de Compatibilidade e Recomendação"
+          >
+            {compatibility.isCompatible ? (
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+            ) : (
+              <AlertTriangle className="h-3.5 w-3.5 text-rose-400" />
+            )}
+            <span className="hidden md:inline">
+              {compatibility.isCompatible ? 'Compatível' : 'Conflito'} • {compatibility.totalTdp}W
             </span>
-            <span className="text-slate-400 text-[11px]">
-              / {compatibility.psuWatts}W
-            </span>
-          </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={onOpenAssistant}
+            className="flex items-center gap-1.5 rounded-xl bg-sky-500 hover:bg-sky-400 px-3 py-1.5 text-xs font-bold text-slate-950 transition cursor-pointer shadow"
+          >
+            <Wand2 className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Montar para Mim</span>
+          </button>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={onCaptureScreenshot}
-            className="hidden sm:flex items-center gap-1.5 rounded-lg bg-[#181b22] hover:bg-[#222630] border border-white/[0.1] px-3 py-1.5 text-xs font-medium text-slate-200 transition cursor-pointer"
+            className="hidden xl:flex items-center gap-1.5 rounded-lg bg-[#181b22] hover:bg-[#222630] border border-white/[0.1] px-3 py-1.5 text-xs font-medium text-slate-200 transition cursor-pointer"
           >
             <Camera className="h-3.5 w-3.5 text-sky-400" />
             <span>Capturar Foto</span>
@@ -200,18 +387,24 @@ export default function SidebarControls({
         </div>
       </header>
 
-      {!compatibility.isCompatible && (
-        <div className="bg-rose-950/90 border-b border-rose-500/40 px-6 py-2 flex items-center justify-between text-xs text-rose-200 z-20">
+      {(!compatibility.isCompatible || compatibility.warnings.length > 0) && (
+        <div
+          className={`${
+            compatibility.isCompatible
+              ? 'bg-amber-950/90 border-amber-500/40 text-amber-200'
+              : 'bg-rose-950/90 border-rose-500/40 text-rose-200'
+          } border-b px-6 py-2 flex items-center justify-between text-xs z-20`}
+        >
           <div className="flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4 text-rose-400 shrink-0" />
-            <span>{compatibility.issues[0]}</span>
+            <AlertTriangle className="h-4 w-4 shrink-0" />
+            <span>{compatibility.issues[0] || compatibility.warnings[0]}</span>
           </div>
           <button
             type="button"
-            onClick={() => onOpenPartPicker('motherboard')}
-            className="rounded bg-rose-500/30 hover:bg-rose-500/50 border border-rose-400/40 px-2.5 py-0.5 text-[11px] font-semibold text-white cursor-pointer shrink-0"
+            onClick={onOpenAssistant}
+            className="rounded bg-white/15 hover:bg-white/25 border border-white/20 px-2.5 py-0.5 text-[11px] font-semibold text-white cursor-pointer shrink-0"
           >
-            Trocar Placa-Mãe
+            Resolver no Assistente
           </button>
         </div>
       )}
@@ -432,15 +625,25 @@ export default function SidebarControls({
               </p>
             </div>
 
-            <button
-              type="button"
-              onClick={onResetBuild}
-              className="flex items-center gap-1.5 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] px-2.5 py-1.5 text-xs font-medium text-slate-300 hover:text-white transition cursor-pointer"
-              title="Restaurar configuração padrão"
-            >
-              <RotateCcw className="h-3.5 w-3.5" />
-              <span>Restaurar</span>
-            </button>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={onOpenAssistant}
+                className="flex items-center gap-1 rounded-lg bg-sky-500/15 hover:bg-sky-500/25 border border-sky-400/30 px-2.5 py-1.5 text-xs font-semibold text-sky-300 transition cursor-pointer"
+                title="Abrir Assistente de Recomendação"
+              >
+                <Wand2 className="h-3.5 w-3.5" />
+                <span>Assistente</span>
+              </button>
+              <button
+                type="button"
+                onClick={onResetBuild}
+                className="flex items-center gap-1 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] px-2.5 py-1.5 text-xs font-medium text-slate-300 hover:text-white transition cursor-pointer"
+                title="Restaurar configuração padrão"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+              </button>
+            </div>
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 space-y-2.5">

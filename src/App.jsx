@@ -2,7 +2,11 @@ import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react'
 import Canvas3D from './components/Canvas3D';
 import SidebarControls from './components/SidebarControls';
 import InspectorModal from './components/InspectorModal';
-import { DEFAULT_BUILD, HARDWARE_CATALOG } from './utils/textureGenerator';
+import {
+  DEFAULT_BUILD,
+  DEFAULT_RGB_CONFIG,
+  HARDWARE_CATALOG,
+} from './utils/textureGenerator';
 import {
   preloadAllHardwareCategories,
   clearHardwareDatasetCache,
@@ -31,6 +35,8 @@ export default function App() {
   const [autoRotate, setAutoRotate] = useState(false);
   const [explodedView, setExplodedView] = useState(false);
   const [showGlass, setShowGlass] = useState(true);
+  const [isPcOn, setIsPcOn] = useState(true);
+  const [rgbConfig, setRgbConfig] = useState(DEFAULT_RGB_CONFIG);
 
   const [cameraViewTrigger, setCameraViewTrigger] = useState({
     mode: 'iso',
@@ -132,6 +138,10 @@ export default function App() {
     }));
   }, []);
 
+  const handleApplyRecommendedBuild = useCallback((recommendedBuild) => {
+    setBuild(recommendedBuild);
+  }, []);
+
   const handleUploadCustomGlb = useCallback((category, file) => {
     const objectUrl = URL.createObjectURL(file);
     setCustomGlbOverrides((prev) => ({
@@ -147,6 +157,8 @@ export default function App() {
     setExplodedView(false);
     setShowBoundingLabels(false);
     setShowGlass(true);
+    setIsPcOn(true);
+    setRgbConfig(DEFAULT_RGB_CONFIG);
   }, []);
 
   const handleCaptureScreenshot = useCallback(() => {
@@ -155,7 +167,7 @@ export default function App() {
     if (!dataUrl) return;
 
     const link = document.createElement('a');
-    link.download = `voxelcores-build.png`;
+    link.download = `voxelvault-build.png`;
     link.href = dataUrl;
     document.body.appendChild(link);
     link.click();
@@ -186,6 +198,9 @@ export default function App() {
         onOpenPartDetails={(category, item) =>
           setModalState({ mode: 'details', category, item })
         }
+        onOpenAssistant={() =>
+          setModalState({ mode: 'assistant', category: 'cpu', item: null })
+        }
         envPreset={envPreset}
         setEnvPreset={setEnvPreset}
         showBoundingLabels={showBoundingLabels}
@@ -198,12 +213,13 @@ export default function App() {
         setExplodedView={setExplodedView}
         showGlass={showGlass}
         setShowGlass={setShowGlass}
+        isPcOn={isPcOn}
+        setIsPcOn={setIsPcOn}
+        rgbConfig={rgbConfig}
+        setRgbConfig={setRgbConfig}
         onSnapCamera={handleSnapCamera}
         onCaptureScreenshot={handleCaptureScreenshot}
         screenshotToast={screenshotToast}
-        onOpenInspector={() =>
-          setModalState({ mode: 'manifest', category: 'cpu', item: null })
-        }
         onResetBuild={handleResetBuild}
         stats={stats}
         totalPrice={totalPrice}
@@ -217,6 +233,8 @@ export default function App() {
           autoRotate={autoRotate}
           explodedView={explodedView}
           showGlass={showGlass}
+          isPcOn={isPcOn}
+          rgbConfig={rgbConfig}
           cameraViewTrigger={cameraViewTrigger}
           onStatsUpdate={setStats}
           screenshotHandlerRef={screenshotHandlerRef}
@@ -232,6 +250,7 @@ export default function App() {
         }
         onSelectPartForBuild={handleSelectPart}
         onRemovePartFromBuild={handleRemovePart}
+        onApplyRecommendedBuild={handleApplyRecommendedBuild}
         onOpenPartDetails={(category, item) =>
           setModalState({ mode: 'details', category, item })
         }
