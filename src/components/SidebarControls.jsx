@@ -169,11 +169,11 @@ export default function SidebarControls({
         <div className="flex items-center gap-3">
           <img
             src="/logo.png"
-            alt="VoxelVault Logo"
+            alt="ToxelVault 3D Logo"
             className="w-9 h-9 rounded-lg object-contain"
           />
           <span className="font-display text-sm font-bold tracking-wide text-white">
-            VOXELVAULT
+            ToxelVault 3D
           </span>
         </div>
 

@@ -16,8 +16,8 @@ export const DATASET_ENDPOINTS = {
   case: 'case.json',
 };
 
-const CACHE_STORAGE_NAME = 'voxelvault-hardware-dataset-v3';
-const LOCAL_STORAGE_PREFIX = 'voxelvault_hw_cat_v3_';
+const CACHE_STORAGE_NAME = 'toxelvault-3d-hardware-dataset-v3';
+const LOCAL_STORAGE_PREFIX = 'toxelvault_3d_hw_cat_v3_';
 const MAX_NORMALIZED_ITEMS_PER_CATEGORY = 320;
 
 const memoryCategoryCache = new Map();
