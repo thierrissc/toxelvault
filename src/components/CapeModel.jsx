@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Html } from '@react-three/drei';
+import { Html, RoundedBox } from '@react-three/drei';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
@@ -10,6 +10,9 @@ import {
   createGpuBackplateTexture,
   createKrakenLcdTexture,
   createHardwareLabelTexture,
+  createFanHubStickerTexture,
+  createBraidedSleeveTexture,
+  createSoftRgbGradientTexture,
 } from '../utils/textureGenerator';
 
 // Singleton DRACOLoader + GLTFLoader for real .glb / .gltf files
@@ -23,14 +26,14 @@ const gltfCache = new Map();
 
 /**
  * Creates a curved aerodynamic fan blade using THREE.ExtrudeGeometry
- * so each of the 9 fan blades has real 3D curvature and 30-degree pitch.
+ * so each of the 9 fan blades has real 3D curvature and 35-degree pitch.
  */
 function createCurvedBladeGeometry() {
   const shape = new THREE.Shape();
   shape.moveTo(0.055, -0.012);
-  shape.quadraticCurveTo(0.125, -0.028, 0.195, -0.014);
-  shape.lineTo(0.198, 0.022);
-  shape.quadraticCurveTo(0.125, 0.032, 0.055, 0.012);
+  shape.quadraticCurveTo(0.125, -0.03, 0.196, -0.014);
+  shape.lineTo(0.199, 0.023);
+  shape.quadraticCurveTo(0.125, 0.034, 0.055, 0.012);
   shape.closePath();
 
   const extrudeSettings = {
@@ -49,12 +52,11 @@ function createCurvedBladeGeometry() {
 
 /**
  * Creates a 120mm chamfered octagon fan housing frame with a circular central bore
- * using THREE.ExtrudeGeometry + Path hole so the fan frame is a real hollowed shroud,
- * not a flat solid box.
+ * using THREE.ExtrudeGeometry + Path hole so the fan frame is a real hollowed shroud.
  */
 function createChamferedFanFrameGeometry() {
   const s = 0.24;
-  const c = 0.038;
+  const c = 0.04;
   const shape = new THREE.Shape();
   shape.moveTo(-s + c, -s);
   shape.lineTo(s - c, -s);
@@ -75,8 +77,38 @@ function createChamferedFanFrameGeometry() {
     steps: 1,
     depth: 0.062,
     bevelEnabled: true,
-    bevelThickness: 0.004,
-    bevelSize: 0.004,
+    bevelThickness: 0.005,
+    bevelSize: 0.005,
+    bevelSegments: 3,
+  });
+  geom.center();
+  return geom;
+}
+
+/**
+ * Creates an asymmetric geometric DDR5 RAM heatsink profile with beveled top fins
+ */
+function createAsymmetricRamHeatsinkGeometry() {
+  const shape = new THREE.Shape();
+  // Bottom edge along DIMM slot
+  shape.moveTo(-0.205, -0.048);
+  shape.lineTo(0.205, -0.048);
+  // Right angled shoulder
+  shape.lineTo(0.21, 0.018);
+  shape.lineTo(0.155, 0.044);
+  // Asymmetric central dip & angular fin peak
+  shape.lineTo(0.035, 0.032);
+  shape.lineTo(-0.045, 0.048);
+  shape.lineTo(-0.165, 0.046);
+  shape.lineTo(-0.21, 0.022);
+  shape.closePath();
+
+  const geom = new THREE.ExtrudeGeometry(shape, {
+    steps: 1,
+    depth: 0.028,
+    bevelEnabled: true,
+    bevelThickness: 0.003,
+    bevelSize: 0.003,
     bevelSegments: 2,
   });
   geom.center();
@@ -85,20 +117,26 @@ function createChamferedFanFrameGeometry() {
 
 const sharedBladeGeometry = createCurvedBladeGeometry();
 const sharedFanFrameGeometry = createChamferedFanFrameGeometry();
+const sharedRamHeatsinkGeometry = createAsymmetricRamHeatsinkGeometry();
+const FAN_PITCH_35_RAD = (35 * Math.PI) / 180; // Exact 35° blade pitch
 
 /**
- * High-Detail 120mm Fan with Chamfered Hollow Frame, 4 Stator Struts,
- * Brushed Metallic Center Hub with Brand Emblem, 9 Curved ExtrudeGeometry Blades
- * pitched at 30° (Math.PI / 6), and Soft Diffused LED Halo Ring.
+ * High-Detail 120mm Industrial Fan:
+ * - Chamfered 120mm hollowed frame
+ * - Rubber anti-vibration corner dampeners on all 4 mounting corners
+ * - Translucent diffuser ring with soft controlled gradient emission
+ * - 9 curved blades angled at 35° pitch + textured center sticker hub
  */
 function RealisticFan120({
   position = [0, 0, 0],
   rotation = [0, 0, 0],
   scale = 1,
   frameMat,
+  rubberMat,
   bladeMat,
-  rgbMat,
-  hubMat,
+  diffuserMat,
+  hubStickerMat,
+  hubMetalMat,
   onRegisterFan,
   fanIndex,
 }) {
@@ -112,49 +150,55 @@ function RealisticFan120({
         receiveShadow
       />
 
-      {/* 4 Rubber Anti-Vibration Corner Pads + Mounting Screws */}
+      {/* 4 Rubber Anti-Vibration Dampener Pads on the 4 mounting corners + Screw Inserts */}
       {[
-        [-0.2, -0.2],
-        [0.2, -0.2],
-        [-0.2, 0.2],
-        [0.2, 0.2],
+        [-0.195, -0.195],
+        [0.195, -0.195],
+        [-0.195, 0.195],
+        [0.195, 0.195],
       ].map(([cx, cy], idx) => (
-        <mesh key={idx} position={[cx, cy, 0]} rotation={[Math.PI / 2, 0, 0]} material={hubMat}>
-          <cylinderGeometry args={[0.012, 0.012, 0.068, 12]} />
-        </mesh>
+        <group key={idx} position={[cx, cy, 0]}>
+          {/* Molded Rubber Dampener Pad */}
+          <RoundedBox args={[0.068, 0.068, 0.072]} radius={0.01} smoothness={2} material={rubberMat} />
+          {/* Stainless Screw Core */}
+          <mesh rotation={[Math.PI / 2, 0, 0]} material={hubMetalMat}>
+            <cylinderGeometry args={[0.011, 0.011, 0.076, 12]} />
+          </mesh>
+        </group>
       ))}
 
       {/* 4 Rear Stator Support Struts holding the motor hub */}
       {[0.6, 2.1, 3.7, 5.2].map((ang, idx) => (
         <mesh
           key={idx}
-          position={[Math.cos(ang) * 0.11, Math.sin(ang) * 0.11, -0.024]}
+          position={[Math.cos(ang) * 0.11, Math.sin(ang) * 0.11, -0.025]}
           rotation={[0, 0, ang]}
           material={frameMat}
         >
-          <boxGeometry args={[0.19, 0.012, 0.008]} />
+          <boxGeometry args={[0.19, 0.013, 0.008]} />
         </mesh>
       ))}
 
-      {/* Soft Diffused LED Ring Inside Bore */}
-      <mesh position={[0, 0, 0.028]} material={rgbMat}>
-        <torusGeometry args={[0.208, 0.007, 12, 36]} />
+      {/* Translucent Diffuser Halo Ring with Soft Controlled Light Gradient */}
+      <mesh position={[0, 0, 0.028]} material={diffuserMat}>
+        <torusGeometry args={[0.208, 0.009, 16, 48]} />
       </mesh>
 
-      {/* Spinning Rotor: Center Motor Hub + Metallic Logo Cap + 9 Curved 30° Blades */}
+      {/* Spinning Rotor: Center Motor Hub + Textured Sticker + 9 Curved 35° Blades */}
       <group ref={(el) => onRegisterFan(fanIndex, el)}>
         <mesh rotation={[Math.PI / 2, 0, 0]} material={frameMat}>
-          <cylinderGeometry args={[0.068, 0.068, 0.056, 28]} />
+          <cylinderGeometry args={[0.068, 0.068, 0.056, 32]} />
         </mesh>
-        {/* Brushed Aluminum Hub Cap */}
-        <mesh position={[0, 0, 0.029]} material={hubMat}>
-          <circleGeometry args={[0.052, 28]} />
+        {/* Machined Aluminum Outer Hub Bezel */}
+        <mesh position={[0, 0, 0.029]} material={hubMetalMat}>
+          <ringGeometry args={[0.052, 0.066, 32]} />
         </mesh>
-        <mesh position={[0, 0, 0.03]} material={rgbMat}>
-          <ringGeometry args={[0.038, 0.048, 28]} />
+        {/* Center Hub Brand Sticker Texture */}
+        <mesh position={[0, 0, 0.0295]} material={hubStickerMat}>
+          <circleGeometry args={[0.052, 32]} />
         </mesh>
 
-        {/* 9 Curved ExtrudeGeometry Blades pitched at 30° */}
+        {/* 9 Curved ExtrudeGeometry Blades pitched at 35° */}
         {Array.from({ length: 9 }).map((_, idx) => {
           const angle = (idx / 9) * Math.PI * 2;
           return (
@@ -162,9 +206,10 @@ function RealisticFan120({
               <mesh
                 geometry={sharedBladeGeometry}
                 position={[0.125, 0, 0.004]}
-                rotation={[Math.PI / 6, 0.12, 0]}
+                rotation={[FAN_PITCH_35_RAD, 0.14, 0]}
                 material={bladeMat}
                 castShadow
+                receiveShadow
               />
             </group>
           );
@@ -175,20 +220,43 @@ function RealisticFan120({
 }
 
 /**
- * Braided Sleeved Tube / Power Cable using CatmullRomCurve3
+ * Braided Nylon Sleeved Hose / Power Cable using CatmullRomCurve3
  */
 function BraidedTube({ points, radius = 0.022, material }) {
   const tubeGeo = useMemo(() => {
     const vectors = points.map((p) => new THREE.Vector3(...p));
     const curve = new THREE.CatmullRomCurve3(vectors);
-    return new THREE.TubeGeometry(curve, 28, radius, 12, false);
+    return new THREE.TubeGeometry(curve, 32, radius, 16, false);
   }, [points, radius]);
 
-  return <mesh geometry={tubeGeo} material={material} castShadow />;
+  return <mesh geometry={tubeGeo} material={material} castShadow receiveShadow />;
 }
 
 /**
- * High-Detail Multi-Mesh PBR Fallback Renderer with Real Textures & Fine Sub-Components
+ * Dual-Hose Alignment Comb Clip (Presilha de alinhamento das mangueiras do AIO)
+ */
+function HoseAlignmentClip({ posA, posB, material, trimMat }) {
+  const { mid, rotZ, dist } = useMemo(() => {
+    const a = new THREE.Vector3(...posA);
+    const b = new THREE.Vector3(...posB);
+    const m = a.clone().add(b).multiplyScalar(0.5);
+    const d = a.distanceTo(b);
+    const angle = Math.atan2(b.y - a.y, b.x - a.x);
+    return { mid: m, rotZ: angle, dist: d };
+  }, [posA, posB]);
+
+  return (
+    <group position={mid} rotation={[0, 0, rotZ]}>
+      <RoundedBox args={[dist + 0.065, 0.042, 0.068]} radius={0.01} smoothness={3} material={material} castShadow />
+      <mesh position={[0, 0, 0.035]} material={trimMat}>
+        <boxGeometry args={[dist * 0.55, 0.014, 0.004]} />
+      </mesh>
+    </group>
+  );
+}
+
+/**
+ * High-Detail Multi-Mesh Photorealistic Industrial PBR Renderer
  */
 function HighDetailPbrFallback({
   part,
@@ -202,7 +270,7 @@ function HighDetailPbrFallback({
     () =>
       cat === 'motherboard'
         ? createMotherboardPcbTexture(
-            part?.pcbColor || '#111318',
+            part?.pcbColor || '#0c0e12',
             part?.accentColor || '#f59e0b'
           )
         : null,
@@ -239,84 +307,131 @@ function HighDetailPbrFallback({
 
   if (cat === 'case') {
     const chassisMat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(part.chassisColor || '#15171e'),
-      metalness: 0.72,
-      roughness: 0.28,
+      color: new THREE.Color(part.chassisColor || '#14171f'),
+      metalness: 0.86,
+      roughness: 0.3,
       wireframe,
     });
     const interiorMat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(part.interiorColor || '#0f1117'),
-      metalness: 0.6,
-      roughness: 0.35,
+      color: new THREE.Color(part.interiorColor || '#0f1218'),
+      metalness: 0.78,
+      roughness: 0.34,
       wireframe,
     });
 
     return (
       <group name="Fallback_HYTE_Y70_Case">
-        {/* Bottom & Top Structural Plates */}
-        <mesh position={[0, -1.3, 0]} material={chassisMat} castShadow receiveShadow>
-          <boxGeometry args={[2.2, 0.07, 1.38]} />
-        </mesh>
-        <mesh position={[0, 1.3, 0]} material={chassisMat} castShadow receiveShadow>
-          <boxGeometry args={[2.2, 0.06, 1.38]} />
-        </mesh>
+        {/* Bottom & Top Chamfered Structural Plates */}
+        <RoundedBox
+          position={[0, -1.3, 0]}
+          args={[2.2, 0.075, 1.38]}
+          radius={0.015}
+          smoothness={3}
+          material={chassisMat}
+          castShadow
+          receiveShadow
+        />
+        <RoundedBox
+          position={[0, 1.3, 0]}
+          args={[2.2, 0.065, 1.38]}
+          radius={0.015}
+          smoothness={3}
+          material={chassisMat}
+          castShadow
+          receiveShadow
+        />
 
-        {/* 4 Machined Case Feet */}
+        {/* 4 Machined Anodized Case Feet with Rubber Pads */}
         {[
           [-0.95, -1.38, -0.55],
           [0.95, -1.38, -0.55],
           [-0.95, -1.38, 0.55],
           [0.95, -1.38, 0.55],
         ].map((pos, idx) => (
-          <mesh key={idx} position={pos} material={interiorMat}>
-            <cylinderGeometry args={[0.09, 0.1, 0.08, 20]} />
-          </mesh>
+          <group key={idx} position={pos}>
+            <mesh material={materials.brushedAluminumMat}>
+              <cylinderGeometry args={[0.092, 0.102, 0.075, 24]} />
+            </mesh>
+            <mesh position={[0, -0.04, 0]} material={materials.rubberMat}>
+              <cylinderGeometry args={[0.095, 0.095, 0.015, 24]} />
+            </mesh>
+          </group>
         ))}
 
         {/* Rear Spine Wall & Dual-Chamber Motherboard Tray */}
-        <mesh position={[0, 0, -0.67]} material={chassisMat} castShadow receiveShadow>
-          <boxGeometry args={[2.2, 2.56, 0.04]} />
-        </mesh>
-        <mesh position={[-0.22, 0, -0.18]} material={interiorMat} castShadow receiveShadow>
-          <boxGeometry args={[1.72, 2.52, 0.04]} />
-        </mesh>
+        <RoundedBox
+          position={[0, 0, -0.67]}
+          args={[2.2, 2.56, 0.04]}
+          radius={0.008}
+          smoothness={2}
+          material={chassisMat}
+          castShadow
+          receiveShadow
+        />
+        <RoundedBox
+          position={[-0.22, 0, -0.18]}
+          args={[1.72, 2.52, 0.042]}
+          radius={0.008}
+          smoothness={2}
+          material={interiorMat}
+          castShadow
+          receiveShadow
+        />
 
         {/* Ribbed Rubber Cable Grommets */}
         {[0.45, -0.05, -0.55].map((yPos, idx) => (
-          <mesh key={idx} position={[0.42, yPos, -0.155]} material={chassisMat}>
-            <boxGeometry args={[0.11, 0.32, 0.025]} />
-          </mesh>
+          <RoundedBox
+            key={idx}
+            position={[0.42, yPos, -0.155]}
+            args={[0.115, 0.32, 0.028]}
+            radius={0.008}
+            smoothness={2}
+            material={materials.rubberMat}
+          />
         ))}
 
-        {/* Side Recessed Fan Bracket + 3x Realistic 120mm Fans with 9 Curved Blades */}
-        <mesh position={[0.76, 0, -0.36]} material={interiorMat}>
-          <boxGeometry args={[0.56, 2.52, 0.04]} />
-        </mesh>
+        {/* Side Recessed Fan Bracket + 3x Realistic 120mm Fans with 9 Curved 35° Blades */}
+        <RoundedBox
+          position={[0.76, 0, -0.36]}
+          args={[0.56, 2.52, 0.04]}
+          radius={0.008}
+          smoothness={2}
+          material={interiorMat}
+        />
         {[-0.56, 0, 0.56].map((yPos, idx) => (
           <RealisticFan120
             key={`side_${idx}`}
             position={[0.76, yPos, -0.31]}
             frameMat={interiorMat}
+            rubberMat={materials.rubberMat}
             bladeMat={materials.fanBladeMat}
-            rgbMat={materials.rgbCyanMat}
-            hubMat={materials.nickelMat}
+            diffuserMat={materials.diffuserRingMat}
+            hubStickerMat={materials.fanHubStickerMat}
+            hubMetalMat={materials.brushedAluminumMat}
             onRegisterFan={onRegisterFan}
             fanIndex={idx + 1}
           />
         ))}
 
         {/* Rear Exhaust Wall + 120mm Exhaust Fan */}
-        <mesh position={[-1.08, 0, 0]} material={chassisMat} castShadow>
-          <boxGeometry args={[0.05, 2.56, 1.38]} />
-        </mesh>
+        <RoundedBox
+          position={[-1.08, 0, 0]}
+          args={[0.05, 2.56, 1.38]}
+          radius={0.01}
+          smoothness={2}
+          material={chassisMat}
+          castShadow
+        />
         <RealisticFan120
           position={[-1.02, 0.52, 0.18]}
           rotation={[0, Math.PI / 2, 0]}
           scale={0.92}
           frameMat={interiorMat}
+          rubberMat={materials.rubberMat}
           bladeMat={materials.fanBladeMat}
-          rgbMat={materials.rgbCyanMat}
-          hubMat={materials.nickelMat}
+          diffuserMat={materials.diffuserRingMat}
+          hubStickerMat={materials.fanHubStickerMat}
+          hubMetalMat={materials.brushedAluminumMat}
           onRegisterFan={onRegisterFan}
           fanIndex={0}
         />
@@ -329,36 +444,49 @@ function HighDetailPbrFallback({
             rotation={[-Math.PI / 2, 0, 0]}
             scale={0.92}
             frameMat={interiorMat}
+            rubberMat={materials.rubberMat}
             bladeMat={materials.fanBladeMat}
-            rgbMat={materials.rgbPurpleMat}
-            hubMat={materials.nickelMat}
+            diffuserMat={materials.diffuserRingMat}
+            hubStickerMat={materials.fanHubStickerMat}
+            hubMetalMat={materials.brushedAluminumMat}
             onRegisterFan={onRegisterFan}
             fanIndex={10 + idx}
           />
         ))}
 
-        {/* Panoramic Tempered Glass Panels (MeshPhysicalMaterial with transmission) */}
+        {/* Tempered Glass Panels: MeshPhysicalMaterial (roughness: 0.05, transmission: 0.95, ior: 1.5) + Edge Bevel Highlights */}
         <group position={[1.08, 0, 0]}>
           <mesh material={materials.glassTransmissionMat}>
-            <boxGeometry args={[0.02, 2.52, 1.34]} />
+            <boxGeometry args={[0.022, 2.52, 1.34]} />
+          </mesh>
+          {/* Polished Glass Edge Catchlight Strips */}
+          <mesh position={[0, 0, 0.67]} material={materials.glassEdgeMat}>
+            <boxGeometry args={[0.024, 2.52, 0.008]} />
           </mesh>
           <mesh position={[0, 1.24, 0]} material={chassisMat}>
-            <boxGeometry args={[0.03, 0.06, 1.36]} />
+            <boxGeometry args={[0.032, 0.06, 1.36]} />
           </mesh>
           <mesh position={[0, -1.24, 0]} material={chassisMat}>
-            <boxGeometry args={[0.03, 0.06, 1.36]} />
+            <boxGeometry args={[0.032, 0.06, 1.36]} />
           </mesh>
         </group>
 
         <group position={[0, 0, 0.69]}>
           <mesh material={materials.glassTransmissionMat}>
-            <boxGeometry args={[2.16, 2.52, 0.02]} />
+            <boxGeometry args={[2.16, 2.52, 0.022]} />
+          </mesh>
+          {/* Polished Glass Vertical Edge Highlight */}
+          <mesh position={[1.075, 0, 0]} material={materials.glassEdgeMat}>
+            <boxGeometry args={[0.01, 2.52, 0.025]} />
+          </mesh>
+          <mesh position={[-1.075, 0, 0]} material={materials.glassEdgeMat}>
+            <boxGeometry args={[0.01, 2.52, 0.025]} />
           </mesh>
           <mesh position={[0, 1.24, 0]} material={chassisMat}>
-            <boxGeometry args={[2.18, 0.06, 0.028]} />
+            <boxGeometry args={[2.18, 0.06, 0.03]} />
           </mesh>
           <mesh position={[0, -1.24, 0]} material={chassisMat}>
-            <boxGeometry args={[2.18, 0.06, 0.028]} />
+            <boxGeometry args={[2.18, 0.06, 0.03]} />
           </mesh>
         </group>
       </group>
@@ -367,115 +495,171 @@ function HighDetailPbrFallback({
 
   if (cat === 'motherboard') {
     const vrmMat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(part.vrmColor || '#242832'),
-      metalness: 0.82,
-      roughness: 0.24,
+      color: new THREE.Color(part.vrmColor || '#262b36'),
+      metalness: 0.9,
+      roughness: 0.28,
       wireframe,
     });
     const tufAccentMat = new THREE.MeshStandardMaterial({
       color: new THREE.Color(part.accentColor || '#f59e0b'),
-      emissive: new THREE.Color(part.accentColor || '#f59e0b'),
-      emissiveIntensity: 0.55,
+      metalness: 0.65,
+      roughness: 0.3,
       wireframe,
     });
 
     return (
       <group name="Fallback_ASUS_TUF_B650M_Motherboard">
-        {/* High-Resolution Textured PCB Board */}
-        <mesh castShadow receiveShadow>
-          <boxGeometry args={[1.26, 1.54, 0.035]} />
+        {/* Semi-Matte Black PCB Board with High-Resolution Golden/Copper IC Trace Canvas Texture */}
+        <RoundedBox
+          args={[1.26, 1.54, 0.036]}
+          radius={0.008}
+          smoothness={2}
+          castShadow
+          receiveShadow
+        >
           <meshStandardMaterial
             map={pcbTex}
-            metalness={0.32}
-            roughness={0.48}
+            metalness={0.35}
+            roughness={0.42}
             wireframe={wireframe}
           />
-        </mesh>
+        </RoundedBox>
 
-        {/* Left VRM Heatsink Block with Machined Cooling Grooves & TUF Stripes */}
-        <group position={[-0.48, 0.34, 0.07]}>
-          <mesh material={vrmMat} castShadow>
-            <boxGeometry args={[0.24, 0.78, 0.1]} />
-          </mesh>
-          {/* 8 Machined Cooling Fin Ridges along Left VRM */}
-          {Array.from({ length: 8 }).map((_, idx) => (
-            <mesh
+        {/* Left VRM Brushed Aluminum Heatsink with Embossed Relief Cuts & Chamfered Edges */}
+        <group position={[-0.48, 0.34, 0.072]}>
+          <RoundedBox
+            args={[0.245, 0.78, 0.105]}
+            radius={0.012}
+            smoothness={3}
+            material={vrmMat}
+            castShadow
+            receiveShadow
+          />
+          {/* 9 Brushed Aluminum Embossed Fin Ridges with Relief Cuts */}
+          {Array.from({ length: 9 }).map((_, idx) => (
+            <RoundedBox
               key={idx}
-              position={[0.06, -0.3 + idx * 0.085, 0.055]}
+              position={[0.058, -0.32 + idx * 0.08, 0.056]}
+              args={[0.115, 0.044, 0.028]}
+              radius={0.004}
+              smoothness={2}
+              material={materials.brushedAluminumMat}
+              castShadow
+            />
+          ))}
+          {/* Anodized TUF Industrial Accent Bars */}
+          <mesh position={[-0.045, 0.14, 0.056]} material={tufAccentMat}>
+            <boxGeometry args={[0.065, 0.36, 0.008]} />
+          </mesh>
+          <mesh position={[-0.045, -0.22, 0.056]} material={tufAccentMat}>
+            <boxGeometry args={[0.065, 0.12, 0.008]} />
+          </mesh>
+        </group>
+
+        {/* Top VRM Brushed Aluminum Heatsink with 12 Vertical Machined Channels */}
+        <group position={[-0.06, 0.65, 0.068]}>
+          <RoundedBox
+            args={[0.56, 0.155, 0.088]}
+            radius={0.01}
+            smoothness={3}
+            material={vrmMat}
+            castShadow
+            receiveShadow
+          />
+          {Array.from({ length: 12 }).map((_, idx) => (
+            <RoundedBox
+              key={idx}
+              position={[-0.24 + idx * 0.044, 0, 0.048]}
+              args={[0.022, 0.145, 0.024]}
+              radius={0.003}
+              smoothness={2}
+              material={materials.brushedAluminumMat}
+              castShadow
+            />
+          ))}
+          <mesh position={[0, 0.042, 0.048]} material={tufAccentMat}>
+            <boxGeometry args={[0.42, 0.02, 0.008]} />
+          </mesh>
+        </group>
+
+        {/* Physical L-Shaped Power Delivery Array around CPU Socket:
+            Alloy Chokes + Silver Cylindrical Solid Capacitors (Top & Left rows) */}
+        {Array.from({ length: 10 }).map((_, idx) => (
+          <group key={`vrm_top_${idx}`}>
+            {/* Chamfered Alloy Ferrite Choke */}
+            <RoundedBox
+              position={[-0.28 + idx * 0.046, 0.535, 0.034]}
+              args={[0.036, 0.036, 0.03]}
+              radius={0.004}
+              smoothness={2}
               material={vrmMat}
               castShadow
-            >
-              <boxGeometry args={[0.11, 0.045, 0.025]} />
-            </mesh>
-          ))}
-          {/* TUF Yellow/Amber Accent Stripe */}
-          <mesh position={[-0.04, 0.12, 0.054]} material={tufAccentMat}>
-            <boxGeometry args={[0.07, 0.38, 0.008]} />
-          </mesh>
-          <mesh position={[-0.04, -0.22, 0.054]} material={tufAccentMat}>
-            <boxGeometry args={[0.07, 0.12, 0.008]} />
-          </mesh>
-        </group>
-
-        {/* Top VRM Heatsink with 10 Vertical Fin Channels */}
-        <group position={[-0.06, 0.65, 0.065]}>
-          <mesh material={vrmMat} castShadow>
-            <boxGeometry args={[0.56, 0.15, 0.085]} />
-          </mesh>
-          {Array.from({ length: 10 }).map((_, idx) => (
+            />
+            {/* Silver Cylindrical Solid Capacitor with polarity marking cap */}
             <mesh
-              key={idx}
-              position={[-0.22 + idx * 0.048, 0, 0.048]}
-              material={vrmMat}
-            >
-              <boxGeometry args={[0.024, 0.14, 0.022]} />
-            </mesh>
-          ))}
-          <mesh position={[0, 0.04, 0.048]} material={tufAccentMat}>
-            <boxGeometry args={[0.42, 0.022, 0.008]} />
-          </mesh>
-        </group>
-
-        {/* Row of 12 Alloy Chokes & Cylindrical Solid Capacitors around CPU Socket */}
-        {Array.from({ length: 10 }).map((_, idx) => (
-          <group key={`vrm_cap_${idx}`}>
-            {/* Ferrite Choke Cube */}
-            <mesh
-              position={[-0.28 + idx * 0.046, 0.53, 0.032]}
-              material={vrmMat}
-            >
-              <boxGeometry args={[0.034, 0.034, 0.028]} />
-            </mesh>
-            {/* Cylindrical Solid Capacitor */}
-            <mesh
-              position={[-0.28 + idx * 0.046, 0.49, 0.032]}
+              position={[-0.28 + idx * 0.046, 0.492, 0.035]}
               rotation={[Math.PI / 2, 0, 0]}
               material={materials.nickelMat}
+              castShadow
             >
-              <cylinderGeometry args={[0.011, 0.011, 0.028, 12]} />
+              <cylinderGeometry args={[0.012, 0.012, 0.032, 16]} />
             </mesh>
           </group>
         ))}
 
-        {/* Rear I/O Audio Capacitors (Gold/Silver cylinders at bottom-left) */}
+        {/* Vertical Column of 7 Silver Cylindrical Solid Capacitors + Chokes on Left of CPU Socket */}
+        {Array.from({ length: 7 }).map((_, idx) => (
+          <group key={`vrm_left_${idx}`}>
+            <RoundedBox
+              position={[-0.32, 0.14 + idx * 0.05, 0.034]}
+              args={[0.036, 0.036, 0.03]}
+              radius={0.004}
+              smoothness={2}
+              material={vrmMat}
+              castShadow
+            />
+            <mesh
+              position={[-0.275, 0.14 + idx * 0.05, 0.035]}
+              rotation={[Math.PI / 2, 0, 0]}
+              material={materials.nickelMat}
+              castShadow
+            >
+              <cylinderGeometry args={[0.012, 0.012, 0.032, 16]} />
+            </mesh>
+          </group>
+        ))}
+
+        {/* Rear Audio Filtering Gold/Copper Capacitors */}
         {[-0.64, -0.58, -0.52, -0.46, -0.4].map((yPos, idx) => (
           <mesh
             key={`aud_cap_${idx}`}
-            position={[-0.56, yPos, 0.034]}
+            position={[-0.56, yPos, 0.035]}
             rotation={[Math.PI / 2, 0, 0]}
             material={materials.copperMat}
+            castShadow
           >
-            <cylinderGeometry args={[0.016, 0.016, 0.034, 14]} />
+            <cylinderGeometry args={[0.016, 0.016, 0.036, 16]} />
           </mesh>
         ))}
 
-        {/* Silver CR2032 CMOS Battery with Retention Clip */}
+        {/* Silver Round CR2032 CMOS Battery with Retention Socket & Positive Contact Clip */}
         <group position={[-0.28, -0.62, 0.028]}>
-          <mesh rotation={[Math.PI / 2, 0, 0]} material={vrmMat}>
-            <cylinderGeometry args={[0.052, 0.052, 0.016, 24]} />
+          {/* Black Plastic Retention Holder Base */}
+          <mesh rotation={[Math.PI / 2, 0, 0]} material={vrmMat} castShadow>
+            <cylinderGeometry args={[0.056, 0.056, 0.018, 28]} />
           </mesh>
-          <mesh position={[0, 0, 0.005]} rotation={[Math.PI / 2, 0, 0]} material={materials.nickelMat}>
-            <cylinderGeometry args={[0.044, 0.044, 0.014, 24]} />
+          {/* Mirror-Silver CR2032 Coin Cell */}
+          <mesh
+            position={[0, 0, 0.006]}
+            rotation={[Math.PI / 2, 0, 0]}
+            material={materials.nickelMat}
+            castShadow
+          >
+            <cylinderGeometry args={[0.047, 0.047, 0.015, 28]} />
+          </mesh>
+          {/* Metallic Spring Retention Clip */}
+          <mesh position={[0.042, 0, 0.015]} material={materials.brushedAluminumMat}>
+            <boxGeometry args={[0.02, 0.024, 0.006]} />
           </mesh>
         </group>
 
@@ -483,50 +667,77 @@ function HighDetailPbrFallback({
         {[0, 1, 2, 3].map((slotIdx) => {
           const sx = 0.22 + slotIdx * 0.06;
           return (
-            <group key={`dimm_${slotIdx}`} position={[sx, 0.34, 0.035]}>
-              <mesh material={vrmMat}>
-                <boxGeometry args={[0.022, 0.44, 0.03]} />
+            <group key={`dimm_${slotIdx}`} position={[sx, 0.34, 0.036]}>
+              <mesh material={vrmMat} castShadow>
+                <boxGeometry args={[0.022, 0.44, 0.032]} />
               </mesh>
-              {/* Top & Bottom Ejector Latches */}
-              <mesh position={[0, 0.23, 0.012]} material={materials.nickelMat}>
-                <boxGeometry args={[0.026, 0.022, 0.032]} />
+              <mesh position={[0, 0.23, 0.012]} material={materials.brushedAluminumMat}>
+                <boxGeometry args={[0.026, 0.022, 0.034]} />
               </mesh>
-              <mesh position={[0, -0.23, 0.012]} material={materials.nickelMat}>
-                <boxGeometry args={[0.026, 0.022, 0.032]} />
+              <mesh position={[0, -0.23, 0.012]} material={materials.brushedAluminumMat}>
+                <boxGeometry args={[0.026, 0.022, 0.034]} />
               </mesh>
             </group>
           );
         })}
 
-        {/* Steel-Reinforced PCIe 5.0 x16 SafeSlots with Locking Tab */}
+        {/* Metal-Armored PCIe 5.0 x16 SafeSlots with Stainless Steel Side Shields & Locking Latch */}
         {[-0.18, -0.54].map((py, idx) => (
-          <group key={`pcie_${idx}`} position={[-0.06, py, 0.035]}>
-            <mesh material={materials.nickelMat}>
-              <boxGeometry args={[0.68, 0.038, 0.038]} />
+          <group key={`pcie_${idx}`} position={[-0.06, py, 0.038]}>
+            {/* Outer Stainless Steel Armor Shell */}
+            <RoundedBox
+              args={[0.69, 0.042, 0.042]}
+              radius={0.005}
+              smoothness={2}
+              material={materials.nickelMat}
+              castShadow
+            />
+            {/* Inner Dark Slot Connector Channel */}
+            <mesh position={[0, 0, 0.006]} material={vrmMat}>
+              <boxGeometry args={[0.65, 0.018, 0.034]} />
             </mesh>
-            <mesh position={[0.35, 0, 0.01]} material={tufAccentMat}>
-              <boxGeometry args={[0.03, 0.045, 0.03]} />
+            {/* Retention Wing Tab */}
+            <mesh position={[0.355, 0, 0.01]} material={tufAccentMat}>
+              <boxGeometry args={[0.032, 0.048, 0.032]} />
             </mesh>
           </group>
         ))}
 
-        {/* M.2 Thermal Armor Shield & Chipset Heatsink with TUF Graphics */}
-        <mesh position={[-0.08, -0.36, 0.042]} material={vrmMat} castShadow>
-          <boxGeometry args={[0.56, 0.16, 0.04]} />
-        </mesh>
-        <mesh position={[0.28, -0.44, 0.048]} material={vrmMat} castShadow>
-          <boxGeometry args={[0.38, 0.34, 0.052]} />
-        </mesh>
-        <mesh position={[0.28, -0.44, 0.076]} material={tufAccentMat}>
-          <boxGeometry args={[0.26, 0.032, 0.008]} />
-        </mesh>
+        {/* Brushed Aluminum M.2 Thermal Heatsink & Chipset Armor with Relief Grooves */}
+        <group position={[-0.08, -0.36, 0.044]}>
+          <RoundedBox
+            args={[0.56, 0.16, 0.042]}
+            radius={0.006}
+            smoothness={2}
+            material={vrmMat}
+            castShadow
+          />
+          {[-0.04, 0, 0.04].map((ry, rIdx) => (
+            <mesh key={rIdx} position={[0, ry, 0.022]} material={materials.brushedAluminumMat}>
+              <boxGeometry args={[0.5, 0.012, 0.005]} />
+            </mesh>
+          ))}
+        </group>
+
+        <group position={[0.28, -0.44, 0.05]}>
+          <RoundedBox
+            args={[0.38, 0.34, 0.054]}
+            radius={0.008}
+            smoothness={3}
+            material={vrmMat}
+            castShadow
+          />
+          <mesh position={[0, 0, 0.029]} material={tufAccentMat}>
+            <boxGeometry args={[0.28, 0.028, 0.006]} />
+          </mesh>
+        </group>
 
         {/* 24-Pin ATX Power Header & 8-Pin EPS Header */}
-        <mesh position={[0.56, 0.22, 0.045]} material={vrmMat}>
-          <boxGeometry args={[0.055, 0.3, 0.06]} />
+        <mesh position={[0.56, 0.22, 0.046]} material={vrmMat} castShadow>
+          <boxGeometry args={[0.055, 0.3, 0.062]} />
         </mesh>
-        <mesh position={[-0.48, 0.72, 0.045]} material={vrmMat}>
-          <boxGeometry args={[0.16, 0.05, 0.05]} />
+        <mesh position={[-0.48, 0.72, 0.046]} material={vrmMat} castShadow>
+          <boxGeometry args={[0.16, 0.05, 0.052]} />
         </mesh>
       </group>
     );
@@ -535,28 +746,31 @@ function HighDetailPbrFallback({
   if (cat === 'cpu') {
     return (
       <group name="Fallback_AM5_LGA_CPU">
-        {/* Socket Retention ILM Frame & Lever */}
-        <mesh material={materials.nickelMat}>
-          <boxGeometry args={[0.33, 0.35, 0.02]} />
-        </mesh>
+        {/* Brushed Steel Socket Retention ILM Frame & Lever */}
+        <RoundedBox
+          args={[0.33, 0.35, 0.022]}
+          radius={0.004}
+          smoothness={2}
+          material={materials.brushedAluminumMat}
+          castShadow
+        />
         <mesh position={[0.18, 0, 0.01]} material={materials.nickelMat}>
-          <cylinderGeometry args={[0.006, 0.006, 0.36, 8]} />
+          <cylinderGeometry args={[0.006, 0.006, 0.36, 12]} />
         </mesh>
-        {/* Green/Teal CPU Package Substrate */}
-        <mesh position={[0, 0, 0.015]}>
+        {/* Teal/Green Fiberglass CPU Substrate */}
+        <mesh position={[0, 0, 0.016]}>
           <boxGeometry args={[0.27, 0.27, 0.012]} />
-          <meshStandardMaterial color="#0f766e" roughness={0.4} metalness={0.3} wireframe={wireframe} />
+          <meshStandardMaterial color="#0f766e" roughness={0.35} metalness={0.4} wireframe={wireframe} />
         </mesh>
-        {/* Multi-Notched Nickel Integrated Heat Spreader (IHS) */}
-        <mesh position={[0, 0, 0.028]} material={materials.nickelMat} castShadow>
-          <boxGeometry
-            args={
-              part.brand === 'Intel'
-                ? [0.21, 0.26, 0.018]
-                : [0.23, 0.23, 0.018]
-            }
-          />
-        </mesh>
+        {/* Chamfered Nickel-Plated Copper Integrated Heat Spreader (IHS) */}
+        <RoundedBox
+          position={[0, 0, 0.03]}
+          args={part.brand === 'Intel' ? [0.21, 0.26, 0.02] : [0.23, 0.23, 0.02]}
+          radius={0.005}
+          smoothness={3}
+          material={materials.nickelMat}
+          castShadow
+        />
       </group>
     );
   }
@@ -564,8 +778,8 @@ function HighDetailPbrFallback({
   if (cat === 'cooler') {
     const isAir = part.coolerStyle === 'air_dual';
     const bodyMat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(part.radiatorColor || '#161920'),
-      metalness: 0.72,
+      color: new THREE.Color(part.radiatorColor || '#151820'),
+      metalness: 0.85,
       roughness: 0.28,
       wireframe,
     });
@@ -573,22 +787,21 @@ function HighDetailPbrFallback({
     if (isAir) {
       return (
         <group position={[0, 0, 0.08]} name="Fallback_Noctua_Air_Cooler">
-          {/* Dual Fin Array Towers (22 Stacked Fin Plates each) */}
           {[-0.14, 0.14].map((tx, tIdx) => (
             <group key={tIdx} position={[tx, 0, 0]}>
-              {Array.from({ length: 18 }).map((_, fIdx) => (
+              {Array.from({ length: 20 }).map((_, fIdx) => (
                 <mesh
                   key={fIdx}
-                  position={[0, -0.19 + fIdx * 0.022, 0]}
+                  position={[0, -0.19 + fIdx * 0.02, 0]}
                   material={bodyMat}
+                  castShadow
                 >
-                  <boxGeometry args={[0.14, 0.008, 0.36]} />
+                  <boxGeometry args={[0.14, 0.007, 0.36]} />
                 </mesh>
               ))}
-              {/* 4 Heatpipes piercing the tower */}
               {[-0.12, -0.04, 0.04, 0.12].map((zOff, hIdx) => (
                 <mesh key={hIdx} position={[0, 0, zOff]} material={materials.copperMat}>
-                  <cylinderGeometry args={[0.014, 0.014, 0.45, 12]} />
+                  <cylinderGeometry args={[0.014, 0.014, 0.45, 14]} />
                 </mesh>
               ))}
             </group>
@@ -598,9 +811,11 @@ function HighDetailPbrFallback({
             rotation={[0, Math.PI / 2, 0]}
             scale={0.8}
             frameMat={bodyMat}
+            rubberMat={materials.rubberMat}
             bladeMat={materials.fanBladeMat}
-            rgbMat={materials.rgbCyanMat}
-            hubMat={materials.nickelMat}
+            diffuserMat={materials.diffuserRingMat}
+            hubStickerMat={materials.fanHubStickerMat}
+            hubMetalMat={materials.brushedAluminumMat}
             onRegisterFan={onRegisterFan}
             fanIndex={4}
           />
@@ -608,61 +823,97 @@ function HighDetailPbrFallback({
       );
     }
 
-    // NZXT Kraken Elite 360: Cylindrical Pump w/ Circular 42°C LCD + CatmullRom Tubes + 360mm Top Radiator
+    // NZXT Kraken Elite 360 AIO:
+    // - Pump block with machined aluminum outer ring & mirror-glass top displaying 42°C telemetry
+    // - Braided nylon hoses with alignment clips (presilhas)
+    // - 360mm radiator with 3 chamfered 120mm fans
+    const hoseA = [
+      [0.14, 0.02, 0.02],
+      [0.36, 0.08, 0.22],
+      [0.56, 0.35, 0.25],
+      [0.7, 0.62, 0.2],
+    ];
+    const hoseB = [
+      [0.11, -0.07, 0.02],
+      [0.33, -0.01, 0.25],
+      [0.52, 0.29, 0.28],
+      [0.64, 0.62, 0.24],
+    ];
+
     return (
       <group name="Fallback_NZXT_Kraken_360">
-        {/* Pump Block over CPU Socket */}
-        <mesh rotation={[Math.PI / 2, 0, 0]} material={bodyMat} castShadow>
-          <cylinderGeometry args={[0.165, 0.175, 0.15, 36]} />
-        </mesh>
-        <mesh position={[0, 0, 0.077]} material={materials.rgbCyanMat}>
-          <ringGeometry args={[0.145, 0.16, 36]} />
-        </mesh>
-        <mesh position={[0, 0, 0.078]} material={materials.krakenLcdMat}>
-          <circleGeometry args={[0.142, 36]} />
+        {/* Lower Pump Housing */}
+        <mesh rotation={[Math.PI / 2, 0, 0]} material={bodyMat} castShadow receiveShadow>
+          <cylinderGeometry args={[0.162, 0.174, 0.145, 40]} />
         </mesh>
 
-        {/* Top 360mm Radiator + 3x Realistic 120mm Fans */}
+        {/* Machined Anodized Aluminum Outer Bezel Ring with Chamfered Step */}
+        <mesh position={[0, 0, 0.056]} rotation={[Math.PI / 2, 0, 0]} material={materials.brushedAluminumMat} castShadow>
+          <cylinderGeometry args={[0.172, 0.168, 0.042, 40, 1, true]} />
+        </mesh>
+        <mesh position={[0, 0, 0.076]} material={materials.brushedAluminumMat}>
+          <ringGeometry args={[0.148, 0.172, 40]} />
+        </mesh>
+
+        {/* Soft Translucent Halo Ring inside Pump Bezel */}
+        <mesh position={[0, 0, 0.077]} material={materials.diffuserRingMat}>
+          <ringGeometry args={[0.138, 0.148, 40]} />
+        </mesh>
+
+        {/* Internal LCD Telemetry Display (42°C) */}
+        <mesh position={[0, 0, 0.0775]} material={materials.krakenLcdMat}>
+          <circleGeometry args={[0.138, 40]} />
+        </mesh>
+
+        {/* Mirror-Finish Clearcoat Glass Cap over the LCD */}
+        <mesh position={[0, 0, 0.08]} material={materials.mirrorGlassCapMat}>
+          <circleGeometry args={[0.148, 40]} />
+        </mesh>
+
+        {/* Top 360mm Aluminum Radiator + 3x Realistic 120mm Fans */}
         <group position={[0.26, 0.68, 0.2]}>
-          <mesh material={bodyMat} castShadow>
-            <boxGeometry args={[1.56, 0.095, 0.5]} />
-          </mesh>
+          <RoundedBox
+            args={[1.56, 0.098, 0.5]}
+            radius={0.01}
+            smoothness={3}
+            material={bodyMat}
+            castShadow
+            receiveShadow
+          />
           {[-0.5, 0, 0.5].map((xPos, idx) => (
             <RealisticFan120
               key={`rad_${idx}`}
-              position={[xPos, -0.08, 0]}
+              position={[xPos, -0.082, 0]}
               rotation={[Math.PI / 2, 0, 0]}
               scale={0.94}
               frameMat={bodyMat}
+              rubberMat={materials.rubberMat}
               bladeMat={materials.fanBladeMat}
-              rgbMat={materials.rgbCyanMat}
-              hubMat={materials.nickelMat}
+              diffuserMat={materials.diffuserRingMat}
+              hubStickerMat={materials.fanHubStickerMat}
+              hubMetalMat={materials.brushedAluminumMat}
               onRegisterFan={onRegisterFan}
               fanIndex={4 + idx}
             />
           ))}
         </group>
 
-        {/* 2 Flexible Sleeved Liquid Tubes (CatmullRomCurve3) */}
-        <BraidedTube
-          points={[
-            [0.14, 0, 0.02],
-            [0.38, 0.08, 0.22],
-            [0.58, 0.35, 0.25],
-            [0.72, 0.62, 0.2],
-          ]}
-          radius={0.023}
+        {/* 2 Braided Nylon Sleeved Liquid Hoses */}
+        <BraidedTube points={hoseA} radius={0.023} material={materials.braidedSleeveMat} />
+        <BraidedTube points={hoseB} radius={0.023} material={materials.braidedSleeveMat} />
+
+        {/* 2 Hose Alignment Clips (Presilhas de Alinhamento) */}
+        <HoseAlignmentClip
+          posA={hoseA[1]}
+          posB={hoseB[1]}
           material={bodyMat}
+          trimMat={materials.brushedAluminumMat}
         />
-        <BraidedTube
-          points={[
-            [0.1, -0.08, 0.02],
-            [0.34, -0.02, 0.26],
-            [0.52, 0.28, 0.28],
-            [0.64, 0.62, 0.24],
-          ]}
-          radius={0.023}
+        <HoseAlignmentClip
+          posA={hoseA[2]}
+          posB={hoseB[2]}
           material={bodyMat}
+          trimMat={materials.brushedAluminumMat}
         />
       </group>
     );
@@ -670,96 +921,133 @@ function HighDetailPbrFallback({
 
   if (cat === 'gpu') {
     const shroudMat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(part.shroudColor || '#1c2029'),
-      metalness: 0.78,
-      roughness: 0.25,
+      color: new THREE.Color(part.shroudColor || '#1a1e26'),
+      metalness: 0.86,
+      roughness: 0.28,
       wireframe,
     });
     const trimMat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(part.trimColor || '#475569'),
-      metalness: 0.88,
-      roughness: 0.2,
+      color: new THREE.Color(part.trimColor || '#64748b'),
+      metalness: 0.92,
+      roughness: 0.24,
       wireframe,
     });
     const gpuLen = 1.24;
 
     return (
-      <group name="Fallback_ROG_Strix_RTX_4070">
-        {/* 1. Textured Brushed-Metal ROG Backplate on Top */}
-        <mesh position={[0, 0.098, 0]} castShadow receiveShadow>
-          <boxGeometry args={[gpuLen * 0.99, 0.012, 0.48]} />
+      <group name="Fallback_ROG_Strix_RTX_4070_ThreeLayer">
+        {/* =================================================================
+            LAYER 1 (TOP): Brushed-Metal Backplate with Ventilation Cutouts
+           ================================================================= */}
+        <RoundedBox
+          position={[0, 0.098, 0]}
+          args={[gpuLen * 0.99, 0.015, 0.48]}
+          radius={0.004}
+          smoothness={2}
+          castShadow
+          receiveShadow
+        >
           <meshStandardMaterial
             map={gpuBackplateTex}
-            metalness={0.82}
-            roughness={0.24}
+            metalness={0.9}
+            roughness={0.26}
             wireframe={wireframe}
           />
-        </mesh>
+        </RoundedBox>
 
-        {/* 2. Exposed Individual Silver Aluminum Fin Stack Array in Middle (42 thin metallic plates) */}
-        <group position={[0, 0.01, 0]}>
-          {Array.from({ length: 42 }).map((_, fIdx) => (
+        {/* =================================================================
+            LAYER 2 (MIDDLE): Dense Array of 56 Aluminized Silver Heatsink Fins
+            + 5 Exposed Copper Heatpipes running through the fin stack
+           ================================================================= */}
+        <group position={[0, 0.012, 0]}>
+          {Array.from({ length: 56 }).map((_, fIdx) => (
             <mesh
               key={`fin_${fIdx}`}
-              position={[-gpuLen * 0.46 + (fIdx / 41) * (gpuLen * 0.92), 0, 0]}
+              position={[-gpuLen * 0.465 + (fIdx / 55) * (gpuLen * 0.93), 0, 0]}
               material={materials.nickelMat}
+              castShadow
+              receiveShadow
             >
-              <boxGeometry args={[0.007, 0.11, 0.47]} />
+              <boxGeometry args={[0.006, 0.115, 0.468]} />
             </mesh>
           ))}
         </group>
 
-        {/* 3. 5 Exposed Copper Heatpipes running through the Fin Stack and curving out the end */}
+        {/* 5 Exposed Copper Heatpipes piercing the heatsink fin stack */}
         {[-0.16, -0.08, 0, 0.08, 0.16].map((zOff, idx) => (
           <mesh
             key={`hp_${idx}`}
-            position={[0.02, 0.01, zOff]}
+            position={[0.02, 0.012, zOff]}
             rotation={[0, 0, Math.PI / 2]}
             material={materials.copperMat}
+            castShadow
           >
-            <cylinderGeometry args={[0.012, 0.012, gpuLen * 0.99, 14]} />
+            <cylinderGeometry args={[0.0125, 0.0125, gpuLen * 0.995, 16]} />
           </mesh>
         ))}
 
-        {/* 4. Chamfered ROG Strix Shroud Frame Rails (Front & Rear Top/Bottom Bezels leaving fins visible) */}
-        <mesh position={[0, 0.065, 0.235]} material={shroudMat} castShadow>
-          <boxGeometry args={[gpuLen, 0.055, 0.03]} />
-        </mesh>
-        <mesh position={[0, -0.055, 0.235]} material={shroudMat} castShadow>
-          <boxGeometry args={[gpuLen, 0.045, 0.03]} />
-        </mesh>
-        {/* Bottom Fan Shroud Deck */}
-        <mesh position={[0, -0.065, 0]} material={shroudMat} castShadow>
-          <boxGeometry args={[gpuLen, 0.04, 0.48]} />
-        </mesh>
+        {/* =================================================================
+            LAYER 3 (BOTTOM): Chamfered Shroud Housing with 3 Recessed Fans
+            (9 curved blades at 35° pitch + textured sticker hub)
+           ================================================================= */}
+        {/* Upper & Lower Chamfered Shroud Frame Rails */}
+        <RoundedBox
+          position={[0, 0.066, 0.235]}
+          args={[gpuLen, 0.052, 0.032]}
+          radius={0.006}
+          smoothness={2}
+          material={shroudMat}
+          castShadow
+        />
+        <RoundedBox
+          position={[0, -0.056, 0.235]}
+          args={[gpuLen, 0.044, 0.032]}
+          radius={0.006}
+          smoothness={2}
+          material={shroudMat}
+          castShadow
+        />
+        {/* Lower Shroud Deck */}
+        <RoundedBox
+          position={[0, -0.068, 0]}
+          args={[gpuLen, 0.042, 0.48]}
+          radius={0.008}
+          smoothness={3}
+          material={shroudMat}
+          castShadow
+          receiveShadow
+        />
 
-        {/* Angled Metallic Strix Armor Claws on Front Edge */}
+        {/* Angled Brushed Metal Strix Armor Accents */}
         {[-0.42, -0.14, 0.14, 0.42].map((xPos, idx) => (
-          <mesh
+          <RoundedBox
             key={`claw_${idx}`}
             position={[xPos, 0.01, 0.244]}
             rotation={[0, 0, 0.35]}
+            args={[0.036, 0.15, 0.016]}
+            radius={0.003}
+            smoothness={2}
             material={trimMat}
-          >
-            <boxGeometry args={[0.035, 0.15, 0.015]} />
-          </mesh>
+            castShadow
+          />
         ))}
 
-        {/* 5. Republic of Gamers RGB Light Bar & End-Cap Infinity Ring */}
-        <mesh position={[-0.16, 0.068, 0.252]} material={materials.rgbPinkMat}>
-          <boxGeometry args={[gpuLen * 0.46, 0.022, 0.008]} />
+        {/* Controlled Translucent Diffused Light Bar on Side Edge */}
+        <mesh position={[-0.12, 0.068, 0.253]} material={materials.diffuserBarMat}>
+          <boxGeometry args={[gpuLen * 0.62, 0.018, 0.008]} />
         </mesh>
-        <mesh position={[0.32, 0.068, 0.252]} material={materials.rgbCyanMat}>
-          <boxGeometry args={[gpuLen * 0.26, 0.022, 0.008]} />
-        </mesh>
-        <mesh position={[gpuLen * 0.495, 0.01, 0]} material={materials.rgbPinkMat}>
-          <boxGeometry args={[0.012, 0.13, 0.44]} />
+        <mesh position={[gpuLen * 0.495, 0.01, 0]} material={materials.diffuserBarMat}>
+          <boxGeometry args={[0.012, 0.125, 0.44]} />
         </mesh>
 
-        {/* 6. PCIe 16-Pin 12VHPWR Power Header + Braided Cable */}
-        <mesh position={[0.34, 0.065, 0.24]} material={trimMat}>
-          <boxGeometry args={[0.09, 0.045, 0.045]} />
-        </mesh>
+        {/* PCIe 16-Pin 12VHPWR Power Header + Braided Nylon Cable */}
+        <RoundedBox
+          position={[0.34, 0.065, 0.24]}
+          args={[0.09, 0.045, 0.045]}
+          radius={0.004}
+          smoothness={2}
+          material={trimMat}
+        />
         <BraidedTube
           points={[
             [0.34, 0.04, 0.26],
@@ -768,25 +1056,31 @@ function HighDetailPbrFallback({
             [0.26, -0.45, -0.14],
           ]}
           radius={0.022}
-          material={shroudMat}
+          material={materials.braidedSleeveMat}
         />
 
-        {/* 7. Dual-Slot Brushed Steel Rear I/O Bracket */}
-        <mesh position={[-gpuLen / 2 - 0.015, -0.02, 0]} material={materials.nickelMat}>
-          <boxGeometry args={[0.025, 0.24, 0.46]} />
-        </mesh>
+        {/* Dual-Slot Stainless Steel Rear I/O Bracket */}
+        <RoundedBox
+          position={[-gpuLen / 2 - 0.015, -0.02, 0]}
+          args={[0.026, 0.24, 0.46]}
+          radius={0.003}
+          smoothness={2}
+          material={materials.nickelMat}
+        />
 
-        {/* 8. 3x Realistic Axial-Tech Fans on Bottom with 9 Curved 30° Blades spinning */}
+        {/* 3 Recessed Axial-Tech Fans on Bottom with 9 Curved 35° Blades + Textured Hub Sticker */}
         {[-0.36, 0, 0.36].map((xNorm, idx) => (
           <RealisticFan120
             key={`gpu_f_${idx}`}
-            position={[xNorm * gpuLen * 0.9, -0.092, 0]}
+            position={[xNorm * gpuLen * 0.9, -0.09, 0]}
             rotation={[Math.PI / 2, 0, 0]}
             scale={0.62}
             frameMat={shroudMat}
+            rubberMat={materials.rubberMat}
             bladeMat={materials.fanBladeMat}
-            rgbMat={materials.rgbCyanMat}
-            hubMat={materials.nickelMat}
+            diffuserMat={materials.diffuserRingMat}
+            hubStickerMat={materials.fanHubStickerMat}
+            hubMetalMat={materials.brushedAluminumMat}
             onRegisterFan={onRegisterFan}
             fanIndex={7 + idx}
           />
@@ -796,43 +1090,81 @@ function HighDetailPbrFallback({
   }
 
   if (cat === 'ram') {
-    const heatMat = new THREE.MeshStandardMaterial({
+    const matteHeatsinkMat = new THREE.MeshStandardMaterial({
       color: new THREE.Color(part.heatsinkColor || '#181b22'),
-      metalness: 0.85,
-      roughness: 0.2,
+      metalness: 0.72,
+      roughness: 0.38,
       wireframe,
     });
     return (
-      <group name="Fallback_GSkill_Trident_Z5_Stick">
-        <mesh material={heatMat} castShadow>
-          <boxGeometry args={[0.032, 0.42, 0.11]} />
-        </mesh>
-        {/* Brushed Aluminum Side Fin Strip */}
-        <mesh position={[0.017, 0, 0]} material={materials.nickelMat}>
-          <boxGeometry args={[0.003, 0.38, 0.04]} />
-        </mesh>
-        {/* Diffused Top RGB Bar */}
-        <mesh position={[0, 0, 0.06]} material={materials.rgbCyanMat}>
-          <boxGeometry args={[0.034, 0.425, 0.022]} />
-        </mesh>
+      <group name="Fallback_Asymmetric_DDR5_Stick">
+        {/* Asymmetric Geometric Extruded Heatsink Armor */}
+        <mesh
+          geometry={sharedRamHeatsinkGeometry}
+          rotation={[0, Math.PI / 2, Math.PI / 2]}
+          material={matteHeatsinkMat}
+          castShadow
+          receiveShadow
+        />
+        {/* Brushed Aluminum Diagonal Accent Wing */}
+        <RoundedBox
+          position={[0.016, 0.01, -0.004]}
+          args={[0.004, 0.36, 0.038]}
+          radius={0.001}
+          smoothness={2}
+          material={materials.brushedAluminumMat}
+        />
+        {/* Translucent Top Diffuser Light Bar with Subtle Gradient */}
+        <RoundedBox
+          position={[0, 0, 0.056]}
+          args={[0.03, 0.422, 0.02]}
+          radius={0.005}
+          smoothness={2}
+          material={materials.diffuserBarMat}
+        />
       </group>
     );
   }
 
   if (cat === 'storage') {
     return (
-      <group name="Fallback_Samsung_990_PRO_SSD">
-        <mesh castShadow>
-          <boxGeometry args={[0.46, 0.12, 0.035]} />
+      <group name="Fallback_Samsung_990_PRO_Integrated_Heatsink_SSD">
+        {/* Dark Green/Black M.2 2280 PCB Substrate with Gold Key-M Edge */}
+        <mesh position={[0, 0, -0.01]} castShadow>
+          <boxGeometry args={[0.48, 0.125, 0.008]} />
+          <meshStandardMaterial color="#0f172a" metalness={0.45} roughness={0.38} wireframe={wireframe} />
+        </mesh>
+        <mesh position={[-0.235, 0, -0.01]} material={materials.copperMat}>
+          <boxGeometry args={[0.016, 0.11, 0.01]} />
+        </mesh>
+
+        {/* Integrated Chamfered Metallic M.2 Heatsink Body */}
+        <RoundedBox
+          position={[0, 0, 0.008]}
+          args={[0.45, 0.122, 0.028]}
+          radius={0.005}
+          smoothness={3}
+          material={materials.brushedAluminumMat}
+          castShadow
+          receiveShadow
+        />
+
+        {/* Machined Cooling Grooves on Integrated M.2 Heatsink */}
+        {[-0.16, -0.1, 0.1, 0.16].map((gx, idx) => (
+          <mesh key={idx} position={[gx, 0, 0.023]} material={materials.nickelMat}>
+            <boxGeometry args={[0.018, 0.118, 0.004]} />
+          </mesh>
+        ))}
+
+        {/* Thermal Specification Label Sticker on Top Center */}
+        <mesh position={[0, 0, 0.024]}>
+          <planeGeometry args={[0.38, 0.106]} />
           <meshStandardMaterial
             map={ssdLabelTex}
-            metalness={0.65}
-            roughness={0.28}
+            metalness={0.35}
+            roughness={0.32}
             wireframe={wireframe}
           />
-        </mesh>
-        <mesh position={[0, 0, 0.02]} material={materials.rgbPinkMat}>
-          <boxGeometry args={[0.34, 0.014, 0.006]} />
         </mesh>
       </group>
     );
@@ -841,21 +1173,26 @@ function HighDetailPbrFallback({
   if (cat === 'psu') {
     return (
       <group name="Fallback_Corsair_RM1000_PSU">
-        <mesh castShadow receiveShadow>
-          <boxGeometry args={[0.64, 0.42, 0.44]} />
+        <RoundedBox
+          args={[0.64, 0.42, 0.44]}
+          radius={0.012}
+          smoothness={3}
+          castShadow
+          receiveShadow
+        >
           <meshStandardMaterial
-            color="#161820"
-            metalness={0.72}
-            roughness={0.28}
+            color="#151821"
+            metalness={0.85}
+            roughness={0.32}
             wireframe={wireframe}
           />
-        </mesh>
-        <mesh position={[0, 0, 0.224]}>
+        </RoundedBox>
+        <mesh position={[0, 0, 0.222]}>
           <planeGeometry args={[0.56, 0.28]} />
           <meshStandardMaterial
             map={psuLabelTex}
-            roughness={0.22}
-            metalness={0.25}
+            roughness={0.28}
+            metalness={0.35}
             wireframe={wireframe}
           />
         </mesh>
@@ -1035,77 +1372,149 @@ export default function CapeModel({
   }, []);
 
   const krakenLcdTex = useMemo(() => createKrakenLcdTexture(42, 48, 422), []);
+  const fanHubStickerTex = useMemo(() => createFanHubStickerTexture(), []);
+  const braidedSleeveTex = useMemo(() => createBraidedSleeveTexture(), []);
+  const softRgbGradTex = useMemo(() => createSoftRgbGradientTexture(), []);
 
   const materials = useMemo(() => {
     return {
+      // Tempered Glass: roughness 0.05, transmission 0.95, ior 1.5, subtle edge sheen
       glassTransmissionMat: new THREE.MeshPhysicalMaterial({
-        color: new THREE.Color('#ffffff'),
+        color: new THREE.Color('#f8fafc'),
         transparent: true,
-        opacity: wireframe ? 0.25 : 0.14,
-        transmission: wireframe ? 0 : 0.88,
-        roughness: 0.04,
-        metalness: 0.05,
+        opacity: wireframe ? 0.25 : 1.0,
+        transmission: wireframe ? 0 : 0.95,
+        roughness: 0.05,
+        metalness: 0.0,
         ior: 1.5,
-        thickness: 0.04,
+        thickness: 0.06,
+        reflectivity: 0.65,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.05,
+        attenuationColor: new THREE.Color('#e2e8f0'),
+        attenuationDistance: 2.2,
         depthWrite: false,
         wireframe,
       }),
-      nickelMat: new THREE.MeshStandardMaterial({
-        color: new THREE.Color('#cbd5e1'),
-        metalness: 0.92,
-        roughness: 0.18,
+      glassEdgeMat: new THREE.MeshPhysicalMaterial({
+        color: new THREE.Color('#e2e8f0'),
+        transparent: true,
+        opacity: 0.42,
+        roughness: 0.08,
+        metalness: 0.2,
+        clearcoat: 1.0,
         wireframe,
       }),
+      // Mirror-tinted glass lens over the AIO LCD pump display
+      mirrorGlassCapMat: new THREE.MeshPhysicalMaterial({
+        color: new THREE.Color('#ffffff'),
+        transparent: true,
+        opacity: 0.22,
+        roughness: 0.03,
+        metalness: 0.15,
+        ior: 1.52,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.02,
+        reflectivity: 0.9,
+        depthWrite: false,
+        wireframe,
+      }),
+      // Industrial Aluminum & Nickel Heatsink Fins (metalness 0.85 - 0.95, roughness 0.25 - 0.4)
+      nickelMat: new THREE.MeshStandardMaterial({
+        color: new THREE.Color('#d1d5db'),
+        metalness: 0.92,
+        roughness: 0.26,
+        wireframe,
+      }),
+      brushedAluminumMat: new THREE.MeshPhysicalMaterial({
+        color: new THREE.Color('#94a3b8'),
+        metalness: 0.88,
+        roughness: 0.28,
+        clearcoat: 0.25,
+        clearcoatRoughness: 0.3,
+        wireframe,
+      }),
+      // Copper Heatpipes & Capacitors (metalness 0.92, roughness 0.25)
       copperMat: new THREE.MeshStandardMaterial({
         color: new THREE.Color('#d97706'),
-        metalness: 0.9,
-        roughness: 0.2,
+        metalness: 0.92,
+        roughness: 0.25,
         wireframe,
       }),
-      fanBladeMat: new THREE.MeshStandardMaterial({
-        color: new THREE.Color('#475569'),
-        transparent: true,
-        opacity: 0.88,
-        roughness: 0.22,
+      // Vulcanized Rubber Corner Dampeners
+      rubberMat: new THREE.MeshStandardMaterial({
+        color: new THREE.Color('#0b0d12'),
+        metalness: 0.08,
+        roughness: 0.78,
+        wireframe,
+      }),
+      // Braided Nylon Sleeve Material
+      braidedSleeveMat: new THREE.MeshStandardMaterial({
+        map: braidedSleeveTex,
+        bumpMap: braidedSleeveTex,
+        bumpScale: 0.008,
         metalness: 0.35,
+        roughness: 0.48,
         wireframe,
       }),
-      rgbCyanMat: new THREE.MeshStandardMaterial({
-        color: new THREE.Color('#38bdf8'),
+      // Polycarbonate Curved Fan Blades
+      fanBladeMat: new THREE.MeshPhysicalMaterial({
+        color: new THREE.Color('#334155'),
+        transparent: true,
+        opacity: 0.92,
+        roughness: 0.26,
+        metalness: 0.45,
+        clearcoat: 0.35,
+        wireframe,
+      }),
+      // Center Fan Hub Sticker Material
+      fanHubStickerMat: new THREE.MeshStandardMaterial({
+        map: fanHubStickerTex,
+        metalness: 0.8,
+        roughness: 0.25,
+        wireframe,
+      }),
+      // Translucent Diffuser Ring (Controlled soft gradient emission, non-opaque)
+      diffuserRingMat: new THREE.MeshPhysicalMaterial({
+        map: softRgbGradTex,
+        emissiveMap: softRgbGradTex,
         emissive: new THREE.Color('#38bdf8'),
-        emissiveIntensity: 0.95,
-        roughness: 0.25,
+        emissiveIntensity: 0.42,
+        transparent: true,
+        opacity: 0.78,
+        transmission: 0.35,
+        roughness: 0.32,
+        metalness: 0.1,
         wireframe,
       }),
-      rgbPurpleMat: new THREE.MeshStandardMaterial({
-        color: new THREE.Color('#818cf8'),
-        emissive: new THREE.Color('#818cf8'),
-        emissiveIntensity: 0.85,
-        roughness: 0.25,
-        wireframe,
-      }),
-      rgbPinkMat: new THREE.MeshStandardMaterial({
-        color: new THREE.Color('#ec4899'),
-        emissive: new THREE.Color('#ec4899'),
-        emissiveIntensity: 1.05,
-        roughness: 0.25,
+      // Translucent RAM & GPU Diffuser Light Bar (Subtle gradient emission)
+      diffuserBarMat: new THREE.MeshPhysicalMaterial({
+        map: softRgbGradTex,
+        emissiveMap: softRgbGradTex,
+        emissive: new THREE.Color('#ffffff'),
+        emissiveIntensity: 0.48,
+        transparent: true,
+        opacity: 0.85,
+        transmission: 0.3,
+        roughness: 0.28,
+        metalness: 0.1,
         wireframe,
       }),
       krakenLcdMat: new THREE.MeshStandardMaterial({
         map: krakenLcdTex,
         emissiveMap: krakenLcdTex,
         emissive: new THREE.Color('#ffffff'),
-        emissiveIntensity: 0.9,
-        roughness: 0.1,
+        emissiveIntensity: 0.72,
+        roughness: 0.12,
         wireframe,
       }),
     };
-  }, [wireframe, krakenLcdTex]);
+  }, [wireframe, krakenLcdTex, fanHubStickerTex, braidedSleeveTex, softRgbGradTex]);
 
   useFrame((_, delta) => {
     for (let i = 0; i < fanRefs.current.length; i++) {
       const f = fanRefs.current[i];
-      if (f) f.rotation.z -= delta * 8.5;
+      if (f) f.rotation.z -= delta * 7.5;
     }
   });
 

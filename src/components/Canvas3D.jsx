@@ -1,26 +1,106 @@
 import React, { Suspense, useEffect, useRef } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, ContactShadows, Environment } from '@react-three/drei';
+import {
+  OrbitControls,
+  ContactShadows,
+  Environment,
+  Lightformer,
+} from '@react-three/drei';
+import { EffectComposer, N8AO } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import CapeModel from './CapeModel';
 
 /**
- * Studio Lighting + HDRI <Environment /> for realistic metallic & glass reflections on .GLB models
+ * Industrial Studio Lighting Rig + Neutral Studio HDRI Environment + Cool & Warm Rim Lights
+ * Configured for realistic specular highlights on brushed aluminum, copper heatpipes, and tempered glass.
  */
-function StudioEnvironmentRig({ envPreset = 'city' }) {
+function StudioEnvironmentRig({ envPreset = 'studio' }) {
   return (
     <>
-      <ambientLight intensity={0.65} color="#f8fafc" />
+      {/* Subtle neutral studio ambient fill */}
+      <ambientLight intensity={0.4} color="#f8fafc" />
+
+      {/* Primary Key Studio Softbox Light */}
       <directionalLight
-        position={[4.5, 6.0, 5.0]}
-        intensity={2.2}
+        position={[4.2, 6.2, 5.2]}
+        intensity={2.4}
         color="#ffffff"
         castShadow
-        shadow-mapSize={[1024, 1024]}
+        shadow-mapSize={[2048, 2048]}
+        shadow-bias={-0.0002}
       />
-      <directionalLight position={[-4.0, 3.0, 3.0]} intensity={1.1} color="#cbd5e1" />
+
+      {/* Cool Rim Light (Back-Left / Top Edge Highlight for angular case & heatsink contours) */}
+      <spotLight
+        position={[-4.8, 3.8, -3.6]}
+        angle={0.65}
+        penumbra={0.85}
+        intensity={4.2}
+        color="#38bdf8"
+        distance={14}
+      />
+      <directionalLight
+        position={[-4.2, 2.4, 2.8]}
+        intensity={1.35}
+        color="#7dd3fc"
+      />
+
+      {/* Warm Rim Light (Back-Right / Lower Edge Highlight for copper heatpipes & chamfered shrouds) */}
+      <spotLight
+        position={[4.6, -1.8, -3.4]}
+        angle={0.7}
+        penumbra={0.9}
+        intensity={3.6}
+        color="#fb923c"
+        distance={14}
+      />
+      <pointLight
+        position={[2.8, -1.2, 2.6]}
+        intensity={1.1}
+        color="#fde68a"
+        distance={8}
+      />
+
+      {/* Neutral Studio HDRI / Room Environment with Procedural Studio Softbox Lightformers */}
       <Suspense fallback={null}>
-        <Environment preset={envPreset} />
+        <Environment preset={envPreset} environmentIntensity={1.15} resolution={512}>
+          {/* Overhead neutral studio softbox */}
+          <Lightformer
+            form="rect"
+            intensity={2.8}
+            color="#ffffff"
+            scale={[6, 3, 1]}
+            position={[0, 4.5, 0]}
+            rotation={[Math.PI / 2, 0, 0]}
+          />
+          {/* Left cool metallic reflection strip */}
+          <Lightformer
+            form="rect"
+            intensity={2.2}
+            color="#bae6fd"
+            scale={[4, 5, 1]}
+            position={[-4.5, 1.0, -1.5]}
+            rotation={[0, Math.PI / 2.2, 0]}
+          />
+          {/* Right warm industrial reflection strip */}
+          <Lightformer
+            form="rect"
+            intensity={1.9}
+            color="#fed7aa"
+            scale={[4, 5, 1]}
+            position={[4.5, 0.5, -1.5]}
+            rotation={[0, -Math.PI / 2.2, 0]}
+          />
+          {/* Front subtle glass catchlight bar */}
+          <Lightformer
+            form="rect"
+            intensity={1.4}
+            color="#f8fafc"
+            scale={[2.5, 4, 1]}
+            position={[1.8, 1.2, 4.2]}
+            target={[0, 0, 0]}
+          />
+        </Environment>
       </Suspense>
     </>
   );
@@ -83,7 +163,7 @@ export default function Canvas3D({
   build,
   customGlbOverrides,
   showBoundingLabels,
-  envPreset = 'city',
+  envPreset = 'studio',
   wireframe,
   autoRotate,
   explodedView,
@@ -124,7 +204,7 @@ export default function Canvas3D({
   }, [cameraViewTrigger]);
 
   return (
-    <div className="relative w-full h-full overflow-hidden bg-[#101216]">
+    <div className="relative w-full h-full overflow-hidden bg-[#0c0e13]">
       <Canvas
         shadows
         dpr={[1, 2]}
@@ -132,6 +212,8 @@ export default function Canvas3D({
           preserveDrawingBuffer: true,
           alpha: true,
           antialias: true,
+          toneMapping: THREE.ACESFilmicToneMapping,
+          toneMappingExposure: 1.18,
           powerPreference: 'high-performance',
         }}
         camera={{
@@ -143,7 +225,7 @@ export default function Canvas3D({
       >
         <StudioEnvironmentRig envPreset={envPreset} />
 
-        {/* Real GLTF/GLB Socket Assembly with Missing-GLB Wireframe BoundingBox Fallback */}
+        {/* Real GLTF/GLB Socket Assembly with Photorealistic Industrial PBR Fallback */}
         <CapeModel
           build={build}
           customGlbOverrides={customGlbOverrides}
@@ -152,12 +234,23 @@ export default function Canvas3D({
           explodedView={explodedView}
         />
 
-        {/* Soft Studio Contact Shadows */}
+        {/* Lightweight Ambient Occlusion (N8AO) for realistic contact shadows between slots, fins & connectors */}
+        <EffectComposer disableNormalPass={false} multisampling={4}>
+          <N8AO
+            aoRadius={0.32}
+            distanceFalloff={0.85}
+            intensity={2.4}
+            color="#030407"
+            halfRes={false}
+          />
+        </EffectComposer>
+
+        {/* Ground Studio Contact Shadows */}
         <ContactShadows
           position={[0, -1.42, 0]}
-          opacity={0.65}
+          opacity={0.75}
           scale={8.0}
-          blur={2.4}
+          blur={2.1}
           far={4.5}
           color="#000000"
         />

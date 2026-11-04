@@ -11,8 +11,8 @@ export default function App() {
   // Optional local .GLB ObjectURL overrides uploaded directly in browser per category
   const [customGlbOverrides, setCustomGlbOverrides] = useState({});
 
-  // 3D Viewport & HDRI Environment Controls (GLB Path Labels OFF by default)
-  const [envPreset, setEnvPreset] = useState('city');
+  // 3D Viewport & HDRI Environment Controls (GLB Path Labels OFF by default, Neutral Studio HDRI default)
+  const [envPreset, setEnvPreset] = useState('studio');
   const [showBoundingLabels, setShowBoundingLabels] = useState(false);
   const [wireframe, setWireframe] = useState(false);
   const [autoRotate, setAutoRotate] = useState(false);

@@ -98,9 +98,7 @@ export function getFallbackProductPhotoDataUri(part) {
     const isCorsair = part.id.includes('4000d');
     const isLianLi = part.id.includes('o11');
 
-    // Isometric 3D Studio Case Packshot
     ctx.save();
-    // Rear interior dark chamber
     ctx.fillStyle = '#181b22';
     ctx.beginPath();
     ctx.moveTo(145, 52);
@@ -112,7 +110,6 @@ export function getFallbackProductPhotoDataUri(part) {
     ctx.closePath();
     ctx.fill();
 
-    // Motherboard + GPU hint inside glass
     ctx.fillStyle = '#272c38';
     ctx.fillRect(175, 76, 86, 110);
     ctx.fillStyle = '#334155';
@@ -120,7 +117,6 @@ export function getFallbackProductPhotoDataUri(part) {
     ctx.fillStyle = '#0ea5e9';
     ctx.fillRect(172, 160, 100, 4);
 
-    // 3 Side ARGB Fans inside case
     [94, 142, 190].forEach((fy) => {
       ctx.strokeStyle = '#38bdf8';
       ctx.lineWidth = 3;
@@ -133,7 +129,6 @@ export function getFallbackProductPhotoDataUri(part) {
       ctx.fill();
     });
 
-    // Clear Tempered Glass Front/Side Sheen
     const glassGrad = ctx.createLinearGradient(145, 45, 335, 275);
     glassGrad.addColorStop(0, 'rgba(255,255,255,0.26)');
     glassGrad.addColorStop(0.45, 'rgba(56,189,248,0.06)');
@@ -141,17 +136,14 @@ export function getFallbackProductPhotoDataUri(part) {
     ctx.fillStyle = glassGrad;
     ctx.fillRect(152, 56, 176, 212);
 
-    // Outer Steel Bezel Frame
     ctx.strokeStyle = '#0f172a';
     ctx.lineWidth = 5;
     ctx.strokeRect(150, 52, 182, 220);
 
     if (isCorsair) {
-      // Perforated mesh front pattern
       ctx.fillStyle = '#1e293b';
       ctx.fillRect(285, 55, 46, 214);
     } else if (!isLianLi) {
-      // HYTE Y70 angled corner pillar
       ctx.fillStyle = '#0f172a';
       ctx.fillRect(268, 52, 12, 220);
     }
@@ -161,8 +153,7 @@ export function getFallbackProductPhotoDataUri(part) {
     const isZ790 = part.id.includes('z790');
     const accent = isTuf ? '#f59e0b' : isZ790 ? '#3b82f6' : '#ef4444';
 
-    // Full Top-Down Studio Motherboard Packshot
-    ctx.fillStyle = '#11141c';
+    ctx.fillStyle = '#0e1015';
     ctx.strokeStyle = '#334155';
     ctx.lineWidth = 3;
     ctx.beginPath();
@@ -170,8 +161,8 @@ export function getFallbackProductPhotoDataUri(part) {
     ctx.fill();
     ctx.stroke();
 
-    // Copper trace lines on PCB
-    ctx.strokeStyle = 'rgba(148, 163, 184, 0.18)';
+    // Gold/Copper trace lines on PCB
+    ctx.strokeStyle = 'rgba(217, 119, 6, 0.35)';
     ctx.lineWidth = 1.5;
     for (let i = 145; i < 335; i += 12) {
       ctx.beginPath();
@@ -180,7 +171,6 @@ export function getFallbackProductPhotoDataUri(part) {
       ctx.stroke();
     }
 
-    // Left I/O VRM Heatsink Armor with ridges
     ctx.fillStyle = '#262b36';
     ctx.fillRect(138, 42, 48, 118);
     ctx.fillStyle = accent;
@@ -189,7 +179,6 @@ export function getFallbackProductPhotoDataUri(part) {
     ctx.font = 'bold 11px sans-serif';
     ctx.fillText(isTuf ? 'TUF GAMING' : 'ROG HERO', 143, 84);
 
-    // Top VRM Heatsink with cooling fins
     ctx.fillStyle = '#262b36';
     ctx.fillRect(192, 42, 92, 34);
     for (let x = 198; x < 280; x += 8) {
@@ -197,13 +186,11 @@ export function getFallbackProductPhotoDataUri(part) {
       ctx.fillRect(x, 44, 3, 30);
     }
 
-    // AM5 / LGA1700 CPU Socket in center
     ctx.fillStyle = '#cbd5e1';
     ctx.fillRect(204, 88, 56, 56);
     ctx.fillStyle = '#475569';
     ctx.fillRect(214, 98, 36, 36);
 
-    // 4x DDR5 DIMM Slots with top/bottom latches
     for (let s = 0; s < 4; s++) {
       const sx = 278 + s * 12;
       ctx.fillStyle = s % 2 === 1 ? accent : '#334155';
@@ -213,7 +200,6 @@ export function getFallbackProductPhotoDataUri(part) {
       ctx.fillRect(sx - 1, 154, 8, 4);
     }
 
-    // Steel-Reinforced PCIe 5.0 x16 Slots
     [176, 224].forEach((py) => {
       ctx.fillStyle = '#cbd5e1';
       ctx.fillRect(150, py, 128, 9);
@@ -221,14 +207,12 @@ export function getFallbackProductPhotoDataUri(part) {
       ctx.fillRect(154, py + 2, 120, 5);
     });
 
-    // M.2 Heatsink Shields & Chipset Armor
     ctx.fillStyle = '#2d3340';
     ctx.fillRect(154, 192, 118, 24);
     ctx.fillRect(256, 188, 78, 68);
     ctx.fillStyle = accent;
     ctx.fillRect(266, 236, 58, 6);
 
-    // Silver CMOS Battery
     ctx.fillStyle = '#e2e8f0';
     ctx.beginPath();
     ctx.arc(234, 248, 11, 0, Math.PI * 2);
@@ -237,13 +221,11 @@ export function getFallbackProductPhotoDataUri(part) {
     const isIntel = part.brand === 'Intel';
     const is9800 = part.id.includes('9800');
 
-    // Retail Box + Actual Processor IHS Foreground Packshot
     ctx.fillStyle = isIntel ? '#1d4ed8' : '#1f242d';
     ctx.beginPath();
     ctx.roundRect(118, 38, 175, 215, 8);
     ctx.fill();
 
-    // Box Accent Border
     ctx.strokeStyle = isIntel ? '#38bdf8' : '#f97316';
     ctx.lineWidth = 5;
     ctx.strokeRect(128, 48, 155, 195);
@@ -255,14 +237,12 @@ export function getFallbackProductPhotoDataUri(part) {
     ctx.font = 'bold 14px monospace';
     ctx.fillText(isIntel ? 'i9-14900K' : is9800 ? '7 9800X3D' : '7 7800X3D', 142, 104);
 
-    // Foreground Metallic CPU Chip Package (AM5 Octopus / LGA1700 IHS)
     ctx.fillStyle = '#0f766e';
     ctx.fillRect(245, 138, 116, 116);
     ctx.strokeStyle = '#eab308';
     ctx.lineWidth = 2;
     ctx.strokeRect(245, 138, 116, 116);
 
-    // Brushed Nickel Integrated Heat Spreader (IHS)
     const ihsGrad = ctx.createLinearGradient(255, 148, 350, 244);
     ihsGrad.addColorStop(0, '#f8fafc');
     ihsGrad.addColorStop(0.5, '#cbd5e1');
@@ -289,18 +269,15 @@ export function getFallbackProductPhotoDataUri(part) {
     ctx.translate(240, 162);
     ctx.rotate(-0.04);
 
-    // Exposed Aluminum Fin Stack & Copper Heatpipes along top edge
     ctx.fillStyle = '#94a3b8';
     ctx.fillRect(-165, -66, 330, 12);
     for (let x = -160; x < 160; x += 6) {
       ctx.fillStyle = '#cbd5e1';
       ctx.fillRect(x, -66, 2, 12);
     }
-    // Copper heatpipes
     ctx.fillStyle = '#d97706';
     ctx.fillRect(-140, -70, 280, 4);
 
-    // Main Die-Cast Shroud Body
     ctx.fillStyle = isSapphire ? '#334155' : '#181b22';
     ctx.strokeStyle = '#475569';
     ctx.lineWidth = 3;
@@ -309,12 +286,10 @@ export function getFallbackProductPhotoDataUri(part) {
     ctx.fill();
     ctx.stroke();
 
-    // ROG / Sapphire Metallic Frame Accents
     ctx.fillStyle = isSapphire ? '#cbd5e1' : '#334155';
     ctx.fillRect(-165, -56, 330, 10);
     ctx.fillRect(-165, 50, 330, 10);
 
-    // ROG RGB Accent Bar
     const rgbGrad = ctx.createLinearGradient(-160, 0, 160, 0);
     rgbGrad.addColorStop(0, '#ec4899');
     rgbGrad.addColorStop(0.5, '#8b5cf6');
@@ -322,7 +297,6 @@ export function getFallbackProductPhotoDataUri(part) {
     ctx.fillStyle = rgbGrad;
     ctx.fillRect(-155, -48, 310, 5);
 
-    // 3 Axial-Tech Cooling Fans with 9 curved blades each
     const fanPositions = isFe ? [-95, 95] : [-108, 0, 108];
     fanPositions.forEach((fx) => {
       const r = isFe ? 44 : 42;
@@ -334,7 +308,6 @@ export function getFallbackProductPhotoDataUri(part) {
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // 9 Curved Fan Blades
       for (let b = 0; b < 9; b++) {
         const angle = (b / 9) * Math.PI * 2;
         ctx.save();
@@ -347,43 +320,35 @@ export function getFallbackProductPhotoDataUri(part) {
         ctx.restore();
       }
 
-      // Metallic Center Hub with Brand Emblem
       ctx.fillStyle = '#cbd5e1';
       ctx.beginPath();
       ctx.arc(fx, 4, 13, 0, Math.PI * 2);
       ctx.fill();
     });
 
-    // Gold PCIe x16 Connector Pins at bottom
     ctx.fillStyle = '#eab308';
     ctx.fillRect(-125, 60, 135, 8);
-    // Steel I/O Bracket on left
     ctx.fillStyle = '#94a3b8';
     ctx.fillRect(-185, -62, 10, 136);
     ctx.restore();
   } else if (cat === 'cooler') {
     const isAir = part.coolerStyle === 'air_dual';
     if (isAir) {
-      // Noctua NH-D15 chromax.black Dual-Tower Packshot
       ctx.fillStyle = '#181b22';
       ctx.fillRect(128, 52, 78, 195);
       ctx.fillRect(268, 52, 78, 195);
-      // Fin stack lines
       for (let y = 58; y < 240; y += 6) {
         ctx.fillStyle = '#2d3340';
         ctx.fillRect(132, y, 70, 2);
         ctx.fillRect(272, y, 70, 2);
       }
-      // Center 140mm PWM Fan
       ctx.fillStyle = '#0f172a';
       ctx.fillRect(204, 62, 66, 178);
-      // Copper/Black heatpipe caps on top
       [142, 162, 182, 282, 302, 322].forEach((hx) => {
         ctx.fillStyle = '#64748b';
         ctx.fillRect(hx, 40, 10, 12);
       });
     } else {
-      // NZXT Kraken Elite 360 AIO Radiator + Circular 42°C LCD Pump Packshot
       ctx.fillStyle = '#181b22';
       ctx.strokeStyle = '#334155';
       ctx.lineWidth = 2;
@@ -392,7 +357,6 @@ export function getFallbackProductPhotoDataUri(part) {
       ctx.fill();
       ctx.stroke();
 
-      // 3x 120mm Fans mounted on radiator
       [132, 240, 348].forEach((fx) => {
         ctx.fillStyle = '#0f172a';
         ctx.beginPath();
@@ -403,7 +367,6 @@ export function getFallbackProductPhotoDataUri(part) {
         ctx.stroke();
       });
 
-      // Braided Tubes curving down to Pump Block
       ctx.strokeStyle = '#1e293b';
       ctx.lineWidth = 10;
       ctx.lineCap = 'round';
@@ -412,7 +375,6 @@ export function getFallbackProductPhotoDataUri(part) {
       ctx.bezierCurveTo(330, 190, 285, 215, 265, 215);
       ctx.stroke();
 
-      // Cylindrical Pump with 42°C LCD Display
       ctx.fillStyle = '#090b10';
       ctx.beginPath();
       ctx.arc(230, 212, 48, 0, Math.PI * 2);
@@ -431,14 +393,11 @@ export function getFallbackProductPhotoDataUri(part) {
       ctx.textAlign = 'left';
     }
   } else if (cat === 'ram') {
-    // Dual/Quad G.Skill Trident Z5 / Corsair Dominator DDR5 Packshot
     [-34, 24].forEach((yOff) => {
       ctx.save();
       ctx.translate(240, 155 + yOff);
-      // Gold DDR5 pins
       ctx.fillStyle = '#eab308';
       ctx.fillRect(-145, 22, 290, 7);
-      // Brushed Aluminum Heatsink
       ctx.fillStyle = '#181b22';
       ctx.strokeStyle = '#475569';
       ctx.lineWidth = 2;
@@ -446,7 +405,6 @@ export function getFallbackProductPhotoDataUri(part) {
       ctx.roundRect(-155, -18, 310, 42, 4);
       ctx.fill();
       ctx.stroke();
-      // Top Translucent ARGB Light Bar
       const rgb = ctx.createLinearGradient(-155, 0, 155, 0);
       rgb.addColorStop(0, '#06b6d4');
       rgb.addColorStop(0.5, '#a855f7');
@@ -459,7 +417,6 @@ export function getFallbackProductPhotoDataUri(part) {
       ctx.restore();
     });
   } else if (cat === 'storage') {
-    // Samsung 990 PRO NVMe M.2 2280 Packshot
     ctx.fillStyle = '#111318';
     ctx.strokeStyle = '#334155';
     ctx.lineWidth = 3;
@@ -467,10 +424,8 @@ export function getFallbackProductPhotoDataUri(part) {
     ctx.roundRect(75, 112, 330, 92, 6);
     ctx.fill();
     ctx.stroke();
-    // Gold M.2 Key-M Connector
     ctx.fillStyle = '#eab308';
     ctx.fillRect(60, 128, 15, 60);
-    // Red 990 PRO Heatsink Accent
     ctx.fillStyle = '#ef4444';
     ctx.fillRect(92, 124, 296, 6);
     ctx.fillStyle = '#ffffff';
@@ -480,7 +435,6 @@ export function getFallbackProductPhotoDataUri(part) {
     ctx.font = 'bold 14px monospace';
     ctx.fillText('PCIe 4.0 NVMe M.2 SSD • 2TB', 96, 186);
   } else {
-    // Corsair RM1000x / ASUS ROG Thor PSU Packshot
     ctx.fillStyle = '#161922';
     ctx.strokeStyle = '#475569';
     ctx.lineWidth = 3;
@@ -488,7 +442,6 @@ export function getFallbackProductPhotoDataUri(part) {
     ctx.roundRect(105, 64, 270, 176, 8);
     ctx.fill();
     ctx.stroke();
-    // Fan Grill on top/front
     ctx.strokeStyle = '#334155';
     ctx.lineWidth = 2;
     [32, 48, 64].forEach((r) => {
@@ -512,74 +465,130 @@ export function getFallbackProductPhotoDataUri(part) {
 }
 
 /**
- * High-Resolution (1024x1024) Realistic Motherboard PCB Texture
- * Includes copper traces, solder pads, SMD resistor arrays, PCIe silkscreens, and TUF/ROG markings.
+ * High-Resolution (1024x1024) Photorealistic Motherboard PCB Texture
+ * Simulates golden/copper integrated circuit traces on a semi-matte black soldermask PCB,
+ * complete with BGA pin matrices, differential pair routing, SMD solder pads, and silkscreen markings.
  */
-export function createMotherboardPcbTexture(pcbColor = '#111318', accentColor = '#f59e0b') {
+export function createMotherboardPcbTexture(pcbColor = '#0c0e12', accentColor = '#f59e0b') {
   const canvas = document.createElement('canvas');
   canvas.width = 1024;
   canvas.height = 1024;
   const ctx = canvas.getContext('2d');
 
-  // Matte Soldermask Base
-  ctx.fillStyle = pcbColor;
+  // Semi-matte dark PCB fiberglass soldermask base
+  const bgGrad = ctx.createRadialGradient(512, 440, 80, 512, 512, 720);
+  bgGrad.addColorStop(0, '#14171f');
+  bgGrad.addColorStop(0.6, pcbColor);
+  bgGrad.addColorStop(1, '#08090c');
+  ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, 1024, 1024);
 
-  // Fine High-Density Copper Signal Buses
-  ctx.strokeStyle = 'rgba(203, 213, 225, 0.09)';
-  ctx.lineWidth = 2;
-  for (let i = 24; i < 1000; i += 10) {
+  // Subtle woven FR-4 fiberglass micro-grid
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.018)';
+  ctx.lineWidth = 1;
+  for (let g = 0; g < 1024; g += 8) {
     ctx.beginPath();
-    ctx.moveTo(i, 30);
-    ctx.lineTo(i, 420);
-    ctx.lineTo(i + 28, 456);
-    ctx.lineTo(i + 28, 990);
+    ctx.moveTo(g, 0);
+    ctx.lineTo(g, 1024);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(0, g);
+    ctx.lineTo(1024, g);
     ctx.stroke();
   }
 
-  // High-Speed DDR5 Memory Bus Traces between CPU and DIMM slots
-  ctx.strokeStyle = accentColor;
-  ctx.globalAlpha = 0.25;
-  ctx.lineWidth = 2;
-  for (let y = 180; y < 480; y += 6) {
+  // Golden/Copper Integrated Circuit Signal Buses (Vertical & 45° Angled PCIe/Chipset Routing)
+  for (let i = 36; i < 988; i += 9) {
+    const isGold = i % 18 === 0;
+    ctx.strokeStyle = isGold
+      ? 'rgba(234, 179, 8, 0.34)' // Rich Gold IC trace
+      : 'rgba(217, 119, 6, 0.24)'; // Burnished Copper trace
+    ctx.lineWidth = isGold ? 2.0 : 1.3;
     ctx.beginPath();
-    ctx.moveTo(460, y);
-    ctx.lineTo(780, y);
+    ctx.moveTo(i, 36);
+    ctx.lineTo(i, 390);
+    ctx.lineTo(i + 34, 434);
+    ctx.lineTo(i + 34, 980);
     ctx.stroke();
   }
-  ctx.globalAlpha = 1.0;
 
-  // TUF Gaming / ROG Stencil & Caution Stripes on PCB
+  // High-Speed Golden DDR5 Serpentine Differential Traces between CPU Socket & DIMM Slots
+  ctx.strokeStyle = 'rgba(245, 158, 11, 0.48)';
+  ctx.lineWidth = 2.2;
+  for (let y = 155; y < 485; y += 5) {
+    ctx.beginPath();
+    ctx.moveTo(430, y);
+    ctx.lineTo(540, y);
+    ctx.lineTo(558, y + (y % 10 === 0 ? 4 : -4));
+    ctx.lineTo(790, y);
+    ctx.stroke();
+  }
+
+  // PCIe x16 High-Frequency Copper Lanes from CPU to PCIe Slots
+  ctx.strokeStyle = 'rgba(234, 179, 8, 0.42)';
+  ctx.lineWidth = 1.8;
+  for (let x = 290; x < 540; x += 6) {
+    ctx.beginPath();
+    ctx.moveTo(x, 380);
+    ctx.lineTo(x - 45, 580);
+    ctx.lineTo(x - 45, 760);
+    ctx.stroke();
+  }
+
+  // Gold Via Micro-Holes scattered along IC buses
+  ctx.fillStyle = '#eab308';
+  for (let vx = 80; vx < 940; vx += 38) {
+    for (let vy = 90; vy < 940; vy += 44) {
+      if ((vx + vy) % 3 === 0) {
+        ctx.beginPath();
+        ctx.arc(vx, vy, 2.6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  }
+
+  // TUF Gaming / ROG Industrial Stencil & Caution Stripes on PCB
   ctx.fillStyle = accentColor;
-  for (let s = 0; s < 8; s++) {
-    ctx.fillRect(48 + s * 24, 940, 14, 36);
+  for (let s = 0; s < 10; s++) {
+    ctx.fillRect(46 + s * 22, 938, 12, 38);
   }
-  ctx.strokeStyle = accentColor;
-  ctx.lineWidth = 4;
-  ctx.strokeRect(28, 28, 968, 968);
+  ctx.strokeStyle = 'rgba(234, 179, 8, 0.45)';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(24, 24, 976, 976);
 
-  // Dense SMD Capacitor & Power Stage Choke Pads around CPU Socket
+  // White PCB Technical Silkscreen Typography & Component Designators
+  ctx.fillStyle = 'rgba(248, 250, 252, 0.65)';
+  ctx.font = 'bold 18px monospace';
+  ctx.fillText('PCIEX16_1 (GEN 5.0)', 230, 595);
+  ctx.fillText('M.2_1 SOCKET3 (PCIe 5.0 x4)', 230, 705);
+  ctx.fillText('DIMM_A1  DIMM_A2  DIMM_B1  DIMM_B2', 640, 138);
+  ctx.fillText('DIGI+ VRM EPU • 14+2 POWER STAGES', 235, 72);
+
+  // Dense SMD Power Stage & Gold Solder Pads around CPU Socket
   for (let i = 0; i < 16; i++) {
-    ctx.fillStyle = '#475569';
-    ctx.fillRect(240 + i * 28, 86, 18, 26);
-    ctx.fillStyle = '#cbd5e1';
-    ctx.fillRect(240 + i * 28, 82, 18, 4);
-    ctx.fillRect(240 + i * 28, 112, 18, 4);
+    ctx.fillStyle = '#272c38';
+    ctx.fillRect(235 + i * 28, 84, 18, 26);
+    ctx.fillStyle = '#eab308';
+    ctx.fillRect(235 + i * 28, 79, 18, 5);
+    ctx.fillRect(235 + i * 28, 110, 18, 5);
   }
 
-  // Brass/Silver Standoff Mounting Holes
+  // Gold-Plated Grounding Ring Standoff Mounting Holes
   [
     [48, 48], [512, 48], [976, 48],
     [48, 512], [512, 512], [976, 512],
     [48, 976], [512, 976], [976, 976],
   ].forEach(([x, y]) => {
-    ctx.fillStyle = '#eab308';
+    ctx.fillStyle = '#f59e0b';
     ctx.beginPath();
-    ctx.arc(x, y, 14, 0, Math.PI * 2);
+    ctx.arc(x, y, 16, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = '#090a0f';
+    ctx.strokeStyle = '#fef08a';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.fillStyle = '#07080b';
     ctx.beginPath();
-    ctx.arc(x, y, 7, 0, Math.PI * 2);
+    ctx.arc(x, y, 7.5, 0, Math.PI * 2);
     ctx.fill();
   });
 
@@ -601,16 +610,16 @@ export function createGpuBackplateTexture(brand = 'ASUS ROG', badge = 'GEFORCE R
 
   // Dark Brushed Aluminum Base
   const grad = ctx.createLinearGradient(0, 0, 1024, 512);
-  grad.addColorStop(0, '#181b22');
-  grad.addColorStop(0.5, '#262b36');
-  grad.addColorStop(1, '#14171f');
+  grad.addColorStop(0, '#1e232d');
+  grad.addColorStop(0.5, '#2d3442');
+  grad.addColorStop(1, '#151921');
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, 1024, 512);
 
   // Brushed metal horizontal micro-lines
-  ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+  ctx.strokeStyle = 'rgba(255,255,255,0.045)';
   ctx.lineWidth = 1;
-  for (let y = 0; y < 512; y += 3) {
+  for (let y = 0; y < 512; y += 2) {
     ctx.beginPath();
     ctx.moveTo(0, y);
     ctx.lineTo(1024, y);
@@ -618,40 +627,176 @@ export function createGpuBackplateTexture(brand = 'ASUS ROG', badge = 'GEFORCE R
   }
 
   // Flow-Through Exhaust Vent Slits on the right half of the backplate
-  ctx.fillStyle = '#090b10';
-  for (let x = 580; x < 950; x += 26) {
+  ctx.fillStyle = '#06070a';
+  for (let x = 560; x < 955; x += 24) {
     ctx.beginPath();
-    ctx.roundRect(x, 85, 14, 340, 4);
+    ctx.roundRect(x, 76, 13, 358, 4);
     ctx.fill();
+    ctx.strokeStyle = 'rgba(203, 213, 225, 0.22)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
   }
 
-  //Exposed Copper Capacitor Core Bracket in center-left
-  ctx.strokeStyle = '#64748b';
-  ctx.lineWidth = 5;
-  ctx.strokeRect(180, 156, 200, 200);
-  ctx.fillStyle = '#0f172a';
-  ctx.fillRect(190, 166, 180, 180);
+  // Exposed Copper MLCC Capacitor Core Bracket in center-left
+  ctx.strokeStyle = '#94a3b8';
+  ctx.lineWidth = 6;
+  ctx.strokeRect(180, 150, 210, 210);
+  ctx.fillStyle = '#0d1017';
+  ctx.fillRect(190, 160, 190, 190);
+  // Gold MLCC capacitor array inside GPU core bracket
+  ctx.fillStyle = '#eab308';
+  for (let cx = 208; cx < 360; cx += 22) {
+    for (let cy = 178; cy < 330; cy += 22) {
+      ctx.fillRect(cx, cy, 14, 9);
+    }
+  }
 
   // Republic of Gamers / GeForce RTX Silkscreen Typography
-  ctx.fillStyle = '#e2e8f0';
+  ctx.fillStyle = '#f1f5f9';
   ctx.font = 'bold 34px sans-serif';
   ctx.fillText(brand.toUpperCase(), 48, 92);
-  ctx.fillStyle = '#38bdf8';
+  ctx.fillStyle = '#cbd5e1';
   ctx.font = 'bold 28px monospace';
-  ctx.fillText(badge, 48, 445);
+  ctx.fillText(badge, 48, 448);
 
-  // Diagonal Cyber Slash Lines
-  ctx.strokeStyle = '#ec4899';
-  ctx.lineWidth = 6;
+  // Brushed metallic diagonal accent line
+  ctx.strokeStyle = '#64748b';
+  ctx.lineWidth = 5;
   ctx.beginPath();
-  ctx.moveTo(430, 40);
-  ctx.lineTo(520, 472);
+  ctx.moveTo(435, 36);
+  ctx.lineTo(525, 476);
   ctx.stroke();
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 8;
   tex.needsUpdate = true;
+  return tex;
+}
+
+/**
+ * Generates High-Resolution Center Fan Hub Sticker Texture (Concentric Brushed Metal + Brand Emblem)
+ */
+let cachedFanHubTex = null;
+export function createFanHubStickerTexture() {
+  if (cachedFanHubTex) return cachedFanHubTex;
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+
+  // Dark metallic radial background
+  const grad = ctx.createRadialGradient(128, 128, 8, 128, 128, 124);
+  grad.addColorStop(0, '#475569');
+  grad.addColorStop(0.55, '#1e293b');
+  grad.addColorStop(1, '#0f172a');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 256, 256);
+
+  // Concentric CD-style machined grooves
+  ctx.strokeStyle = 'rgba(226, 232, 240, 0.16)';
+  ctx.lineWidth = 1.5;
+  for (let r = 18; r < 118; r += 6) {
+    ctx.beginPath();
+    ctx.arc(128, 128, r, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  // Outer precision chrome ring
+  ctx.strokeStyle = '#94a3b8';
+  ctx.lineWidth = 6;
+  ctx.beginPath();
+  ctx.arc(128, 128, 114, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Stylized Axial-Tech / ROG / NZXT Center Emblem
+  ctx.fillStyle = '#f8fafc';
+  ctx.font = 'bold 28px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('ROG', 128, 124);
+  ctx.fillStyle = '#38bdf8';
+  ctx.font = 'bold 16px monospace';
+  ctx.fillText('AXIAL', 128, 148);
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.needsUpdate = true;
+  cachedFanHubTex = tex;
+  return tex;
+}
+
+/**
+ * Generates Repeating Braided Nylon Sleeve Texture for AIO Liquid Hoses & 12VHPWR Cables
+ */
+let cachedBraidedSleeveTex = null;
+export function createBraidedSleeveTexture() {
+  if (cachedBraidedSleeveTex) return cachedBraidedSleeveTex;
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = '#12151c';
+  ctx.fillRect(0, 0, 256, 256);
+
+  // Interlocking diagonal carbon/nylon weave pattern
+  ctx.strokeStyle = '#262c3a';
+  ctx.lineWidth = 6;
+  for (let i = -256; i < 512; i += 16) {
+    ctx.beginPath();
+    ctx.moveTo(i, 0);
+    ctx.lineTo(i + 256, 256);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(i + 256, 0);
+    ctx.lineTo(i, 256);
+    ctx.stroke();
+  }
+
+  // Specular nylon fiber highlights
+  ctx.strokeStyle = 'rgba(148, 163, 184, 0.22)';
+  ctx.lineWidth = 2;
+  for (let i = -256; i < 512; i += 32) {
+    ctx.beginPath();
+    ctx.moveTo(i, 0);
+    ctx.lineTo(i + 256, 256);
+    ctx.stroke();
+  }
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(14, 3);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.needsUpdate = true;
+  cachedBraidedSleeveTex = tex;
+  return tex;
+}
+
+/**
+ * Generates Soft Translucent ARGB Gradient Texture for Fan Diffuser Rings & RAM Light Bars
+ */
+let cachedSoftRgbGradTex = null;
+export function createSoftRgbGradientTexture() {
+  if (cachedSoftRgbGradTex) return cachedSoftRgbGradTex;
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 128;
+  const ctx = canvas.getContext('2d');
+
+  const grad = ctx.createLinearGradient(0, 0, 512, 0);
+  grad.addColorStop(0, '#38bdf8');
+  grad.addColorStop(0.35, '#818cf8');
+  grad.addColorStop(0.7, '#c084fc');
+  grad.addColorStop(1, '#38bdf8');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 512, 128);
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.needsUpdate = true;
+  cachedSoftRgbGradTex = tex;
   return tex;
 }
 
@@ -664,12 +809,12 @@ export function createKrakenLcdTexture(tempC = 42, gpuTempC = 48, wattage = 422)
   canvas.height = 512;
   const ctx = canvas.getContext('2d');
 
-  ctx.fillStyle = '#07090e';
+  ctx.fillStyle = '#05070b';
   ctx.fillRect(0, 0, 512, 512);
 
   // Outer gauge track
   ctx.strokeStyle = '#1e293b';
-  ctx.lineWidth = 26;
+  ctx.lineWidth = 24;
   ctx.beginPath();
   ctx.arc(256, 256, 204, 0, Math.PI * 2);
   ctx.stroke();
@@ -677,25 +822,25 @@ export function createKrakenLcdTexture(tempC = 42, gpuTempC = 48, wattage = 422)
   // Active temperature arc
   const grad = ctx.createLinearGradient(0, 0, 512, 512);
   grad.addColorStop(0, '#38bdf8');
-  grad.addColorStop(1, '#a855f7');
+  grad.addColorStop(1, '#818cf8');
   ctx.strokeStyle = grad;
-  ctx.lineWidth = 24;
+  ctx.lineWidth = 22;
   ctx.lineCap = 'round';
   ctx.beginPath();
   ctx.arc(256, 256, 204, -Math.PI * 0.75, Math.PI * 0.55);
   ctx.stroke();
 
   ctx.fillStyle = '#94a3b8';
-  ctx.font = 'bold 28px monospace';
+  ctx.font = 'bold 26px monospace';
   ctx.textAlign = 'center';
-  ctx.fillText('LIQUID TEMP', 256, 152);
+  ctx.fillText('LIQUID COOLER', 256, 152);
 
   ctx.fillStyle = '#ffffff';
   ctx.font = 'bold 108px sans-serif';
   ctx.fillText(`${tempC}°C`, 256, 272);
 
   ctx.fillStyle = '#38bdf8';
-  ctx.font = 'bold 32px monospace';
+  ctx.font = 'bold 30px monospace';
   ctx.fillText(`GPU ${gpuTempC}°C • ${wattage}W`, 256, 348);
 
   const tex = new THREE.CanvasTexture(canvas);
@@ -705,7 +850,7 @@ export function createKrakenLcdTexture(tempC = 42, gpuTempC = 48, wattage = 422)
 }
 
 /**
- * Generates Samsung 990 PRO NVMe M.2 & Corsair RM1000e Label Textures
+ * Generates Samsung 990 PRO NVMe M.2 Thermal Spec Sticker & Corsair RM1000e Label Textures
  */
 export function createHardwareLabelTexture(type = 'ssd', title = '990 PRO', sub = '2TB NVMe M.2') {
   const canvas = document.createElement('canvas');
@@ -717,17 +862,27 @@ export function createHardwareLabelTexture(type = 'ssd', title = '990 PRO', sub 
   ctx.fillRect(0, 0, 512, 160);
 
   if (type === 'ssd') {
+    // Metallic copper/dark thermal sticker border
+    ctx.strokeStyle = '#b45309';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(8, 8, 496, 144);
+
     ctx.fillStyle = '#ef4444';
     ctx.fillRect(20, 18, 472, 10);
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 40px sans-serif';
-    ctx.fillText('SAMSUNG', 28, 80);
+    ctx.font = 'bold 38px sans-serif';
+    ctx.fillText('SAMSUNG', 28, 76);
     ctx.fillStyle = '#ef4444';
-    ctx.font = 'bold 38px monospace';
-    ctx.fillText(title, 260, 80);
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = 'bold 24px monospace';
-    ctx.fillText(sub, 28, 128);
+    ctx.font = 'bold 36px monospace';
+    ctx.fillText(title, 250, 76);
+    ctx.fillStyle = '#cbd5e1';
+    ctx.font = 'bold 22px monospace';
+    ctx.fillText(`${sub} • PCIe 4.0 x4`, 28, 122);
+    // Serial barcode lines on right
+    ctx.fillStyle = '#e2e8f0';
+    for (let bx = 395; bx < 480; bx += 6) {
+      ctx.fillRect(bx, 92, 3, 36);
+    }
   } else {
     ctx.strokeStyle = '#334155';
     ctx.lineWidth = 4;
