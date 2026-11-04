@@ -30,6 +30,21 @@
         "position": [-0.12, 1.18, 0.18],
         "rotation": [0, 0, 0],
         "boundingBoxSize": [1.56, 0.1, 0.5]
+      },
+      "mount_side_fan_bracket": {
+        "position": [0.76, 0.04, -0.22],
+        "rotation": [0, 0, 0],
+        "boundingBoxSize": [0.58, 1.72, 0.09]
+      },
+      "mount_rear_exhaust_fan": {
+        "position": [-1.035, 0.50, 0.16],
+        "rotation": [0, 1.570796, 0],
+        "boundingBoxSize": [0.07, 0.48, 0.48]
+      },
+      "mount_bottom_fan_bracket": {
+        "position": [-0.12, -1.23, 0.18],
+        "rotation": [-1.570796, 0, 0],
+        "boundingBoxSize": [1.62, 0.54, 0.08]
       }
     },
     "motherboard": {
@@ -266,7 +281,7 @@
       "brand": "AMD",
       "category": "cpu",
       "price": 363.99,
-      "realPhotoUrl": "https://media.sketchfab.com/models/6f96dcbe3a8a488196da999989e01152/thumbnails/9c3e685b8e8241cda8465cbe9e5ab2d6/b9d11fd99023400e95fe49eb52ab3f54.jpeg",
+      "realPhotoUrl": "https://m.media-amazon.com/images/I/71jxHGiiiNL._AC_.jpg",
       "model3dPath": "/models/cpus/ryzen-7-7800x3d.glb",
       "mountOffset": {
         "position": [0, 0, 0],
@@ -294,7 +309,7 @@
       "brand": "AMD",
       "category": "cpu",
       "price": 479.00,
-      "realPhotoUrl": "https://media.sketchfab.com/models/5a3bd5e3dcb2453882498b827a11dfbc/thumbnails/f5cd0755af134e999b53eb57bfdf08c3/6b1805fba355430598697b9dc3657194.jpeg",
+      "realPhotoUrl": "https://m.media-amazon.com/images/I/91ITeh+6zRL._SL1500_.jpg",
       "model3dPath": "/models/cpus/ryzen-7-9800x3d.glb",
       "mountOffset": {
         "position": [0, 0, 0],
@@ -321,7 +336,7 @@
       "brand": "Intel",
       "category": "cpu",
       "price": 439.00,
-      "realPhotoUrl": "https://media.sketchfab.com/models/cdfe2dfc7b884f25964ada8b11dc535b/thumbnails/c04b6229e0464c508c4cf1ea82ccd0ac/c35b40d33fb843c8a4f0b29e7c987bf9.jpeg",
+      "realPhotoUrl": "https://m.media-amazon.com/images/I/61C1DOLRK4L._AC_.jpg",
       "model3dPath": "/models/cpus/intel-i9-14900k.glb",
       "mountOffset": {
         "position": [0, 0, 0],
@@ -519,7 +534,7 @@
       "brand": "Noctua",
       "category": "cooler",
       "price": 119.95,
-      "realPhotoUrl": "https://media.sketchfab.com/models/e54651982f524644a2144b52a6b36e89/thumbnails/dc580967bc1548c481d40b2653ec8973/e2215c198ddf4f7597cb269336cca4d2.jpeg",
+      "realPhotoUrl": "https://m.media-amazon.com/images/I/610RTWemhSL._AC_.jpg",
       "model3dPath": "/models/coolers/noctua-nh-d15.glb",
       "coolerStyle": "air_dual",
       "radiatorColor": "#181a20",

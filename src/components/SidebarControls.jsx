@@ -567,7 +567,7 @@ export default function SidebarControls({
                             title="Inspecionar ficha técnica real e caminho .GLB"
                           >
                             <img
-                              src={selectedPart.imageUrl || fallbackImg}
+                              src={selectedPart.imageUrl || selectedPart.realPhotoUrl || fallbackImg}
                               onError={(e) => {
                                 e.currentTarget.onerror = null;
                                 e.currentTarget.src = fallbackImg;
@@ -577,8 +577,7 @@ export default function SidebarControls({
                               style={{
                                 objectFit: 'contain',
                                 objectPosition: 'center',
-                                padding: '8px',
-                                mixBlendMode: 'multiply',
+                                padding: '6px',
                               }}
                               className="h-full w-full group-hover/img:scale-105 transition-transform"
                             />
@@ -687,7 +686,7 @@ export default function SidebarControls({
                               className="h-14 w-16 shrink-0 rounded-lg overflow-hidden border border-white/15 flex items-center justify-center cursor-pointer"
                             >
                               <img
-                                src={item.imageUrl || fallbackImg}
+                                src={item.imageUrl || item.realPhotoUrl || fallbackImg}
                                 onError={(e) => {
                                   e.currentTarget.onerror = null;
                                   e.currentTarget.src = fallbackImg;
@@ -698,7 +697,6 @@ export default function SidebarControls({
                                   objectFit: 'contain',
                                   objectPosition: 'center',
                                   padding: '6px',
-                                  mixBlendMode: 'multiply',
                                 }}
                                 className="h-full w-full"
                               />

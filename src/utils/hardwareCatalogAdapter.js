@@ -22,8 +22,8 @@ export const DATASET_ENDPOINTS = {
   case: 'case.json',
 };
 
-const CACHE_STORAGE_NAME = 'voxelcores-github-hardware-dataset-v1';
-const LOCAL_STORAGE_PREFIX = 'voxelcores_hw_cat_v1_';
+const CACHE_STORAGE_NAME = 'voxelcores-github-hardware-dataset-v2';
+const LOCAL_STORAGE_PREFIX = 'voxelcores_hw_cat_v2_';
 const MAX_NORMALIZED_ITEMS_PER_CATEGORY = 320;
 
 // In-memory runtime cache so switching tabs/modals is 0ms after initial read
@@ -374,12 +374,46 @@ export function normalizeDatasetItem(category, raw, index = 0) {
     ...extraProps,
   };
 
-  // Extract dataset image URL if provided or fall back to pure #ffffff studio packshot
+  // Extract dataset or commercial product photo URL, falling back to category real photo or studio packshot
+  const categoryPhotoMap = {
+    case: 'https://media.sketchfab.com/models/dc34eb9b89524e4e940a8dc18c393807/thumbnails/dcf2a544e3e148358ed918043ce33ee7/21e38769d01345c4a39d94113a174d48.jpeg',
+    motherboard:
+      brand.includes('ROG')
+        ? 'https://media.sketchfab.com/models/56bd8923fdf341fd8d81b717055a61dd/thumbnails/e21b5482a2ff4d2c8d8f7c2c27456241/23fe7c1bd9d4400f8c25bc5e322be3f9.jpeg'
+        : 'https://media.sketchfab.com/models/b998596cfc4945a0bc7b016005c39321/thumbnails/050c3cc4a99e4308a437153e426ff1a8/82a0ea85174a46e1b0edc47d429e53c6.jpeg',
+    cpu:
+      brand === 'Intel'
+        ? 'https://m.media-amazon.com/images/I/61C1DOLRK4L._AC_.jpg'
+        : 'https://m.media-amazon.com/images/I/71jxHGiiiNL._AC_.jpg',
+    gpu:
+      brand === 'NVIDIA'
+        ? 'https://media.sketchfab.com/models/0eeef36c440f44f586501532dd61bba0/thumbnails/e34ac2c695dd40b1a4dd1ce60fd51f92/58c6a523d8aa458d81edb42682ef7bee.jpeg'
+        : brand === 'Sapphire' || name.toUpperCase().includes('RADEON')
+        ? 'https://media.sketchfab.com/models/648b333a485040f68c6d47d166ee7532/thumbnails/04b12054787f4131befca7a1b53a1f2c/5b14cc7b063247ef826586f4ab521a9f.jpeg'
+        : 'https://media.sketchfab.com/models/dc70c261c70e44b1ab97c03867c19489/thumbnails/59236e4ac5144621b87fec376eb42e6e/749b078ecbd7418cb634c7f451910f3e.jpeg',
+    ram:
+      brand === 'Corsair'
+        ? 'https://media.sketchfab.com/models/8995a60d2dcc46b3be14c35c1c016c0a/thumbnails/becc533137be4b5fa1b9a1d97dbeb957/7d8245e6b9f5420fa33e2e3df39ec534.jpeg'
+        : 'https://media.sketchfab.com/models/79db2e2ec451464a9fe64a733d53985d/thumbnails/294502ce36da43aa877e53b3f27852a9/1d9bea0387724d728cd106f0e2f8bf6e.jpeg',
+    cooler:
+      extraProps.coolerStyle === 'air_dual'
+        ? 'https://m.media-amazon.com/images/I/610RTWemhSL._AC_.jpg'
+        : 'https://media.sketchfab.com/models/22f06ed7cf93498f8324e642f056e4d0/thumbnails/af04009ba71b4afeb433cc859ec3df0f/abbb533a9e1d4804bd7e175cd0c6ed49.jpeg',
+    storage:
+      'https://media.sketchfab.com/models/b9d5c181040a48b5af8aef09b6d91419/thumbnails/92471adca4524d7881a332787e4a1f17/51dea8c471f34bdf983c6b9f24391a13.jpeg',
+    psu:
+      brand.includes('ASUS')
+        ? 'https://media.sketchfab.com/models/5f2d5547de614032b4cbf5be92645b28/thumbnails/401dbf78aa6a4d98b6cd0ed1094ef454/1c87f2f292f44fa7a496660ddf510940.jpeg'
+        : 'https://media.sketchfab.com/models/6d122273398b446a876600401ba08b55/thumbnails/e2ed7c36df7240aa90a6039c396bb59a/8453fcbe49bb4b58bc138fab295fc144.jpeg',
+  };
+
   const rawImg =
-    raw.image ||
+    raw.realPhotoUrl ||
     raw.imageUrl ||
+    raw.image ||
     raw.image_url ||
     raw.img ||
+    categoryPhotoMap[category] ||
     null;
 
   normalizedItem.imageUrl = rawImg || getFallbackProductPhotoDataUri(normalizedItem);
@@ -516,8 +550,8 @@ export async function fetchCategoryHardware(category, { forceRefresh = false } =
     .filter((p) => p.category === category)
     .map((p) => ({
       ...p,
-      imageUrl: getFallbackProductPhotoDataUri(p),
-      realPhotoUrl: getFallbackProductPhotoDataUri(p),
+      imageUrl: p.realPhotoUrl || p.imageUrl || getFallbackProductPhotoDataUri(p),
+      realPhotoUrl: p.realPhotoUrl || p.imageUrl || getFallbackProductPhotoDataUri(p),
     }));
 
   if (!endpointFile) {

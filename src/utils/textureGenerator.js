@@ -11,14 +11,38 @@ export const HARDWARE_CATALOG = HARDWARE_CATEGORIES.reduce((acc, cat) => {
 }, {});
 
 export const DEFAULT_BUILD = {
-  case: HARDWARE_CATALOG.case[0],
-  motherboard: HARDWARE_CATALOG.motherboard[0],
-  cpu: HARDWARE_CATALOG.cpu[0],
-  cooler: HARDWARE_CATALOG.cooler[0],
-  gpu: HARDWARE_CATALOG.gpu[0],
-  ram: HARDWARE_CATALOG.ram[0],
-  storage: HARDWARE_CATALOG.storage[0],
-  psu: HARDWARE_CATALOG.psu[0],
+  case: {
+    ...HARDWARE_CATALOG.case[0],
+    imageUrl: HARDWARE_CATALOG.case[0].realPhotoUrl || getFallbackProductPhotoDataUri(HARDWARE_CATALOG.case[0]),
+  },
+  motherboard: {
+    ...HARDWARE_CATALOG.motherboard[0],
+    imageUrl: HARDWARE_CATALOG.motherboard[0].realPhotoUrl || getFallbackProductPhotoDataUri(HARDWARE_CATALOG.motherboard[0]),
+  },
+  cpu: {
+    ...HARDWARE_CATALOG.cpu[0],
+    imageUrl: HARDWARE_CATALOG.cpu[0].realPhotoUrl || getFallbackProductPhotoDataUri(HARDWARE_CATALOG.cpu[0]),
+  },
+  cooler: {
+    ...HARDWARE_CATALOG.cooler[0],
+    imageUrl: HARDWARE_CATALOG.cooler[0].realPhotoUrl || getFallbackProductPhotoDataUri(HARDWARE_CATALOG.cooler[0]),
+  },
+  gpu: {
+    ...HARDWARE_CATALOG.gpu[0],
+    imageUrl: HARDWARE_CATALOG.gpu[0].realPhotoUrl || getFallbackProductPhotoDataUri(HARDWARE_CATALOG.gpu[0]),
+  },
+  ram: {
+    ...HARDWARE_CATALOG.ram[0],
+    imageUrl: HARDWARE_CATALOG.ram[0].realPhotoUrl || getFallbackProductPhotoDataUri(HARDWARE_CATALOG.ram[0]),
+  },
+  storage: {
+    ...HARDWARE_CATALOG.storage[0],
+    imageUrl: HARDWARE_CATALOG.storage[0].realPhotoUrl || getFallbackProductPhotoDataUri(HARDWARE_CATALOG.storage[0]),
+  },
+  psu: {
+    ...HARDWARE_CATALOG.psu[0],
+    imageUrl: HARDWARE_CATALOG.psu[0].realPhotoUrl || getFallbackProductPhotoDataUri(HARDWARE_CATALOG.psu[0]),
+  },
 };
 
 /**

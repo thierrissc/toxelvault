@@ -349,7 +349,7 @@ export default function InspectorModal({
                         className="relative h-44 w-full flex items-center justify-center cursor-pointer group overflow-hidden"
                       >
                         <img
-                          src={part.imageUrl || fallbackImg}
+                          src={part.imageUrl || part.realPhotoUrl || fallbackImg}
                           onError={(e) => {
                             e.currentTarget.onerror = null;
                             e.currentTarget.src = fallbackImg;
@@ -359,8 +359,7 @@ export default function InspectorModal({
                           style={{
                             objectFit: 'contain',
                             objectPosition: 'center',
-                            padding: '8px',
-                            mixBlendMode: 'multiply',
+                            padding: '6px',
                           }}
                           className="h-full w-full group-hover:scale-105 transition-transform duration-300"
                         />
@@ -511,7 +510,7 @@ export default function InspectorModal({
                 className="rounded-xl overflow-hidden border border-white/10 h-60 flex items-center justify-center"
               >
                 <img
-                  src={part.imageUrl || fallbackImg}
+                  src={part.imageUrl || part.realPhotoUrl || fallbackImg}
                   onError={(e) => {
                     e.currentTarget.onerror = null;
                     e.currentTarget.src = fallbackImg;
@@ -520,8 +519,7 @@ export default function InspectorModal({
                   style={{
                     objectFit: 'contain',
                     objectPosition: 'center',
-                    padding: '8px',
-                    mixBlendMode: 'multiply',
+                    padding: '6px',
                   }}
                   className="h-full w-full"
                 />

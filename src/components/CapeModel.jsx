@@ -390,30 +390,72 @@ function HighDetailPbrFallback({
           />
         ))}
 
-        {/* Side Recessed Fan Bracket + 3x Realistic 120mm Fans with 9 Curved 35° Blades */}
-        <RoundedBox
-          position={[0.76, 0, -0.36]}
-          args={[0.56, 2.52, 0.04]}
-          radius={0.008}
-          smoothness={2}
-          material={interiorMat}
-        />
-        {[-0.56, 0, 0.56].map((yPos, idx) => (
-          <RealisticFan120
-            key={`side_${idx}`}
-            position={[0.76, yPos, -0.31]}
-            frameMat={interiorMat}
-            rubberMat={materials.rubberMat}
-            bladeMat={materials.fanBladeMat}
-            diffuserMat={materials.diffuserRingMat}
-            hubStickerMat={materials.fanHubStickerMat}
-            hubMetalMat={materials.brushedAluminumMat}
-            onRegisterFan={onRegisterFan}
-            fanIndex={idx + 1}
+        {/* =================================================================
+            SIDE FAN BRACKET ANCHOR (mount_side_fan_bracket):
+            Matte dark-gray/black steel rail frame + 3x 120mm fans flush & aligned vertically inside the rail
+           ================================================================= */}
+        <group position={SNAP_POINTS.case.mount_side_fan_bracket?.position || [0.76, 0.04, -0.22]} name="Anchor_Side_Fan_Bracket">
+          {/* Recessed Steel Tray Wall behind the bracket */}
+          <RoundedBox
+            position={[0, -0.04, -0.042]}
+            args={[0.62, 2.52, 0.032]}
+            radius={0.006}
+            smoothness={2}
+            material={interiorMat}
+            castShadow
+            receiveShadow
           />
-        ))}
 
-        {/* Rear Exhaust Wall + 120mm Exhaust Fan */}
+          {/* Matte Dark-Gray/Black Vertical Mounting Rails (Left & Right C-Channel Chassis Rails) */}
+          {[-0.265, 0.265].map((rx, idx) => (
+            <RoundedBox
+              key={`side_rail_${idx}`}
+              position={[rx, 0, 0]}
+              args={[0.042, 1.62, 0.078]}
+              radius={0.006}
+              smoothness={2}
+              material={chassisMat}
+              castShadow
+              receiveShadow
+            />
+          ))}
+
+          {/* Horizontal Cross-Bar Mounting Ribs & Top/Bottom End Caps */}
+          {[-0.76, -0.255, 0.255, 0.76].map((ry, idx) => (
+            <RoundedBox
+              key={`side_cross_${idx}`}
+              position={[0, ry, 0]}
+              args={[0.56, 0.036, 0.076]}
+              radius={0.005}
+              smoothness={2}
+              material={chassisMat}
+              castShadow
+            />
+          ))}
+
+          {/* 3x 120mm Side Intake Fans flush inside the vertical bracket rails, facing interior */}
+          {[-0.51, 0, 0.51].map((yPos, idx) => (
+            <RealisticFan120
+              key={`side_${idx}`}
+              position={[0, yPos, 0.006]}
+              rotation={[0, 0, 0]}
+              scale={0.98}
+              frameMat={interiorMat}
+              rubberMat={materials.rubberMat}
+              bladeMat={materials.fanBladeMat}
+              diffuserMat={materials.diffuserRingMat}
+              hubStickerMat={materials.fanHubStickerMat}
+              hubMetalMat={materials.brushedAluminumMat}
+              onRegisterFan={onRegisterFan}
+              fanIndex={idx + 1}
+            />
+          ))}
+        </group>
+
+        {/* =================================================================
+            REAR EXHAUST WALL + I/O SHIELD + REAR FAN GRILL BRACKET (mount_rear_exhaust_fan)
+            Fixed directly onto the rear chassis grill, aligned with Motherboard I/O
+           ================================================================= */}
         <RoundedBox
           position={[-1.08, 0, 0]}
           args={[0.05, 2.56, 1.38]}
@@ -421,28 +463,64 @@ function HighDetailPbrFallback({
           smoothness={2}
           material={chassisMat}
           castShadow
-        />
-        <RealisticFan120
-          position={[-1.02, 0.52, 0.18]}
-          rotation={[0, Math.PI / 2, 0]}
-          scale={0.92}
-          frameMat={interiorMat}
-          rubberMat={materials.rubberMat}
-          bladeMat={materials.fanBladeMat}
-          diffuserMat={materials.diffuserRingMat}
-          hubStickerMat={materials.fanHubStickerMat}
-          hubMetalMat={materials.brushedAluminumMat}
-          onRegisterFan={onRegisterFan}
-          fanIndex={0}
+          receiveShadow
         />
 
-        {/* 3x Bottom Intake Fans */}
-        {[-0.52, 0, 0.52].map((xPos, idx) => (
+        {/* Rear Motherboard I/O Shield Bezel Plate on the rear wall next to exhaust fan */}
+        <group position={[-1.05, 0.48, -0.15]} name="Rear_Mobo_IO_Shield">
+          <RoundedBox
+            args={[0.025, 0.62, 0.16]}
+            radius={0.004}
+            smoothness={2}
+            material={interiorMat}
+          />
+          {[-0.2, -0.08, 0.04, 0.16].map((ioY, idx) => (
+            <mesh key={idx} position={[0.014, ioY, 0]} material={materials.brushedAluminumMat}>
+              <boxGeometry args={[0.006, 0.06, 0.09]} />
+            </mesh>
+          ))}
+        </group>
+
+        {/* Rear Exhaust Fan Bracket Housing + Grill Bars + 120mm Exhaust Fan */}
+        <group
+          position={SNAP_POINTS.case.mount_rear_exhaust_fan?.position || [-1.035, 0.5, 0.16]}
+          rotation={[0, Math.PI / 2, 0]}
+          name="Anchor_Rear_Exhaust_Fan"
+        >
+          {/* Matte Black Rear Grill Mounting Frame */}
+          {[-0.24, 0.24].map((offset, idx) => (
+            <React.Fragment key={`rear_frame_${idx}`}>
+              <RoundedBox
+                position={[offset, 0, -0.012]}
+                args={[0.036, 0.52, 0.068]}
+                radius={0.005}
+                smoothness={2}
+                material={chassisMat}
+                castShadow
+              />
+              <RoundedBox
+                position={[0, offset, -0.012]}
+                args={[0.52, 0.036, 0.068]}
+                radius={0.005}
+                smoothness={2}
+                material={chassisMat}
+                castShadow
+              />
+            </React.Fragment>
+          ))}
+
+          {/* Perforated Rear Exhaust Grill Slats behind the fan */}
+          {[-0.16, -0.08, 0, 0.08, 0.16].map((gy, idx) => (
+            <mesh key={`grill_${idx}`} position={[0, gy, -0.032]} material={interiorMat}>
+              <boxGeometry args={[0.44, 0.01, 0.008]} />
+            </mesh>
+          ))}
+
+          {/* 120mm Rear Exhaust Fan flush inside the rear grill frame */}
           <RealisticFan120
-            key={`bot_${idx}`}
-            position={[xPos - 0.12, -1.22, 0.18]}
-            rotation={[-Math.PI / 2, 0, 0]}
-            scale={0.92}
+            position={[0, 0, 0]}
+            rotation={[0, 0, 0]}
+            scale={0.94}
             frameMat={interiorMat}
             rubberMat={materials.rubberMat}
             bladeMat={materials.fanBladeMat}
@@ -450,9 +528,58 @@ function HighDetailPbrFallback({
             hubStickerMat={materials.fanHubStickerMat}
             hubMetalMat={materials.brushedAluminumMat}
             onRegisterFan={onRegisterFan}
-            fanIndex={10 + idx}
+            fanIndex={0}
           />
-        ))}
+        </group>
+
+        {/* =================================================================
+            BOTTOM INTAKE FAN TRAY BRACKET (mount_bottom_fan_bracket)
+           ================================================================= */}
+        <group
+          position={SNAP_POINTS.case.mount_bottom_fan_bracket?.position || [-0.12, -1.23, 0.18]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          name="Anchor_Bottom_Fan_Bracket"
+        >
+          {/* Bottom Chassis Rail Tray */}
+          {[-0.25, 0.25].map((ry, idx) => (
+            <RoundedBox
+              key={`bot_rail_${idx}`}
+              position={[0, ry, -0.01]}
+              args={[1.58, 0.038, 0.068]}
+              radius={0.005}
+              smoothness={2}
+              material={chassisMat}
+              castShadow
+            />
+          ))}
+          {[-0.76, -0.255, 0.255, 0.76].map((rx, idx) => (
+            <RoundedBox
+              key={`bot_cross_${idx}`}
+              position={[rx, 0, -0.01]}
+              args={[0.036, 0.52, 0.068]}
+              radius={0.005}
+              smoothness={2}
+              material={chassisMat}
+            />
+          ))}
+
+          {[-0.51, 0, 0.51].map((xPos, idx) => (
+            <RealisticFan120
+              key={`bot_${idx}`}
+              position={[xPos, 0, 0]}
+              rotation={[0, 0, 0]}
+              scale={0.94}
+              frameMat={interiorMat}
+              rubberMat={materials.rubberMat}
+              bladeMat={materials.fanBladeMat}
+              diffuserMat={materials.diffuserRingMat}
+              hubStickerMat={materials.fanHubStickerMat}
+              hubMetalMat={materials.brushedAluminumMat}
+              onRegisterFan={onRegisterFan}
+              fanIndex={10 + idx}
+            />
+          ))}
+        </group>
 
         {/* Tempered Glass Panels: MeshPhysicalMaterial (roughness: 0.05, transmission: 0.95, ior: 1.5) + Edge Bevel Highlights */}
         <group position={[1.08, 0, 0]}>
