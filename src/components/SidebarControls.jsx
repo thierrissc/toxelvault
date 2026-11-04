@@ -76,10 +76,9 @@ export default function SidebarControls({
 }) {
   const glbInputRef = useRef(null);
   const [uploadTargetCategory, setUploadTargetCategory] = useState('gpu');
-  const [rightTab, setRightTab] = useState('parts'); // 'parts' | 'sockets'
+  const [rightTab, setRightTab] = useState('parts');
   const [mobileDrawer, setMobileDrawer] = useState(false);
 
-  // Real-time Sidebar Search & Category/Brand Filter State for GitHub Dataset
   const [sidebarSearch, setSidebarSearch] = useState('');
   const [sidebarCategoryFilter, setSidebarCategoryFilter] = useState('ALL');
   const [sidebarBrandFilter, setSidebarBrandFilter] = useState('ALL');
@@ -93,7 +92,6 @@ export default function SidebarControls({
     e.target.value = '';
   };
 
-  // Top popular brands extracted from the loaded GitHub dataset
   const topBrands = useMemo(() => {
     const counts = new Map();
     const targetCats =
@@ -117,7 +115,6 @@ export default function SidebarControls({
     return ['ALL', ...sorted];
   }, [catalogByCategory, sidebarCategoryFilter]);
 
-  // Live filtered results from the GitHub Open-Source Dataset when searching or filtering in sidebar
   const isFilteringCatalog =
     sidebarSearch.trim().length > 0 ||
     sidebarCategoryFilter !== 'ALL' ||
@@ -171,11 +168,9 @@ export default function SidebarControls({
 
   return (
     <div className="flex flex-col w-screen h-screen bg-[#0b0c10] text-slate-100 overflow-hidden select-none">
-      {/* =====================================================================
-          TOP HEADER BAR (BuildCores Studio + GitHub Dataset CDN + Compatibility)
-         ===================================================================== */}
+
       <header className="h-14 shrink-0 flex items-center justify-between px-4 lg:px-6 bg-[#111318] border-b border-white/[0.08] z-20">
-        {/* Left: Brand */}
+
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-600/20 border border-rose-500/40 text-rose-400">
@@ -207,9 +202,8 @@ export default function SidebarControls({
           </div>
         </div>
 
-        {/* Center Status Pills (Price, Real Socket Compatibility, TDP Wattage) */}
         <div className="flex items-center gap-2 overflow-x-auto py-1">
-          {/* Total Price Pill */}
+
           <div className="flex items-center gap-1.5 rounded-lg bg-[#181b22] border border-white/[0.08] px-3 py-1.5 text-xs">
             <span className="h-2 w-2 rounded-full bg-emerald-400" />
             <span className="font-mono-tech font-bold text-emerald-400">
@@ -217,7 +211,6 @@ export default function SidebarControls({
             </span>
           </div>
 
-          {/* Compatibility Validation Pill */}
           <div
             className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs ${
               compatibility.isCompatible
@@ -247,7 +240,6 @@ export default function SidebarControls({
             )}
           </div>
 
-          {/* Wattage Pill */}
           <div className="hidden sm:flex items-center gap-1.5 rounded-lg bg-[#181b22] border border-white/[0.08] px-3 py-1.5 text-xs">
             <Zap className="h-3.5 w-3.5 text-amber-400" />
             <span className="font-mono-tech font-semibold text-amber-300">
@@ -259,7 +251,6 @@ export default function SidebarControls({
           </div>
         </div>
 
-        {/* Right: Quick Actions */}
         <div className="flex items-center gap-2">
           <button
             onClick={onCaptureScreenshot}
@@ -286,7 +277,6 @@ export default function SidebarControls({
         </div>
       </header>
 
-      {/* Compatibility Alert Banner if Socket or Clearance fails */}
       {!compatibility.isCompatible && (
         <div className="bg-rose-950/90 border-b border-rose-500/40 px-6 py-2 flex items-center justify-between text-xs text-rose-200 z-20">
           <div className="flex items-center gap-2">
@@ -302,15 +292,12 @@ export default function SidebarControls({
         </div>
       )}
 
-      {/* =====================================================================
-          MAIN WORKSPACE (Center 3D GLTF Viewport + Right Catalog Sidebar)
-         ===================================================================== */}
       <div className="relative flex-1 flex overflow-hidden">
-        {/* CENTER 3D VIEWPORT */}
+
         <div className="relative flex-1 h-full flex flex-col bg-[#0c0e13] overflow-hidden">
-          {/* Viewport Overlay Toolbar */}
+
           <div className="pointer-events-none absolute top-3 left-3 right-3 z-10 flex flex-wrap items-center justify-between gap-2">
-            {/* Camera View Presets */}
+
             <div className="pointer-events-auto flex items-center gap-1 rounded-lg bg-[#14171f]/90 backdrop-blur-md border border-white/[0.08] p-1 shadow-lg">
               {[
                 { id: 'iso', label: '3/4 Rig View' },
@@ -328,7 +315,6 @@ export default function SidebarControls({
               ))}
             </div>
 
-            {/* 3D GLTF & Socket Inspection Toggles */}
             <div className="pointer-events-auto flex items-center gap-1.5 rounded-lg bg-[#14171f]/90 backdrop-blur-md border border-white/[0.08] p-1 shadow-lg">
               <button
                 onClick={() => setShowBoundingLabels(!showBoundingLabels)}
@@ -381,10 +367,8 @@ export default function SidebarControls({
             </div>
           </div>
 
-          {/* 3D Canvas Viewport */}
           <div className="flex-1 w-full h-full">{children}</div>
 
-          {/* Bottom-Left Status Info */}
           <div className="pointer-events-none absolute bottom-3 left-4 z-10 flex flex-wrap items-center gap-4 text-[11px] font-mono-tech text-slate-400">
             <span className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-emerald-400" />
@@ -401,15 +385,12 @@ export default function SidebarControls({
           )}
         </div>
 
-        {/* =================================================================
-            RIGHT SIDEBAR: GITHUB CDN HARDWARE CATALOG + REAL-TIME SEARCH
-           ================================================================= */}
         <aside
           className={`fixed lg:static top-14 bottom-0 right-0 z-30 w-full sm:w-[430px] lg:w-[460px] shrink-0 bg-[#111318] border-l border-white/[0.08] flex flex-col transition-transform duration-300 ${
             mobileDrawer ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'
           }`}
         >
-          {/* Sidebar Tabs */}
+
           <div className="flex items-center justify-between border-b border-white/[0.08] px-4 pt-2.5">
             <div className="flex items-center gap-4">
               <button
@@ -461,9 +442,9 @@ export default function SidebarControls({
 
           {rightTab === 'parts' ? (
             <div className="flex-1 flex flex-col overflow-hidden">
-              {/* REAL-TIME SEARCH & CATEGORY / BRAND FILTERS */}
+
               <div className="p-3.5 border-b border-white/[0.07] bg-[#14171f]/60 space-y-2.5 shrink-0">
-                {/* Search Input */}
+
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
                   <input
@@ -483,7 +464,6 @@ export default function SidebarControls({
                   )}
                 </div>
 
-                {/* Category Filter Pills */}
                 <div className="flex items-center gap-1 overflow-x-auto pb-0.5">
                   <button
                     onClick={() => {
@@ -516,7 +496,6 @@ export default function SidebarControls({
                   ))}
                 </div>
 
-                {/* Brand Filter Pills */}
                 <div className="flex items-center gap-1 overflow-x-auto pb-0.5">
                   {topBrands.map((brand) => (
                     <button
@@ -534,9 +513,8 @@ export default function SidebarControls({
                 </div>
               </div>
 
-              {/* SCROLLABLE CONTENT: Active Slots + Instant GitHub Dataset Search Results */}
               <div className="flex-1 overflow-y-auto p-3.5 space-y-3">
-                {/* Active Hardware Build Slots */}
+
                 <div className="space-y-2">
                   <div className="flex items-center justify-between px-1">
                     <span className="text-[10px] font-mono-tech uppercase tracking-wider text-slate-400">
@@ -559,7 +537,7 @@ export default function SidebarControls({
                         className="group rounded-xl bg-[#161920] hover:bg-[#1c2029] border border-white/[0.07] hover:border-white/[0.15] p-2.5 transition"
                       >
                         <div className="flex items-center gap-3">
-                          {/* Studio Packshot Photo on Pure #FFFFFF Background */}
+
                           <button
                             onClick={() => onOpenPartDetails(cat.id, selectedPart)}
                             style={{ backgroundColor: '#ffffff' }}
@@ -586,7 +564,6 @@ export default function SidebarControls({
                             </span>
                           </button>
 
-                          {/* Component Info */}
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center justify-between gap-1">
                               <span className="flex items-center gap-1.5 text-[10px] font-mono-tech uppercase tracking-wider text-slate-400">
@@ -643,7 +620,6 @@ export default function SidebarControls({
                   })}
                 </div>
 
-                {/* Live Search / Filtered Results directly from GitHub Dataset */}
                 {isFilteringCatalog && (
                   <div className="pt-2 border-t border-white/[0.08] space-y-2">
                     <div className="flex items-center justify-between px-1">
@@ -754,9 +730,9 @@ export default function SidebarControls({
               </div>
             </div>
           ) : (
-            /* SOCKET SNAP COORDINATES & LOCAL .GLB UPLOADER TAB */
+
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {/* Upload Local .GLB File to Test Any Socket Immediately */}
+
               <div className="rounded-xl bg-[#161920] border border-sky-500/30 p-3.5 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="font-display text-xs font-bold text-white">
@@ -804,7 +780,6 @@ export default function SidebarControls({
                 </button>
               </div>
 
-              {/* HDRI Environment Map Selector */}
               <div className="rounded-xl bg-[#161920] border border-white/[0.07] p-3.5 space-y-2.5">
                 <label className="block font-mono-tech text-[10px] uppercase tracking-wider text-slate-400">
                   HDRI Environment Map (Reflexos PBR nos .GLB)
@@ -830,7 +805,6 @@ export default function SidebarControls({
                 </div>
               </div>
 
-              {/* Socket Snap Coordinates Reference Table */}
               <div className="rounded-xl bg-[#161920] border border-white/[0.07] p-3.5 space-y-2.5">
                 <span className="block font-mono-tech text-[10px] uppercase tracking-wider text-slate-400">
                   Coordenadas de Encaixe (Vector3 Snap Points)
@@ -855,7 +829,6 @@ export default function SidebarControls({
             </div>
           )}
 
-          {/* Sidebar Footer */}
           <div className="border-t border-white/[0.08] bg-[#0e1015] p-3.5 flex items-center justify-between">
             <div>
               <span className="block text-[10px] font-mono-tech text-slate-400">

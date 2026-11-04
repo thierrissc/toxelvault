@@ -26,7 +26,6 @@
   font-family: 'JetBrains Mono', monospace;
 }
 
-/* Custom sleek scrollbars for internal side panels */
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;
@@ -45,7 +44,6 @@
   background: rgba(6, 182, 212, 0.5);
 }
 
-/* Custom range input styling */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;

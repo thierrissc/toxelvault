@@ -1,11 +1,6 @@
 import catalogData from '../data/partsCatalog.json';
 import { getFallbackProductPhotoDataUri } from './textureGenerator';
 
-/**
- * GitHub Open-Source Dataset CDN Base URLs
- * Primary: raw.githubusercontent.com/docyx/pc-part-dataset/main/data/json/
- * Mirror Fallback: cdn.jsdelivr.net/gh/docyx/pc-part-dataset@main/data/json/
- */
 export const GITHUB_DATASET_BASE_URL =
   'https://raw.githubusercontent.com/docyx/pc-part-dataset/main/data/json/';
 export const JSDELIVR_DATASET_BASE_URL =
@@ -26,7 +21,6 @@ const CACHE_STORAGE_NAME = 'voxelcores-github-hardware-dataset-v2';
 const LOCAL_STORAGE_PREFIX = 'voxelcores_hw_cat_v2_';
 const MAX_NORMALIZED_ITEMS_PER_CATEGORY = 320;
 
-// In-memory runtime cache so switching tabs/modals is 0ms after initial read
 const memoryCategoryCache = new Map();
 
 const KNOWN_BRANDS = [
@@ -78,9 +72,6 @@ const KNOWN_BRANDS = [
   'FSP',
 ];
 
-/**
- * Extracts a clean canonical manufacturer brand from a product name
- */
 export function extractBrandFromName(name = '') {
   const upper = name.toUpperCase();
   if (upper.startsWith('ASUS ROG') || upper.includes('ROG STRIX') || upper.includes('ROG CROSSHAIR') || upper.includes('ROG MAXIMUS') || upper.includes('ROG THOR')) {
@@ -101,9 +92,6 @@ export function extractBrandFromName(name = '') {
   return firstToken;
 }
 
-/**
- * Generates a deterministic slug ID from category + name + index
- */
 function createPartId(category, name, index = 0) {
   const slug = String(name)
     .toLowerCase()
@@ -113,9 +101,6 @@ function createPartId(category, name, index = 0) {
   return `${category}_${slug}_${index}`;
 }
 
-/**
- * Infers CPU socket from microarchitecture or name in docyx/pc-part-dataset/cpu.json
- */
 function inferCpuSocket(raw) {
   if (raw.socket) return String(raw.socket).toUpperCase().replace(/\s+/g, '');
   const arch = String(raw.microarchitecture || '').toLowerCase();
@@ -140,16 +125,12 @@ function inferCpuSocket(raw) {
   return 'AM5';
 }
 
-/**
- * Normalizes a single raw entry from docyx/pc-part-dataset into VoxelCores schema
- */
 export function normalizeDatasetItem(category, raw, index = 0) {
   const name = raw.name || 'Unknown Hardware Component';
   const brand = raw.brand || extractBrandFromName(name);
   const price = typeof raw.price === 'number' && raw.price > 0 ? raw.price : 99.99;
   const id = raw.id || createPartId(category, name, index);
 
-  // Build realistic merchants list from dataset price
   const merchants = raw.merchants || [
     { name: 'Amazon', shipping: 'FREE s/h', stock: 'In stock', price: Number(price.toFixed(2)) },
     { name: 'Newegg', shipping: 'FREE s/h', stock: 'In stock', price: Number((price * 1.02).toFixed(2)) },
@@ -374,7 +355,6 @@ export function normalizeDatasetItem(category, raw, index = 0) {
     ...extraProps,
   };
 
-  // Extract dataset or commercial product photo URL, falling back to category real photo or studio packshot
   const categoryPhotoMap = {
     case: 'https://media.sketchfab.com/models/dc34eb9b89524e4e940a8dc18c393807/thumbnails/dcf2a544e3e148358ed918043ce33ee7/21e38769d01345c4a39d94113a174d48.jpeg',
     motherboard:
@@ -422,11 +402,6 @@ export function normalizeDatasetItem(category, raw, index = 0) {
   return normalizedItem;
 }
 
-/**
- * Curated Popularity Scorer so enthusiast hardware (Ryzen 9800X3D/7800X3D, RTX 4090/4080/4070,
- * ASUS ROG/TUF, G.Skill Trident Z5, Samsung 990 Pro, HYTE/Lian Li/Corsair) appears at the top
- * while keeping hundreds of real parts searchable.
- */
 function scorePartPopularity(category, raw) {
   if (!raw || typeof raw.price !== 'number' || raw.price <= 0) return -999;
   const name = String(raw.name || '').toUpperCase();
@@ -462,14 +437,10 @@ function scorePartPopularity(category, raw) {
   return score;
 }
 
-/**
- * Fetches raw JSON array from GitHub Open-Source Dataset CDN with Cache API + jsDelivr fallback
- */
 async function fetchRawDatasetJson(endpointFile) {
   const primaryUrl = `${GITHUB_DATASET_BASE_URL}${endpointFile}`;
   const fallbackUrl = `${JSDELIVR_DATASET_BASE_URL}${endpointFile}`;
 
-  // 1. Check Browser Cache API first for instant zero-network reload
   if (typeof window !== 'undefined' && 'caches' in window) {
     try {
       const cache = await window.caches.open(CACHE_STORAGE_NAME);
@@ -478,11 +449,10 @@ async function fetchRawDatasetJson(endpointFile) {
         return { data: await cachedRes.json(), fromCache: true };
       }
     } catch {
-      // Proceed to network fetch if Cache API is restricted
+
     }
   }
 
-  // 2. Fetch from GitHub Raw CDN (or jsDelivr CDN mirror)
   let response;
   try {
     response = await fetch(primaryUrl);
@@ -495,13 +465,12 @@ async function fetchRawDatasetJson(endpointFile) {
     throw new Error(`Failed to fetch dataset endpoint: ${endpointFile}`);
   }
 
-  // Store response clone in Browser Cache API
   if (typeof window !== 'undefined' && 'caches' in window) {
     try {
       const cache = await window.caches.open(CACHE_STORAGE_NAME);
       await cache.put(primaryUrl, response.clone());
     } catch {
-      // Ignore quota errors
+
     }
   }
 
@@ -509,10 +478,6 @@ async function fetchRawDatasetJson(endpointFile) {
   return { data, fromCache: false };
 }
 
-/**
- * Loads and normalizes a hardware category from docyx/pc-part-dataset on GitHub CDN.
- * Uses 3-tier caching: In-Memory Map -> localStorage Normalized Cache -> Browser Cache API -> GitHub CDN.
- */
 export async function fetchCategoryHardware(category, { forceRefresh = false } = {}) {
   if (!forceRefresh && memoryCategoryCache.has(category)) {
     return {
@@ -523,14 +488,13 @@ export async function fetchCategoryHardware(category, { forceRefresh = false } =
 
   const localKey = `${LOCAL_STORAGE_PREFIX}${category}`;
 
-  // Check localStorage normalized snapshot
   if (!forceRefresh && typeof window !== 'undefined' && window.localStorage) {
     try {
       const saved = window.localStorage.getItem(localKey);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          // Ensure studio packshot data-URI fallback is populated
+
           const hydrated = parsed.map((item) => ({
             ...item,
             imageUrl: item.imageUrl || getFallbackProductPhotoDataUri(item),
@@ -541,7 +505,7 @@ export async function fetchCategoryHardware(category, { forceRefresh = false } =
         }
       }
     } catch {
-      // Ignore corrupt localStorage entry
+
     }
   }
 
@@ -562,7 +526,6 @@ export async function fetchCategoryHardware(category, { forceRefresh = false } =
   try {
     const { data: rawArray, fromCache } = await fetchRawDatasetJson(endpointFile);
 
-    // Filter out unpriced entries and rank by enthusiast hardware relevance
     const validRaw = (Array.isArray(rawArray) ? rawArray : [])
       .filter((r) => r && r.name && typeof r.price === 'number' && r.price > 12)
       .map((r) => ({ raw: r, score: scorePartPopularity(category, r) }))
@@ -573,8 +536,6 @@ export async function fetchCategoryHardware(category, { forceRefresh = false } =
       normalizeDatasetItem(category, entry.raw, idx)
     );
 
-    // Merge curated 3D socket defaults at the top so default build IDs are always preserved,
-    // deduplicating by lowercase product name
     const seenNames = new Set(seedParts.map((s) => s.name.toLowerCase()));
     const combined = [
       ...seedParts,
@@ -588,7 +549,6 @@ export async function fetchCategoryHardware(category, { forceRefresh = false } =
 
     memoryCategoryCache.set(category, combined);
 
-    // Save compact normalized list to localStorage (omitting bulky base64 data-URI to save quota)
     if (typeof window !== 'undefined' && window.localStorage) {
       try {
         const compactForStorage = combined.slice(0, 180).map((item) => {
@@ -599,7 +559,7 @@ export async function fetchCategoryHardware(category, { forceRefresh = false } =
         });
         window.localStorage.setItem(localKey, JSON.stringify(compactForStorage));
       } catch {
-        // Ignore quota exceeded
+
       }
     }
 
@@ -614,9 +574,6 @@ export async function fetchCategoryHardware(category, { forceRefresh = false } =
   }
 }
 
-/**
- * Preloads all 8 hardware categories from GitHub Open-Source Dataset CDN in parallel
- */
 export async function preloadAllHardwareCategories({ forceRefresh = false, onProgress } = {}) {
   const categories = Object.keys(DATASET_ENDPOINTS);
   const catalogByCat = {};
@@ -653,9 +610,6 @@ export async function preloadAllHardwareCategories({ forceRefresh = false, onPro
   };
 }
 
-/**
- * Clears local dataset cache (Cache API + localStorage + memory) and re-fetches from GitHub CDN
- */
 export async function clearHardwareDatasetCache() {
   memoryCategoryCache.clear();
   if (typeof window !== 'undefined') {
@@ -668,7 +622,7 @@ export async function clearHardwareDatasetCache() {
       try {
         await window.caches.delete(CACHE_STORAGE_NAME);
       } catch {
-        // Ignore
+
       }
     }
   }

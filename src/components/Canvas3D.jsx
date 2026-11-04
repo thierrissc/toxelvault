@@ -10,17 +10,12 @@ import { EffectComposer, N8AO } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import CapeModel from './CapeModel';
 
-/**
- * Industrial Studio Lighting Rig + Neutral Studio HDRI Environment + Cool & Warm Rim Lights
- * Configured for realistic specular highlights on brushed aluminum, copper heatpipes, and tempered glass.
- */
 function StudioEnvironmentRig({ envPreset = 'studio' }) {
   return (
     <>
-      {/* Subtle neutral studio ambient fill */}
+
       <ambientLight intensity={0.4} color="#f8fafc" />
 
-      {/* Primary Key Studio Softbox Light */}
       <directionalLight
         position={[4.2, 6.2, 5.2]}
         intensity={2.4}
@@ -30,7 +25,6 @@ function StudioEnvironmentRig({ envPreset = 'studio' }) {
         shadow-bias={-0.0002}
       />
 
-      {/* Cool Rim Light (Back-Left / Top Edge Highlight for angular case & heatsink contours) */}
       <spotLight
         position={[-4.8, 3.8, -3.6]}
         angle={0.65}
@@ -45,7 +39,6 @@ function StudioEnvironmentRig({ envPreset = 'studio' }) {
         color="#7dd3fc"
       />
 
-      {/* Warm Rim Light (Back-Right / Lower Edge Highlight for copper heatpipes & chamfered shrouds) */}
       <spotLight
         position={[4.6, -1.8, -3.4]}
         angle={0.7}
@@ -61,10 +54,9 @@ function StudioEnvironmentRig({ envPreset = 'studio' }) {
         distance={8}
       />
 
-      {/* Neutral Studio HDRI / Room Environment with Procedural Studio Softbox Lightformers */}
       <Suspense fallback={null}>
         <Environment preset={envPreset} environmentIntensity={1.15} resolution={512}>
-          {/* Overhead neutral studio softbox */}
+
           <Lightformer
             form="rect"
             intensity={2.8}
@@ -73,7 +65,7 @@ function StudioEnvironmentRig({ envPreset = 'studio' }) {
             position={[0, 4.5, 0]}
             rotation={[Math.PI / 2, 0, 0]}
           />
-          {/* Left cool metallic reflection strip */}
+
           <Lightformer
             form="rect"
             intensity={2.2}
@@ -82,7 +74,7 @@ function StudioEnvironmentRig({ envPreset = 'studio' }) {
             position={[-4.5, 1.0, -1.5]}
             rotation={[0, Math.PI / 2.2, 0]}
           />
-          {/* Right warm industrial reflection strip */}
+
           <Lightformer
             form="rect"
             intensity={1.9}
@@ -91,7 +83,7 @@ function StudioEnvironmentRig({ envPreset = 'studio' }) {
             position={[4.5, 0.5, -1.5]}
             rotation={[0, -Math.PI / 2.2, 0]}
           />
-          {/* Front subtle glass catchlight bar */}
+
           <Lightformer
             form="rect"
             intensity={1.4}
@@ -106,9 +98,6 @@ function StudioEnvironmentRig({ envPreset = 'studio' }) {
   );
 }
 
-/**
- * Telemetry & HD Screenshot Bridge inside the R3F Context
- */
 function SceneBridge({ onStatsUpdate, screenshotHandlerRef }) {
   const { gl, scene, camera } = useThree();
   const frameCount = useRef(0);
@@ -225,7 +214,6 @@ export default function Canvas3D({
       >
         <StudioEnvironmentRig envPreset={envPreset} />
 
-        {/* Real GLTF/GLB Socket Assembly with Photorealistic Industrial PBR Fallback */}
         <CapeModel
           build={build}
           customGlbOverrides={customGlbOverrides}
@@ -234,7 +222,6 @@ export default function Canvas3D({
           explodedView={explodedView}
         />
 
-        {/* Lightweight Ambient Occlusion (N8AO) for realistic contact shadows between slots, fins & connectors */}
         <EffectComposer disableNormalPass={false} multisampling={4}>
           <N8AO
             aoRadius={0.32}
@@ -245,7 +232,6 @@ export default function Canvas3D({
           />
         </EffectComposer>
 
-        {/* Ground Studio Contact Shadows */}
         <ContactShadows
           position={[0, -1.42, 0]}
           opacity={0.75}
@@ -255,7 +241,6 @@ export default function Canvas3D({
           color="#000000"
         />
 
-        {/* Smooth Damped OrbitControls */}
         <OrbitControls
           ref={controlsRef}
           enableDamping

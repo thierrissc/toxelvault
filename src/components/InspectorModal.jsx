@@ -29,7 +29,7 @@ import {
 const PAGE_SIZE = 24;
 
 export default function InspectorModal({
-  modalState, // { mode: 'closed' | 'picker' | 'details' | 'manifest', category: 'cpu', item: null }
+  modalState,
   catalogByCategory = HARDWARE_CATALOG,
   datasetStatus,
   onClose,
@@ -69,7 +69,6 @@ export default function InspectorModal({
     return ['ALL', ...top];
   }, [allCategoryParts]);
 
-  // Check if a candidate part is socket-compatible with the current build
   const isPartCompatibleWithBuild = React.useCallback(
     (part) => {
       if (part.category === 'cpu' && build.motherboard?.specs?.socket) {
@@ -133,9 +132,6 @@ export default function InspectorModal({
 
   const compatibility = validateBuildCompatibility(build);
 
-  // =========================================================================
-  // MODE 1: PART PICKER MODAL (GitHub Open-Source Dataset via Adapter + Pagination)
-  // =========================================================================
   if (modalState.mode === 'picker') {
     const currentlyEquipped = build[activeCategory];
     const endpointFile = DATASET_ENDPOINTS[activeCategory] || 'cpu.json';
@@ -143,7 +139,7 @@ export default function InspectorModal({
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm">
         <div className="relative w-full max-w-6xl h-[90vh] rounded-2xl bg-[#111318] border border-white/[0.1] shadow-[0_24px_90px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden text-slate-100">
-          {/* Header */}
+
           <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.08] bg-[#14171d]">
             <div className="flex items-center gap-3">
               <h2 className="font-display text-base font-bold text-white">
@@ -187,7 +183,7 @@ export default function InspectorModal({
           </div>
 
           <div className="flex-1 flex overflow-hidden">
-            {/* LEFT FILTER SIDEBAR */}
+
             <div className="hidden md:flex w-64 shrink-0 border-r border-white/[0.08] bg-[#0e1015] p-4 flex-col gap-5 overflow-y-auto">
               <div className="rounded-xl bg-[#161920] border border-white/[0.08] p-3.5 space-y-3">
                 <div className="flex items-center gap-2 text-xs font-bold text-white">
@@ -294,7 +290,6 @@ export default function InspectorModal({
               </div>
             </div>
 
-            {/* RIGHT PRODUCT CARDS GRID */}
             <div className="flex-1 flex flex-col overflow-hidden bg-[#111318]">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-6 py-3.5 border-b border-white/[0.07]">
                 <div>
@@ -342,7 +337,7 @@ export default function InspectorModal({
                           : 'border-white/[0.08] hover:border-white/[0.2]'
                       }`}
                     >
-                      {/* E-Commerce Studio Packshot on Pure #FFFFFF Background */}
+
                       <button
                         onClick={() => onOpenPartDetails(activeCategory, part)}
                         style={{ backgroundColor: '#ffffff' }}
@@ -376,7 +371,6 @@ export default function InspectorModal({
                         )}
                       </button>
 
-                      {/* Card Body */}
                       <div className="flex-1 p-4 flex flex-col">
                         <button
                           onClick={() => onOpenPartDetails(activeCategory, part)}
@@ -436,7 +430,6 @@ export default function InspectorModal({
                 })}
               </div>
 
-              {/* Pagination Footer */}
               {totalPages > 1 && (
                 <div className="px-6 py-3 border-t border-white/[0.08] bg-[#14171d] flex items-center justify-between text-xs">
                   <span className="font-mono-tech text-slate-400">
@@ -469,9 +462,6 @@ export default function InspectorModal({
     );
   }
 
-  // =========================================================================
-  // MODE 2: PART DETAILS MODAL (Real Photo, Specs, Model3dPath & MountOffset)
-  // =========================================================================
   if (modalState.mode === 'details' && modalState.item) {
     const part = modalState.item;
     const isEquipped = build[activeCategory]?.id === part.id;
@@ -525,7 +515,6 @@ export default function InspectorModal({
                 />
               </div>
 
-              {/* 3D Asset & Socket Path Box */}
               <div className="rounded-xl bg-[#161920] border border-amber-500/30 p-4 space-y-2 text-xs">
                 <div className="flex items-center gap-2 text-amber-300 font-mono-tech font-bold">
                   <FolderOpen className="h-4 w-4" />
@@ -582,7 +571,6 @@ export default function InspectorModal({
                 </button>
               </div>
 
-              {/* True Specifications Grid */}
               <div className="rounded-xl bg-[#161920] border border-white/[0.08] p-4 space-y-3">
                 <h4 className="font-mono-tech text-[11px] uppercase tracking-wider text-slate-400 border-b border-white/[0.08] pb-2">
                   NORMALIZED SPECIFICATIONS (hardwareCatalogAdapter)
@@ -602,7 +590,6 @@ export default function InspectorModal({
                 </div>
               </div>
 
-              {/* Merchants Table */}
               <div className="rounded-xl bg-[#161920] border border-white/[0.08] overflow-hidden">
                 <div className="grid grid-cols-12 px-4 py-2 bg-[#0e1015] border-b border-white/[0.07] text-[10px] font-mono-tech uppercase text-slate-400">
                   <span className="col-span-5">MERCHANT</span>
@@ -635,9 +622,6 @@ export default function InspectorModal({
     );
   }
 
-  // =========================================================================
-  // MODE 3: FULL BUILD JSON & MISSING .GLB PATHS MANIFEST
-  // =========================================================================
   const buildManifestJson = JSON.stringify(
     Object.fromEntries(
       HARDWARE_CATEGORIES.map((c) => [

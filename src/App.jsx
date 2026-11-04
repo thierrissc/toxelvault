@@ -9,10 +9,9 @@ import {
 } from './utils/hardwareCatalogAdapter';
 
 export default function App() {
-  // Active PC Hardware Build populated from the GitHub Open-Source Dataset / Adapter
+
   const [build, setBuild] = useState(DEFAULT_BUILD);
 
-  // Full normalized catalog per category fetched from docyx/pc-part-dataset via GitHub CDN
   const [catalogByCategory, setCatalogByCategory] = useState(HARDWARE_CATALOG);
   const [datasetStatus, setDatasetStatus] = useState({
     loading: true,
@@ -26,23 +25,19 @@ export default function App() {
     totalRawRecords: 0,
   });
 
-  // Optional local .GLB ObjectURL overrides uploaded directly in browser per category
   const [customGlbOverrides, setCustomGlbOverrides] = useState({});
 
-  // 3D Viewport & HDRI Environment Controls (GLB Path Labels OFF by default, Neutral Studio HDRI default)
   const [envPreset, setEnvPreset] = useState('studio');
   const [showBoundingLabels, setShowBoundingLabels] = useState(false);
   const [wireframe, setWireframe] = useState(false);
   const [autoRotate, setAutoRotate] = useState(false);
   const [explodedView, setExplodedView] = useState(false);
 
-  // Camera angle preset trigger
   const [cameraViewTrigger, setCameraViewTrigger] = useState({
     mode: 'iso',
     ts: 0,
   });
 
-  // Modal State ('closed' | 'picker' | 'details' | 'manifest')
   const [modalState, setModalState] = useState({
     mode: 'closed',
     category: 'cpu',
@@ -51,7 +46,6 @@ export default function App() {
 
   const [screenshotToast, setScreenshotToast] = useState(false);
 
-  // Real-Time WebGL Telemetry
   const [stats, setStats] = useState({
     fps: 60,
     triangles: 0,
@@ -60,7 +54,6 @@ export default function App() {
 
   const screenshotHandlerRef = useRef(null);
 
-  // Load Open-Source Hardware Dataset from GitHub Raw CDN (or instant local cache)
   const handleRefreshDataset = useCallback(async () => {
     setDatasetStatus((prev) => ({ ...prev, loading: true }));
     await clearHardwareDatasetCache();
@@ -119,7 +112,6 @@ export default function App() {
     };
   }, []);
 
-  // Total Build Price
   const totalPrice = useMemo(() => {
     return Object.values(build).reduce(
       (acc, item) => acc + (item?.price || 0),
@@ -127,7 +119,6 @@ export default function App() {
     );
   }, [build]);
 
-  // Select a part from the catalog and snap its 3D model to the corresponding socket
   const handleSelectPart = useCallback((category, part) => {
     setBuild((prev) => ({
       ...prev,
@@ -135,7 +126,6 @@ export default function App() {
     }));
   }, []);
 
-  // Upload a local .glb/.gltf file from the user's computer to test a socket immediately
   const handleUploadCustomGlb = useCallback((category, file) => {
     const objectUrl = URL.createObjectURL(file);
     setCustomGlbOverrides((prev) => ({
@@ -144,7 +134,6 @@ export default function App() {
     }));
   }, []);
 
-  // Reset build & settings to default
   const handleResetBuild = useCallback(() => {
     setBuild(DEFAULT_BUILD);
     setCustomGlbOverrides({});
@@ -153,7 +142,6 @@ export default function App() {
     setShowBoundingLabels(false);
   }, []);
 
-  // Export HD Transparent PNG Screenshot
   const handleCaptureScreenshot = useCallback(() => {
     if (!screenshotHandlerRef.current) return;
     const dataUrl = screenshotHandlerRef.current();
