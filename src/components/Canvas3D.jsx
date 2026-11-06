@@ -197,6 +197,9 @@ export default function Canvas3D({
   explodedView,
   showGlass = true,
   isPcOn = true,
+  showAirflow = false,
+  showDisplays = true,
+  showCaseFans = true,
   rgbConfig = DEFAULT_RGB_CONFIG,
   cameraViewTrigger,
   onStatsUpdate,
@@ -267,6 +270,9 @@ export default function Canvas3D({
           explodedView={explodedView}
           showGlass={showGlass}
           isPcOn={isPcOn}
+          showAirflow={showAirflow}
+          showDisplays={showDisplays}
+          showCaseFans={showCaseFans}
           rgbConfig={rgbConfig}
         />
 

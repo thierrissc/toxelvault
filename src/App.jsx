@@ -36,6 +36,9 @@ export default function App() {
   const [explodedView, setExplodedView] = useState(false);
   const [showGlass, setShowGlass] = useState(true);
   const [isPcOn, setIsPcOn] = useState(true);
+  const [showAirflow, setShowAirflow] = useState(false);
+  const [showDisplays, setShowDisplays] = useState(true);
+  const [showCaseFans, setShowCaseFans] = useState(true);
   const [rgbConfig, setRgbConfig] = useState(DEFAULT_RGB_CONFIG);
   const [currency, setCurrency] = useState('BRL');
 
@@ -159,6 +162,9 @@ export default function App() {
     setShowBoundingLabels(false);
     setShowGlass(true);
     setIsPcOn(true);
+    setShowAirflow(false);
+    setShowDisplays(true);
+    setShowCaseFans(true);
     setRgbConfig(DEFAULT_RGB_CONFIG);
   }, []);
 
@@ -216,6 +222,12 @@ export default function App() {
         setShowGlass={setShowGlass}
         isPcOn={isPcOn}
         setIsPcOn={setIsPcOn}
+        showAirflow={showAirflow}
+        setShowAirflow={setShowAirflow}
+        showDisplays={showDisplays}
+        setShowDisplays={setShowDisplays}
+        showCaseFans={showCaseFans}
+        setShowCaseFans={setShowCaseFans}
         rgbConfig={rgbConfig}
         setRgbConfig={setRgbConfig}
         onSnapCamera={handleSnapCamera}
@@ -237,6 +249,9 @@ export default function App() {
           explodedView={explodedView}
           showGlass={showGlass}
           isPcOn={isPcOn}
+          showAirflow={showAirflow}
+          showDisplays={showDisplays}
+          showCaseFans={showCaseFans}
           rgbConfig={rgbConfig}
           cameraViewTrigger={cameraViewTrigger}
           onStatsUpdate={setStats}

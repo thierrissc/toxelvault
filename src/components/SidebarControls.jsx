@@ -29,6 +29,8 @@ import {
   ListFilter,
   LineChart,
   Plus,
+  Wind,
+  Monitor,
 } from 'lucide-react';
 import {
   HARDWARE_CATEGORIES,
@@ -76,7 +78,7 @@ function ProductThumbnail({ part, onClick }) {
       type="button"
       onClick={onClick}
       style={{ width: '56px', height: '56px', backgroundColor: '#ffffff' }}
-      className="relative shrink-0 rounded-xl overflow-hidden border border-white/15 flex items-center justify-center cursor-pointer shadow-sm hover:scale-105 transition-transform"
+      className="relative shrink-0 rounded-xl border border-white/15 flex items-center justify-center cursor-pointer shadow-sm hover:scale-105 transition-transform"
       title={`Ver detalhes de ${part?.name || ''}`}
     >
       <img
@@ -93,8 +95,14 @@ function ProductThumbnail({ part, onClick }) {
           objectPosition: 'center',
           padding: '4px',
         }}
-        className="w-full h-full"
+        className="w-full h-full rounded-xl"
       />
+      <span
+        style={{ backgroundColor: '#d926a9' }}
+        className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full flex items-center justify-center shadow"
+      >
+        <Box className="h-2.5 w-2.5 text-white" />
+      </span>
     </button>
   );
 }
@@ -161,11 +169,10 @@ function PriceHistoryPanel({ build, currency }) {
                 key={d}
                 type="button"
                 onClick={() => setRangeDays(d)}
-                className={`rounded-md px-2.5 py-1 text-[11px] font-semibold transition cursor-pointer ${
-                  rangeDays === d
+                className={`rounded-md px-2.5 py-1 text-[11px] font-semibold transition cursor-pointer ${rangeDays === d
                     ? 'bg-white text-slate-950'
                     : 'text-slate-400 hover:text-white'
-                }`}
+                  }`}
               >
                 {d}D
               </button>
@@ -293,6 +300,12 @@ export default function SidebarControls({
   setShowGlass,
   isPcOn = true,
   setIsPcOn,
+  showAirflow = false,
+  setShowAirflow,
+  showDisplays = true,
+  setShowDisplays,
+  showCaseFans = true,
+  setShowCaseFans,
   rgbConfig,
   setRgbConfig,
   onSnapCamera,
@@ -373,7 +386,7 @@ export default function SidebarControls({
       }),
     ];
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(summaryLines.join('\n')).catch(() => {});
+      navigator.clipboard.writeText(summaryLines.join('\n')).catch(() => { });
     }
     setBuildName((prev) => (prev.endsWith(' (Copy)') ? prev : `${prev} (Copy)`));
     setClonedToast(true);
@@ -420,11 +433,10 @@ export default function SidebarControls({
                 key={curr.code}
                 type="button"
                 onClick={() => setCurrency && setCurrency(curr.code)}
-                className={`rounded-lg px-2 py-1 text-xs font-semibold transition cursor-pointer ${
-                  currency === curr.code
+                className={`rounded-lg px-2 py-1 text-xs font-semibold transition cursor-pointer ${currency === curr.code
                     ? 'bg-white text-slate-950 shadow-sm'
                     : 'text-slate-400 hover:text-white'
-                }`}
+                  }`}
                 title={`Moeda: ${curr.code} (${curr.symbol})`}
               >
                 {curr.code}
@@ -435,11 +447,10 @@ export default function SidebarControls({
           <button
             type="button"
             onClick={onOpenAssistant}
-            className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-medium transition cursor-pointer ${
-              compatibility.isCompatible && compatibility.warnings.length === 0
+            className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-medium transition cursor-pointer ${compatibility.isCompatible && compatibility.warnings.length === 0
                 ? 'bg-[#161920] hover:bg-[#1e222b] border-white/[0.1] text-slate-200'
                 : 'bg-white/[0.1] border-white/[0.25] text-white'
-            }`}
+              }`}
             title="Status de Compatibilidade e Consumo Estimado"
           >
             {compatibility.isCompatible ? (
@@ -459,11 +470,10 @@ export default function SidebarControls({
           <button
             type="button"
             onClick={() => setIsPcOn(!isPcOn)}
-            className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
-              isPcOn
+            className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${isPcOn
                 ? 'bg-white/[0.1] border-white/[0.22] text-white'
                 : 'bg-[#161920] border-white/[0.08] text-slate-400 hover:text-slate-200'
-            }`}
+              }`}
             title="Ligar ou Desligar o PC 3D"
           >
             <Power className="h-3.5 w-3.5 text-current" />
@@ -520,11 +530,10 @@ export default function SidebarControls({
                         onClick={() =>
                           setRgbConfig((prev) => ({ ...prev, mode: m.id }))
                         }
-                        className={`rounded-lg py-1.5 px-2.5 text-xs font-medium border transition cursor-pointer ${
-                          rgbConfig?.mode === m.id
+                        className={`rounded-lg py-1.5 px-2.5 text-xs font-medium border transition cursor-pointer ${rgbConfig?.mode === m.id
                             ? 'bg-white/[0.12] border-white/[0.28] text-white'
                             : 'bg-[#191d26] border-white/[0.07] text-slate-400 hover:text-white'
-                        }`}
+                          }`}
                       >
                         {m.label}
                       </button>
@@ -620,11 +629,10 @@ export default function SidebarControls({
           <button
             type="button"
             onClick={() => setHide3D((prev) => !prev)}
-            className={`hidden lg:flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-medium transition cursor-pointer ${
-              hide3D
+            className={`hidden lg:flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-medium transition cursor-pointer ${hide3D
                 ? 'bg-white text-slate-950 border-white font-semibold'
                 : 'bg-[#161920] hover:bg-[#1e222b] border-white/[0.1] text-slate-200 hover:text-white'
-            }`}
+              }`}
             title={hide3D ? 'Mostrar Visualização 3D' : 'Ocultar Visualização 3D'}
           >
             {hide3D ? (
@@ -699,9 +707,8 @@ export default function SidebarControls({
                     <SlidersHorizontal className="h-3.5 w-3.5 text-slate-300" />
                     <span>Visualização 3D</span>
                     <ChevronDown
-                      className={`h-3.5 w-3.5 text-slate-400 transition-transform ${
-                        viewMenuOpen ? 'rotate-180' : ''
-                      }`}
+                      className={`h-3.5 w-3.5 text-slate-400 transition-transform ${viewMenuOpen ? 'rotate-180' : ''
+                        }`}
                     />
                   </button>
 
@@ -741,11 +748,10 @@ export default function SidebarControls({
                           <button
                             type="button"
                             onClick={() => setShowGlass(!showGlass)}
-                            className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-xs font-medium border transition cursor-pointer ${
-                              !showGlass
+                            className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-xs font-medium border transition cursor-pointer ${!showGlass
                                 ? 'bg-white/[0.12] border-white/[0.25] text-white'
                                 : 'bg-[#191d26] border-white/[0.07] text-slate-300 hover:text-white'
-                            }`}
+                              }`}
                           >
                             <span className="flex items-center gap-2">
                               {showGlass ? (
@@ -764,11 +770,10 @@ export default function SidebarControls({
                           <button
                             type="button"
                             onClick={() => setExplodedView(!explodedView)}
-                            className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-xs font-medium border transition cursor-pointer ${
-                              explodedView
+                            className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-xs font-medium border transition cursor-pointer ${explodedView
                                 ? 'bg-white/[0.12] border-white/[0.25] text-white'
                                 : 'bg-[#191d26] border-white/[0.07] text-slate-300 hover:text-white'
-                            }`}
+                              }`}
                           >
                             <span className="flex items-center gap-2">
                               <Maximize2 className="h-3.5 w-3.5 text-slate-300" />
@@ -782,17 +787,15 @@ export default function SidebarControls({
                           <button
                             type="button"
                             onClick={() => setAutoRotate(!autoRotate)}
-                            className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-xs font-medium border transition cursor-pointer ${
-                              autoRotate
+                            className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-xs font-medium border transition cursor-pointer ${autoRotate
                                 ? 'bg-white/[0.12] border-white/[0.25] text-white'
                                 : 'bg-[#191d26] border-white/[0.07] text-slate-300 hover:text-white'
-                            }`}
+                              }`}
                           >
                             <span className="flex items-center gap-2">
                               <RotateCw
-                                className={`h-3.5 w-3.5 text-slate-300 ${
-                                  autoRotate ? 'animate-spin' : ''
-                                }`}
+                                className={`h-3.5 w-3.5 text-slate-300 ${autoRotate ? 'animate-spin' : ''
+                                  }`}
                               />
                               <span>Girar 360°</span>
                             </span>
@@ -817,11 +820,10 @@ export default function SidebarControls({
                               key={env.id}
                               type="button"
                               onClick={() => setEnvPreset(env.id)}
-                              className={`rounded-lg py-1.5 px-2 text-xs font-medium border transition cursor-pointer ${
-                                envPreset === env.id
+                              className={`rounded-lg py-1.5 px-2 text-xs font-medium border transition cursor-pointer ${envPreset === env.id
                                   ? 'bg-white/[0.14] border-white/[0.28] text-white'
                                   : 'bg-[#191d26] border-white/[0.07] text-slate-400 hover:text-white'
-                              }`}
+                                }`}
                             >
                               {env.label}
                             </button>
@@ -867,11 +869,10 @@ export default function SidebarControls({
                 <button
                   type="button"
                   onClick={() => setShowGlass(!showGlass)}
-                  className={`flex items-center gap-1.5 rounded-xl backdrop-blur-md border px-3.5 py-2 text-xs font-medium shadow-lg transition cursor-pointer ${
-                    !showGlass
+                  className={`flex items-center gap-1.5 rounded-xl backdrop-blur-md border px-3.5 py-2 text-xs font-medium shadow-lg transition cursor-pointer ${!showGlass
                       ? 'bg-white/[0.14] border-white/[0.28] text-white'
                       : 'bg-[#13161d]/95 hover:bg-[#1b1f29] border-white/[0.1] text-slate-200 hover:text-white'
-                  }`}
+                    }`}
                 >
                   {showGlass ? (
                     <>
@@ -890,6 +891,90 @@ export default function SidebarControls({
 
             <div className="flex-1 w-full h-full">{children}</div>
 
+            <div className="pointer-events-none absolute bottom-4 left-0 right-0 z-20 flex items-center justify-center px-3">
+              <div className="pointer-events-auto flex items-center gap-1 rounded-2xl bg-[#13151d]/95 backdrop-blur-xl border border-white/[0.12] p-1.5 shadow-[0_18px_50px_rgba(0,0,0,0.85)]">
+                <button
+                  type="button"
+                  onClick={() => setShowCaseFans && setShowCaseFans(!showCaseFans)}
+                  className={`flex flex-col items-center justify-center min-w-[56px] sm:min-w-[64px] py-1.5 px-2 rounded-xl text-[10px] font-semibold transition cursor-pointer ${
+                    showCaseFans
+                      ? 'bg-white/[0.12] text-white border border-white/[0.2]'
+                      : 'text-slate-400 hover:text-white hover:bg-white/[0.06] border border-transparent'
+                  }`}
+                  title="Alternar Ventoinhas do Gabinete (Fans)"
+                >
+                  <Fan className="h-4 w-4 mb-1 text-current" />
+                  <span>Fans</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setViewMenuOpen((prev) => !prev)}
+                  className={`flex flex-col items-center justify-center min-w-[56px] sm:min-w-[64px] py-1.5 px-2 rounded-xl text-[10px] font-semibold transition cursor-pointer ${
+                    viewMenuOpen || !showGlass || explodedView
+                      ? 'bg-white/[0.12] text-white border border-white/[0.2]'
+                      : 'text-slate-400 hover:text-white hover:bg-white/[0.06] border border-transparent'
+                  }`}
+                  title="Configurações de Cena 3D e Câmera (Config)"
+                >
+                  <SlidersHorizontal className="h-4 w-4 mb-1 text-current" />
+                  <span>Config</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setRgbMenuOpen((prev) => !prev)}
+                  className={`flex flex-col items-center justify-center min-w-[56px] sm:min-w-[64px] py-1.5 px-2 rounded-xl text-[10px] font-semibold transition cursor-pointer ${
+                    rgbMenuOpen || (isPcOn && rgbConfig?.mode !== 'off')
+                      ? 'bg-white/[0.12] text-white border border-white/[0.2]'
+                      : 'text-slate-400 hover:text-white hover:bg-white/[0.06] border border-transparent'
+                  }`}
+                  title="Controlador de Iluminação RGB / ARGB"
+                >
+                  <Sparkles className="h-4 w-4 mb-1 text-current" />
+                  <span>RGB</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowDisplays && setShowDisplays(!showDisplays)}
+                  className={`flex flex-col items-center justify-center min-w-[56px] sm:min-w-[64px] py-1.5 px-2 rounded-xl text-[10px] font-semibold transition cursor-pointer ${
+                    showDisplays
+                      ? 'bg-white/[0.12] text-white border border-white/[0.2]'
+                      : 'text-slate-400 hover:text-white hover:bg-white/[0.06] border border-transparent'
+                  }`}
+                  title="Alternar Display LCD de Temperatura do Water Cooler (Displays)"
+                >
+                  <Monitor className="h-4 w-4 mb-1 text-current" />
+                  <span>Displays</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowAirflow && setShowAirflow(!showAirflow)}
+                  className={`flex flex-col items-center justify-center min-w-[56px] sm:min-w-[64px] py-1.5 px-2 rounded-xl text-[10px] font-semibold transition cursor-pointer ${
+                    showAirflow
+                      ? 'bg-[#d926a9]/25 text-white border border-[#d926a9]/60'
+                      : 'text-slate-400 hover:text-white hover:bg-white/[0.06] border border-transparent'
+                  }`}
+                  title="Simulador de Fluxo de Ar 3D (Flow)"
+                >
+                  <Wind className="h-4 w-4 mb-1 text-current" />
+                  <span>Flow</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={onCaptureScreenshot}
+                  className="flex flex-col items-center justify-center min-w-[56px] sm:min-w-[64px] py-1.5 px-2 rounded-xl text-[10px] font-semibold text-slate-300 hover:text-white hover:bg-white/[0.1] border border-transparent transition cursor-pointer"
+                  title="Capturar Render / Screenshot do PC 3D"
+                >
+                  <Camera className="h-4 w-4 mb-1 text-current" />
+                  <span>Render</span>
+                </button>
+              </div>
+            </div>
+
             {screenshotToast && (
               <div className="pointer-events-auto absolute bottom-4 right-4 z-20 flex items-center gap-2 rounded-xl bg-[#161922] border border-white/[0.15] px-3.5 py-2 text-xs font-medium text-white shadow-lg">
                 <CheckCircle2 className="h-4 w-4 text-slate-300" />
@@ -900,24 +985,21 @@ export default function SidebarControls({
         )}
 
         <aside
-          className={`fixed lg:static top-14 bottom-0 right-0 z-30 ${
-            hide3D
+          className={`fixed lg:static top-14 bottom-0 right-0 z-30 ${hide3D
               ? 'w-full max-w-5xl mx-auto border-x border-white/[0.08]'
               : 'w-full sm:w-[420px] lg:w-[450px] border-l border-white/[0.08]'
-          } shrink-0 bg-[#101217] flex flex-col transition-transform duration-300 ${
-            mobileDrawer ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'
-          }`}
+            } shrink-0 bg-[#101217] flex flex-col transition-transform duration-300 ${mobileDrawer ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'
+            }`}
         >
           <div className="flex items-center justify-between border-b border-white/[0.08] px-4 py-3 shrink-0 gap-2">
             <div className="flex items-center rounded-xl bg-[#161920] border border-white/[0.08] p-1">
               <button
                 type="button"
                 onClick={() => setSidebarTab('parts')}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
-                  sidebarTab === 'parts'
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${sidebarTab === 'parts'
                     ? 'bg-white text-slate-950 shadow-sm'
                     : 'text-slate-400 hover:text-white'
-                }`}
+                  }`}
               >
                 <ListFilter className="h-3.5 w-3.5" />
                 <span>Parts ({equippedCount}/8)</span>
@@ -925,11 +1007,10 @@ export default function SidebarControls({
               <button
                 type="button"
                 onClick={() => setSidebarTab('history')}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
-                  sidebarTab === 'history'
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${sidebarTab === 'history'
                     ? 'bg-white text-slate-950 shadow-sm'
                     : 'text-slate-400 hover:text-white'
-                }`}
+                  }`}
               >
                 <LineChart className="h-3.5 w-3.5" />
                 <span>Price History</span>
@@ -963,11 +1044,10 @@ export default function SidebarControls({
             </div>
           ) : (
             <div
-              className={`flex-1 overflow-y-auto p-4 ${
-                hide3D
+              className={`flex-1 overflow-y-auto p-4 ${hide3D
                   ? 'grid grid-cols-1 md:grid-cols-2 gap-3 content-start'
                   : 'space-y-2.5'
-              }`}
+                }`}
             >
               {BUILDCORES_SLOT_ORDER.map((slot) => {
                 const Icon = CATEGORY_ICONS[slot.id] || Cpu;
@@ -1019,7 +1099,7 @@ export default function SidebarControls({
                           <span className="text-xs text-slate-400 font-medium">
                             {slot.label} • {slot.ptLabel}
                           </span>
-                          <span className="text-sm font-semibold text-slate-100 tabular-nums shrink-0">
+                          <span className="text-sm font-bold text-[#4ade80] tabular-nums shrink-0">
                             {formatCurrency(selectedPart.price, currency)}
                           </span>
                         </div>
@@ -1065,7 +1145,7 @@ export default function SidebarControls({
               <span className="block text-xs text-slate-400">
                 Valor Total do Setup
               </span>
-              <span className="text-xl font-bold text-white tabular-nums">
+              <span className="text-xl font-bold text-[#4ade80] tabular-nums">
                 {formatCurrency(totalPrice, currency)}
               </span>
             </div>
