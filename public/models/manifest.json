@@ -1,0 +1,51 @@
+{
+  "repository": "ToxelVault Static GLB Model CDN",
+  "version": "2.0.0",
+  "dracoDecoderPath": "https://www.gstatic.com/draco/versioned/decoders/1.5.7/",
+  "pbrMaps": ["baseColorTexture", "normalTexture", "metallicRoughnessTexture", "emissiveFactor"],
+  "models": {
+    "case": {
+      "case_hyte_y70_black": "/models/cases/hyte-y70-black.glb",
+      "case_lianli_o11_vision": "/models/cases/lian-li-o11-vision.glb",
+      "case_corsair_4000d_airflow": "/models/cases/corsair-4000d-airflow.glb",
+      "default": "/models/cases/hyte-y70-black.glb"
+    },
+    "motherboard": {
+      "mobo_asus_b650m_plus": "/models/motherboards/asus-b650m.glb",
+      "mobo_asus_rog_crosshair_x870e": "/models/motherboards/asus-rog-crosshair-x870e.glb",
+      "mobo_asus_rog_maximus_z790": "/models/motherboards/asus-rog-maximus-z790.glb",
+      "default": "/models/motherboards/asus-b650m.glb"
+    },
+    "cpu": {
+      "cpu_ryzen_7_7800x3d": "/models/cpus/ryzen-7-7800x3d.glb",
+      "cpu_ryzen_7_9800x3d": "/models/cpus/ryzen-7-9800x3d.glb",
+      "cpu_intel_i9_14900k": "/models/cpus/intel-i9-14900k.glb",
+      "default": "/models/cpus/ryzen-7-7800x3d.glb"
+    },
+    "gpu": {
+      "gpu_rtx_4070_rog_strix": "/models/gpus/rtx-4070.glb",
+      "gpu_rtx_4090_founders": "/models/gpus/rtx-4090-fe.glb",
+      "gpu_rx_7900_xtx_sapphire": "/models/gpus/rx-7900-xtx.glb",
+      "default": "/models/gpus/rtx-4070.glb"
+    },
+    "ram": {
+      "ram_gskill_trident_z5_32gb": "/models/ram/gskill-trident-z5.glb",
+      "ram_corsair_dominator_64gb": "/models/ram/corsair-dominator-titanium.glb",
+      "default": "/models/ram/gskill-trident-z5.glb"
+    },
+    "cooler": {
+      "cooler_nzxt_kraken_360": "/models/coolers/nzxt-kraken-360.glb",
+      "cooler_noctua_nh_d15": "/models/coolers/noctua-nh-d15.glb",
+      "default": "/models/coolers/nzxt-kraken-360.glb"
+    },
+    "storage": {
+      "storage_samsung_990_pro_2tb": "/models/storage/samsung-990-pro.glb",
+      "default": "/models/storage/samsung-990-pro.glb"
+    },
+    "psu": {
+      "psu_corsair_rm1000x_shift": "/models/psus/corsair-rm1000x.glb",
+      "psu_asus_rog_thor_1200p2": "/models/psus/asus-rog-thor-1200w.glb",
+      "default": "/models/psus/corsair-rm1000x.glb"
+    }
+  }
+}
