@@ -49,14 +49,14 @@
         "boundingBoxSize": [4.0, 4.2, 2.8]
       },
       "mount_motherboard": {
-        "position": [-0.55, 0.18, -0.28],
+        "position": [-0.42, 0.16, -0.26],
         "rotation": [0, 0, 0],
         "boundingBoxSize": [2.44, 3.05, 0.08]
       },
       "mount_psu": {
-        "position": [-1.05, -1.15, -0.88],
-        "rotation": [0, 0, 0],
-        "boundingBoxSize": [1.6, 0.86, 1.5]
+        "position": [-1.18, -0.45, -0.82],
+        "rotation": [0, 0, 1.570796],
+        "boundingBoxSize": [0.86, 1.5, 1.4]
       },
       "mount_top_radiator": {
         "position": [-0.05, 1.84, 0.45],
@@ -123,6 +123,35 @@
     }
   },
   "parts": [
+    {
+      "id": "case_hyte_y70_white",
+      "name": "HYTE Y70 Dual-Chamber Panoramic Snow White",
+      "brand": "HYTE",
+      "category": "case",
+      "price": 219.99,
+      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Gaming-PC_20240426_HOF2511-HDR_RAW-Export.png",
+      "model3dPath": "/models/cases/hyte-y70-white.glb",
+      "chassisColor": "#f3f4f6",
+      "interiorColor": "#e5e7eb",
+      "style": "panoramic_3piece",
+      "mountOffset": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "specs": {
+        "formFactor": "ATX / Micro-ATX / Mini-ITX",
+        "maxGpuLengthMm": 422,
+        "dimensionsMm": "470 x 320 x 470 mm",
+        "volume": "70.7L Dual-Chamber",
+        "sidePanel": "3-Piece Panoramic Tempered Glass",
+        "radiatorSupport": "360mm Top & 360mm Side",
+        "tdpW": 0
+      },
+      "merchants": [
+        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 219.99 }
+      ]
+    },
     {
       "id": "case_hyte_y70_black",
       "name": "HYTE Y70 Dual-Chamber Panoramic Pitch Black",
@@ -209,6 +238,37 @@
       },
       "merchants": [
         { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 104.99 }
+      ]
+    },
+    {
+      "id": "mobo_asus_rog_strix_x870a",
+      "name": "ASUS ROG STRIX X870-A GAMING WIFI DDR5 ATX",
+      "brand": "ASUS",
+      "category": "motherboard",
+      "price": 277.0,
+      "realPhotoUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Computer_motherboard_2.jpg",
+      "model3dPath": "/models/motherboards/asus-rog-strix-x870a.glb",
+      "pcbColor": "#14171f",
+      "vrmColor": "#f1f5f9",
+      "accentColor": "#f59e0b",
+      "themeVariant": "strix_white",
+      "mountOffset": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "specs": {
+        "socket": "AM5",
+        "chipset": "AMD X870",
+        "formFactor": "ATX",
+        "memoryType": "DDR5",
+        "memorySlots": "4x DIMM DDR5 (Up to 8000+ MT/s)",
+        "pcieSlot": "PCIe 5.0 x16 SafeSlot + 4x M.2",
+        "dimensionsMm": "305 x 244 mm",
+        "tdpW": 50
+      },
+      "merchants": [
+        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 277.0 }
       ]
     },
     {

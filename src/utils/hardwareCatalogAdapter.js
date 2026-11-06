@@ -285,10 +285,22 @@ export function normalizeDatasetItem(category, raw, index = 0) {
     const formFactor = raw.form_factor || 'ATX';
     const slots = raw.memory_slots || 4;
     const maxMem = raw.max_memory ? `${raw.max_memory} GB` : '192 GB';
+    const upperMobo = name.toUpperCase();
+    const isWhiteStrix =
+      upperMobo.includes('X870-A') ||
+      upperMobo.includes('B850-A') ||
+      upperMobo.includes('B650-A') ||
+      upperMobo.includes('Z790-A') ||
+      upperMobo.includes('WHITE') ||
+      upperMobo.includes('SILVER') ||
+      upperMobo.includes('ICE') ||
+      String(raw.color || '').toUpperCase().includes('WHITE') ||
+      String(raw.color || '').toUpperCase().includes('SILVER');
     const isRog =
-      name.toUpperCase().includes('ROG') ||
-      name.toUpperCase().includes('CROSSHAIR') ||
-      name.toUpperCase().includes('MAXIMUS');
+      upperMobo.includes('ROG') ||
+      upperMobo.includes('CROSSHAIR') ||
+      upperMobo.includes('MAXIMUS') ||
+      upperMobo.includes('STRIX');
 
     model3dPath =
       socket === 'LGA1700'
@@ -298,15 +310,20 @@ export function normalizeDatasetItem(category, raw, index = 0) {
         : '/models/motherboards/asus-b650m.glb';
 
     extraProps.pcbColor = '#0d0f12';
-    extraProps.vrmColor = isRog ? '#1e2430' : '#262b36';
-    extraProps.accentColor = '#94a3b8';
+    extraProps.vrmColor = isWhiteStrix ? '#f1f5f9' : isRog ? '#1e2430' : '#262b36';
+    extraProps.accentColor = isWhiteStrix ? '#f59e0b' : '#94a3b8';
+    extraProps.themeVariant = isWhiteStrix
+      ? 'strix_white'
+      : upperMobo.includes('TUF')
+      ? 'tuf_black'
+      : 'rog_dark';
 
     specs = {
       socket,
       formFactor,
       memorySlots: `${slots}x DIMM (Max ${maxMem})`,
       memoryType: socket === 'AM4' || socket === 'LGA1200' ? 'DDR4' : 'DDR5',
-      color: raw.color || 'Black / Brushed Aluminum',
+      color: raw.color || (isWhiteStrix ? 'White / Brushed Silver' : 'Black / Brushed Aluminum'),
       dimensionsMm: '305 x 244 mm',
       tdpW: 50,
     };
@@ -450,7 +467,11 @@ export function normalizeDatasetItem(category, raw, index = 0) {
     };
   } else if (category === 'case') {
     const caseType = raw.type || 'ATX Mid Tower';
-    const isWhite = String(raw.color || '').toLowerCase().includes('white');
+    const upperCase = name.toUpperCase();
+    const isWhite =
+      String(raw.color || '').toLowerCase().includes('white') ||
+      upperCase.includes('WHITE') ||
+      upperCase.includes('SNOW');
 
     model3dPath =
       brand === 'Lian Li'
@@ -459,8 +480,8 @@ export function normalizeDatasetItem(category, raw, index = 0) {
         ? '/models/cases/corsair-4000d-airflow.glb'
         : '/models/cases/hyte-y70-black.glb';
 
-    extraProps.chassisColor = isWhite ? '#cbd5e1' : '#111318';
-    extraProps.interiorColor = '#111318';
+    extraProps.chassisColor = isWhite ? '#f3f4f6' : '#121316';
+    extraProps.interiorColor = isWhite ? '#e5e7eb' : '#121316';
 
     specs = {
       formFactor: caseType.includes('Micro')
