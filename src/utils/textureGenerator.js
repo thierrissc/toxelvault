@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import catalogData from '../data/partsCatalog.json';
 import modelManifest from '../../public/models/manifest.json';
 
@@ -268,17 +269,17 @@ export function recommendOptimalBuild(
   const weights =
     objective === '1080p'
       ? {
-          gpu: 0.34,
-          cpu: 0.19,
-          motherboard: 0.12,
-          ram: 0.08,
-          cooler: 0.07,
-          storage: 0.07,
-          psu: 0.06,
-          case: 0.07,
-        }
+        gpu: 0.34,
+        cpu: 0.19,
+        motherboard: 0.12,
+        ram: 0.08,
+        cooler: 0.07,
+        storage: 0.07,
+        psu: 0.06,
+        case: 0.07,
+      }
       : objective === '4k'
-      ? {
+        ? {
           gpu: 0.44,
           cpu: 0.17,
           motherboard: 0.12,
@@ -288,7 +289,7 @@ export function recommendOptimalBuild(
           psu: 0.05,
           case: 0.04,
         }
-      : {
+        : {
           gpu: 0.39,
           cpu: 0.18,
           motherboard: 0.11,
@@ -449,4 +450,350 @@ export function generateBuildPriceHistory(build, days = 30) {
     highest,
     average,
   };
+}
+
+let cachedHerringboneAlpha = null;
+export function createHerringboneVentAlphaTexture() {
+  if (cachedHerringboneAlpha) return cachedHerringboneAlpha;
+  if (typeof document === 'undefined') return null;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 1024;
+  canvas.height = 1024;
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, 1024, 1024);
+
+  ctx.fillStyle = '#000000';
+  const cols = 6;
+  const rows = 28;
+  const colW = 860 / cols;
+  const rowH = 900 / rows;
+
+  for (let c = 0; c < cols; c++) {
+    const dir = c % 2 === 0 ? 1 : -1;
+    for (let r = 0; r < rows; r++) {
+      const cx = 82 + c * colW + colW * 0.5;
+      const cy = 62 + r * rowH + rowH * 0.5;
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(dir * 0.34);
+      ctx.beginPath();
+      ctx.roundRect(-colW * 0.37, -6.5, colW * 0.74, 13, 6);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.anisotropy = 8;
+  tex.needsUpdate = true;
+  cachedHerringboneAlpha = tex;
+  return tex;
+}
+
+let cachedHoneycombAlpha = null;
+export function createHoneycombGrilleAlphaTexture() {
+  if (cachedHoneycombAlpha) return cachedHoneycombAlpha;
+  if (typeof document === 'undefined') return null;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 512;
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, 512, 512);
+
+  ctx.fillStyle = '#000000';
+  const radius = 15;
+  const dx = radius * 1.85;
+  const dy = radius * 1.62;
+
+  for (let row = 2; row < 28; row++) {
+    for (let col = 2; col < 17; col++) {
+      const x = col * dx + (row % 2 === 0 ? 0 : dx * 0.5);
+      const y = row * dy;
+      if (x > 38 && x < 474 && y > 38 && y < 474) {
+        ctx.beginPath();
+        for (let s = 0; s < 6; s++) {
+          const ang = (s / 6) * Math.PI * 2;
+          const px = x + Math.cos(ang) * (radius - 3);
+          const py = y + Math.sin(ang) * (radius - 3);
+          if (s === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+  }
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.anisotropy = 8;
+  tex.needsUpdate = true;
+  cachedHoneycombAlpha = tex;
+  return tex;
+}
+
+const moboSurfaceCache = new Map();
+export function createMotherboardSurfaceTextures(part) {
+  if (typeof document === 'undefined') return null;
+  const upperName = String(part?.name || '').toUpperCase();
+  const isStrixWhite =
+    part?.themeVariant === 'strix_white' ||
+    upperName.includes('X870-A') ||
+    upperName.includes('B850-A') ||
+    upperName.includes('B650-A') ||
+    upperName.includes('WHITE') ||
+    upperName.includes('SILVER') ||
+    upperName.includes('ICE');
+  const isTuf = upperName.includes('TUF');
+  const cacheKey = isStrixWhite ? 'strix_white' : isTuf ? 'tuf_black' : 'rog_dark';
+
+  if (moboSurfaceCache.has(cacheKey)) {
+    return moboSurfaceCache.get(cacheKey);
+  }
+
+  const pcbCanvas = document.createElement('canvas');
+  pcbCanvas.width = 1024;
+  pcbCanvas.height = 1024;
+  const pCtx = pcbCanvas.getContext('2d');
+  pCtx.fillStyle = isStrixWhite ? '#161922' : '#0b0d12';
+  pCtx.fillRect(0, 0, 1024, 1024);
+
+  pCtx.strokeStyle = isStrixWhite ? 'rgba(203, 213, 225, 0.18)' : 'rgba(148, 163, 184, 0.12)';
+  pCtx.lineWidth = 2;
+  for (let i = 0; i < 48; i++) {
+    const x = 80 + i * 18;
+    pCtx.beginPath();
+    pCtx.moveTo(x, 60);
+    pCtx.lineTo(x, 460);
+    pCtx.lineTo(x + 22, 510);
+    pCtx.lineTo(x + 22, 960);
+    pCtx.stroke();
+  }
+
+  for (const [mx, my] of [
+    [42, 42],
+    [982, 42],
+    [42, 512],
+    [982, 512],
+    [42, 982],
+    [982, 982],
+  ]) {
+    pCtx.fillStyle = '#94a3b8';
+    pCtx.beginPath();
+    pCtx.arc(mx, my, 16, 0, Math.PI * 2);
+    pCtx.fill();
+    pCtx.fillStyle = '#090b0f';
+    pCtx.beginPath();
+    pCtx.arc(mx, my, 7, 0, Math.PI * 2);
+    pCtx.fill();
+  }
+
+  const vrmCanvas = document.createElement('canvas');
+  vrmCanvas.width = 512;
+  vrmCanvas.height = 1024;
+  const vCtx = vrmCanvas.getContext('2d');
+
+  const vrmEmissiveCanvas = document.createElement('canvas');
+  vrmEmissiveCanvas.width = 512;
+  vrmEmissiveCanvas.height = 1024;
+  const veCtx = vrmEmissiveCanvas.getContext('2d');
+  veCtx.fillStyle = '#000000';
+  veCtx.fillRect(0, 0, 512, 1024);
+
+  if (isStrixWhite) {
+    const grad = vCtx.createLinearGradient(0, 0, 512, 1024);
+    grad.addColorStop(0, '#f8fafc');
+    grad.addColorStop(0.5, '#e2e8f0');
+    grad.addColorStop(1, '#cbd5e1');
+    vCtx.fillStyle = grad;
+    vCtx.fillRect(0, 0, 512, 1024);
+
+    vCtx.strokeStyle = 'rgba(100, 116, 139, 0.28)';
+    vCtx.lineWidth = 4;
+    for (let y = -200; y < 1200; y += 44) {
+      vCtx.beginPath();
+      vCtx.moveTo(0, y);
+      vCtx.lineTo(512, y - 220);
+      vCtx.stroke();
+    }
+
+    vCtx.save();
+    vCtx.translate(260, 220);
+    vCtx.rotate(-0.32);
+    vCtx.fillStyle = '#64748b';
+    vCtx.font = 'bold 46px Inter, sans-serif';
+    vCtx.fillText('FOR THOSE', -140, 0);
+    vCtx.font = 'bold 34px Inter, sans-serif';
+    vCtx.fillText('WHO DARE', -120, 44);
+    vCtx.restore();
+
+    const drawRogEye = (ctx, fillStyle) => {
+      ctx.save();
+      ctx.translate(220, 520);
+      ctx.fillStyle = fillStyle;
+      ctx.beginPath();
+      ctx.moveTo(-145, 25);
+      ctx.lineTo(-35, -75);
+      ctx.lineTo(135, -20);
+      ctx.lineTo(45, 45);
+      ctx.lineTo(-40, 10);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(-85, 65);
+      ctx.lineTo(15, 25);
+      ctx.lineTo(125, 65);
+      ctx.lineTo(20, 95);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    };
+
+    drawRogEye(vCtx, '#facc15');
+    drawRogEye(veCtx, '#fbbf24');
+
+    vCtx.save();
+    vCtx.translate(250, 820);
+    vCtx.rotate(-0.32);
+    vCtx.fillStyle = '#64748b';
+    vCtx.font = 'bold 52px Inter, sans-serif';
+    vCtx.fillText('DARE', -95, 0);
+    vCtx.restore();
+  } else if (isTuf) {
+    vCtx.fillStyle = '#1c2029';
+    vCtx.fillRect(0, 0, 512, 1024);
+    vCtx.fillStyle = '#f59e0b';
+    vCtx.fillRect(36, 140, 16, 740);
+    vCtx.save();
+    vCtx.translate(260, 520);
+    vCtx.rotate(-Math.PI / 2);
+    vCtx.fillStyle = '#94a3b8';
+    vCtx.font = 'bold 68px Inter, sans-serif';
+    vCtx.fillText('TUF GAMING', -220, 20);
+    vCtx.restore();
+  } else {
+    vCtx.fillStyle = '#161a23';
+    vCtx.fillRect(0, 0, 512, 1024);
+    const drawDarkEye = (ctx, fill) => {
+      ctx.save();
+      ctx.translate(230, 500);
+      ctx.fillStyle = fill;
+      ctx.beginPath();
+      ctx.moveTo(-135, 20);
+      ctx.lineTo(-30, -70);
+      ctx.lineTo(130, -15);
+      ctx.lineTo(40, 40);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    };
+    drawDarkEye(vCtx, '#38bdf8');
+    drawDarkEye(veCtx, '#38bdf8');
+  }
+
+  const m2Canvas = document.createElement('canvas');
+  m2Canvas.width = 1024;
+  m2Canvas.height = 512;
+  const mCtx = m2Canvas.getContext('2d');
+
+  if (isStrixWhite) {
+    const mGrad = mCtx.createLinearGradient(0, 0, 1024, 512);
+    mGrad.addColorStop(0, '#f1f5f9');
+    mGrad.addColorStop(0.55, '#cbd5e1');
+    mGrad.addColorStop(1, '#94a3b8');
+    mCtx.fillStyle = mGrad;
+    mCtx.fillRect(0, 0, 1024, 512);
+
+    mCtx.strokeStyle = 'rgba(71, 85, 105, 0.35)';
+    mCtx.lineWidth = 5;
+    for (let x = -200; x < 1200; x += 64) {
+      mCtx.beginPath();
+      mCtx.moveTo(x, 512);
+      mCtx.lineTo(x + 280, 0);
+      mCtx.stroke();
+    }
+
+    mCtx.save();
+    mCtx.translate(540, 290);
+    mCtx.rotate(-0.42);
+    mCtx.fillStyle = '#334155';
+    mCtx.font = '900 138px Inter, sans-serif';
+    mCtx.fillText('STRIX', -230, 40);
+    mCtx.restore();
+  } else {
+    mCtx.fillStyle = '#181c24';
+    mCtx.fillRect(0, 0, 1024, 512);
+    mCtx.strokeStyle = '#334155';
+    mCtx.lineWidth = 4;
+    mCtx.strokeRect(18, 18, 988, 476);
+    mCtx.fillStyle = '#64748b';
+    mCtx.font = 'bold 64px Inter, sans-serif';
+    mCtx.fillText(isTuf ? 'TUF M.2 ARMOR' : 'REPUBLIC OF GAMERS', 140, 275);
+  }
+
+  const pcbTex = new THREE.CanvasTexture(pcbCanvas);
+  const vrmTex = new THREE.CanvasTexture(vrmCanvas);
+  const vrmEmissiveTex = new THREE.CanvasTexture(vrmEmissiveCanvas);
+  const m2Tex = new THREE.CanvasTexture(m2Canvas);
+
+  [pcbTex, vrmTex, vrmEmissiveTex, m2Tex].forEach((t) => {
+    t.anisotropy = 8;
+    t.needsUpdate = true;
+  });
+
+  const bundle = {
+    isStrixWhite,
+    isTuf,
+    pcbTex,
+    vrmTex,
+    vrmEmissiveTex,
+    m2Tex,
+  };
+  moboSurfaceCache.set(cacheKey, bundle);
+  return bundle;
+}
+
+let cachedLcdTex = null;
+export function createKrakenLcdTexture() {
+  if (cachedLcdTex) return cachedLcdTex;
+  if (typeof document === 'undefined') return null;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 512;
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = '#07090e';
+  ctx.fillRect(0, 0, 512, 512);
+
+  ctx.strokeStyle = '#38bdf8';
+  ctx.lineWidth = 18;
+  ctx.beginPath();
+  ctx.arc(256, 256, 212, -Math.PI * 0.75, Math.PI * 0.75);
+  ctx.stroke();
+
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = 'bold 28px Inter, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('LIQUID TEMP', 256, 168);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 116px Inter, sans-serif';
+  ctx.fillText('38°C', 256, 288);
+
+  ctx.fillStyle = '#38bdf8';
+  ctx.font = 'bold 26px Inter, sans-serif';
+  ctx.fillText('PUMP 2640 RPM', 256, 356);
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.anisotropy = 8;
+  tex.needsUpdate = true;
+  cachedLcdTex = tex;
+  return tex;
 }
