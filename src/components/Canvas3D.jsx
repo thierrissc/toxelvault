@@ -12,39 +12,32 @@ import * as THREE from 'three';
 import CapeModel from './CapeModel';
 import { DEFAULT_RGB_CONFIG } from '../utils/textureGenerator';
 
-function StudioEnvironmentRig({ envPreset = 'studio', isPcOn = true }) {
+function StudioEnvironmentRig({ envPreset = 'studio' }) {
   return (
     <>
-      <ambientLight intensity={isPcOn ? 0.38 : 0.26} color="#f8fafc" />
+      <ambientLight intensity={0.12} color="#e2e8f0" />
 
       <directionalLight
         position={[6.5, 11.0, 7.5]}
-        intensity={isPcOn ? 2.2 : 1.5}
-        color="#ffffff"
+        intensity={1.15}
+        color="#f8fafc"
         castShadow
         shadow-mapSize={[2048, 2048]}
         shadow-bias={-0.0002}
+        shadow-normalBias={0.02}
+      />
+
+      <directionalLight
+        position={[-6.0, 5.8, 4.2]}
+        intensity={0.35}
+        color="#cbd5e1"
       />
 
       <spotLight
         position={[-7.0, 7.5, -5.2]}
-        angle={0.65}
-        penumbra={0.85}
-        intensity={3.2}
-        color="#cbd5e1"
-        distance={22}
-      />
-      <directionalLight
-        position={[-6.0, 5.8, 4.2]}
-        intensity={1.1}
-        color="#e2e8f0"
-      />
-
-      <spotLight
-        position={[6.8, 1.5, -5.0]}
-        angle={0.7}
+        angle={0.6}
         penumbra={0.9}
-        intensity={2.6}
+        intensity={1.2}
         color="#94a3b8"
         distance={22}
       />
@@ -52,43 +45,32 @@ function StudioEnvironmentRig({ envPreset = 'studio', isPcOn = true }) {
       <Suspense fallback={null}>
         <Environment
           preset={envPreset}
-          environmentIntensity={isPcOn ? 1.05 : 0.75}
-          resolution={512}
+          environmentIntensity={0.45}
+          resolution={256}
         >
           <Lightformer
             form="rect"
-            intensity={2.5}
-            color="#ffffff"
+            intensity={0.9}
+            color="#e5e7eb"
             scale={[10, 5, 1]}
             position={[0, 9.0, 0]}
             rotation={[Math.PI / 2, 0, 0]}
           />
-
           <Lightformer
             form="rect"
-            intensity={1.9}
-            color="#e2e8f0"
+            intensity={0.6}
+            color="#cbd5e1"
             scale={[6, 7, 1]}
             position={[-7.0, 3.5, -2.5]}
             rotation={[0, Math.PI / 2.2, 0]}
           />
-
           <Lightformer
             form="rect"
-            intensity={1.6}
-            color="#cbd5e1"
+            intensity={0.45}
+            color="#94a3b8"
             scale={[6, 7, 1]}
             position={[7.0, 2.8, -2.5]}
             rotation={[0, -Math.PI / 2.2, 0]}
-          />
-
-          <Lightformer
-            form="rect"
-            intensity={1.3}
-            color="#f8fafc"
-            scale={[4, 6, 1]}
-            position={[2.8, 3.8, 6.5]}
-            target={[0, 2.1, 0]}
           />
         </Environment>
       </Suspense>
@@ -247,7 +229,7 @@ export default function Canvas3D({
           alpha: false,
           antialias: true,
           toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 1.16,
+          toneMappingExposure: 0.85,
           powerPreference: 'high-performance',
         }}
         camera={{
@@ -260,7 +242,7 @@ export default function Canvas3D({
         <color attach="background" args={['#090b0f']} />
         <fog attach="fog" args={['#090b0f', 14, 32]} />
 
-        <StudioEnvironmentRig envPreset={envPreset} isPcOn={isPcOn} />
+        <StudioEnvironmentRig envPreset={envPreset} />
 
         <CapeModel
           build={build}
@@ -280,10 +262,12 @@ export default function Canvas3D({
 
         <EffectComposer disableNormalPass={false} multisampling={4}>
           <N8AO
-            aoRadius={0.45}
-            distanceFalloff={0.85}
-            intensity={2.2}
-            color="#030407"
+            aoRadius={0.35}
+            distanceFalloff={0.6}
+            intensity={4.0}
+            aoSamples={16}
+            denoiseSamples={8}
+            color="#000000"
             halfRes={false}
           />
         </EffectComposer>
