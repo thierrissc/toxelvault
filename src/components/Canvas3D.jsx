@@ -3,6 +3,8 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import {
   OrbitControls,
   ContactShadows,
+  AccumulativeShadows,
+  RandomizedLight,
   Environment,
   Lightformer,
   Grid,
@@ -151,12 +153,31 @@ function BuildCoresDarkGridFloor({ floorTheme = 'dark' }) {
 
       <ContactShadows
         position={[0, 0.006, 0]}
-        opacity={0.86}
+        opacity={0.88}
         scale={13.5}
-        blur={2.0}
+        blur={1.85}
         far={5.5}
         color="#000000"
       />
+
+      <AccumulativeShadows
+        temporal={false}
+        frames={1}
+        color="#000000"
+        colorBlend={0.6}
+        opacity={0.55}
+        scale={12}
+        position={[0, 0.004, 0]}
+      >
+        <RandomizedLight
+          amount={4}
+          radius={5}
+          ambient={0.35}
+          intensity={1.1}
+          position={[5, 8, 5]}
+          bias={0.001}
+        />
+      </AccumulativeShadows>
     </group>
   );
 }

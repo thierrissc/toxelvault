@@ -11,7 +11,11 @@ import {
   createMotherboardSurfaceTextures,
   createKrakenLcdTexture,
 } from '../utils/textureGenerator';
-import { clampToContainer, CHASSIS_INTERNAL_BOUNDS } from '../utils/assetValidator';
+import {
+  clampToContainer,
+  clampPsuToRearChamber,
+  CHASSIS_INTERNAL_BOUNDS,
+} from '../utils/assetValidator';
 
 const CASE_WIDTH = 3.8;
 const CASE_HEIGHT = 4.2;
@@ -34,6 +38,31 @@ function createChamferedPlateGeometry(width, depth, chamfer, thickness) {
     bevelEnabled: false,
   });
   geo.rotateX(-Math.PI / 2);
+  return geo;
+}
+
+function createBeveledBoxGeometry(width, height, depth, bevel = 0.014) {
+  const b = Math.min(bevel, width * 0.2, height * 0.2, depth * 0.25);
+  const hw = Math.max(0.01, width * 0.5 - b);
+  const hh = Math.max(0.01, height * 0.5 - b);
+  const extDepth = Math.max(0.01, depth - b * 2);
+
+  const shape = new THREE.Shape();
+  shape.moveTo(-hw, -hh);
+  shape.lineTo(hw, -hh);
+  shape.lineTo(hw, hh);
+  shape.lineTo(-hw, hh);
+  shape.closePath();
+
+  const geo = new THREE.ExtrudeGeometry(shape, {
+    depth: extDepth,
+    bevelEnabled: true,
+    bevelThickness: b,
+    bevelSize: b,
+    bevelSegments: 3,
+  });
+  geo.translate(0, 0, -extDepth * 0.5);
+  geo.computeVertexNormals();
   return geo;
 }
 
@@ -102,8 +131,8 @@ function CaseFan120({
     return undefined;
   }, [onRegisterImpeller]);
 
-  const frameColor = isWhite ? '#d8dce3' : '#151820';
-  const bladeColor = isWhite ? '#cfd4dc' : '#252d3d';
+  const frameColor = isWhite ? '#e5e7eb' : '#151820';
+  const bladeColor = isWhite ? '#d1d5db' : '#252d3d';
   const edgeColor = isWhite ? '#9ca3af' : '#2a2e37';
 
   const half = fanSize * 0.5;
@@ -117,8 +146,8 @@ function CaseFan120({
         <boxGeometry args={[fanSize, barThick, depth]} />
         <meshStandardMaterial
           color={frameColor}
-          roughness={0.45}
-          metalness={0.15}
+          roughness={0.35}
+          metalness={0.2}
           wireframe={wireframe}
         />
         <Edges threshold={15} color={edgeColor} />
@@ -127,8 +156,8 @@ function CaseFan120({
         <boxGeometry args={[fanSize, barThick, depth]} />
         <meshStandardMaterial
           color={frameColor}
-          roughness={0.45}
-          metalness={0.15}
+          roughness={0.35}
+          metalness={0.2}
           wireframe={wireframe}
         />
         <Edges threshold={15} color={edgeColor} />
@@ -137,8 +166,8 @@ function CaseFan120({
         <boxGeometry args={[barThick, fanSize - barThick * 2, depth]} />
         <meshStandardMaterial
           color={frameColor}
-          roughness={0.45}
-          metalness={0.15}
+          roughness={0.35}
+          metalness={0.2}
           wireframe={wireframe}
         />
         <Edges threshold={15} color={edgeColor} />
@@ -147,8 +176,8 @@ function CaseFan120({
         <boxGeometry args={[barThick, fanSize - barThick * 2, depth]} />
         <meshStandardMaterial
           color={frameColor}
-          roughness={0.45}
-          metalness={0.15}
+          roughness={0.35}
+          metalness={0.2}
           wireframe={wireframe}
         />
         <Edges threshold={15} color={edgeColor} />
@@ -158,8 +187,8 @@ function CaseFan120({
         <cylinderGeometry args={[radius, radius, depth - 0.01, 32, 1, true]} />
         <meshStandardMaterial
           color={frameColor}
-          roughness={0.45}
-          metalness={0.18}
+          roughness={0.35}
+          metalness={0.2}
           side={THREE.DoubleSide}
           wireframe={wireframe}
         />
@@ -192,7 +221,7 @@ function CaseFan120({
               <boxGeometry args={[radius * 0.22, radius * 0.62, 0.012]} />
               <meshStandardMaterial
                 color={bladeColor}
-                roughness={0.4}
+                roughness={0.35}
                 metalness={0.2}
                 wireframe={wireframe}
               />
@@ -217,6 +246,7 @@ function HyteY70PanoramicCase({
 
   const upperName = String(casePart?.name || '').toUpperCase();
   const isWhiteCase =
+    String(casePart?.chassisColor || '').toLowerCase() === '#e5e7eb' ||
     String(casePart?.chassisColor || '').toLowerCase() === '#d8dce3' ||
     String(casePart?.chassisColor || '').toLowerCase() === '#f3f4f6' ||
     String(casePart?.chassisColor || '').toLowerCase() === '#cbd5e1' ||
@@ -224,11 +254,10 @@ function HyteY70PanoramicCase({
     upperName.includes('SNOW') ||
     upperName.includes('SILVER');
 
-  const chassisHex = isWhiteCase ? '#d8dce3' : casePart?.chassisColor || '#121316';
-  const interiorHex = isWhiteCase ? '#cfd4dc' : '#14171e';
-  const accentTrimHex = isWhiteCase ? '#c3c9d4' : '#1b1f29';
+  const chassisHex = isWhiteCase ? '#e5e7eb' : casePart?.chassisColor || '#121316';
+  const interiorHex = isWhiteCase ? '#d1d5db' : '#14171e';
+  const accentTrimHex = isWhiteCase ? '#cbd5e1' : '#1b1f29';
   const shadowCavernHex = isWhiteCase ? '#334155' : '#050608';
-  const silkscreenHex = isWhiteCase ? '#cfd4dc' : '#090b0f';
   const edgeColor = isWhiteCase ? '#9ca3af' : '#2a2e37';
 
   const halfW = CASE_WIDTH * 0.5;
@@ -246,15 +275,15 @@ function HyteY70PanoramicCase({
   const glassMaterial = useMemo(
     () =>
       new THREE.MeshPhysicalMaterial({
-        color: new THREE.Color('#e2e8f0'),
-        transmission: 0.96,
-        roughness: 0.04,
+        color: new THREE.Color('#ffffff'),
+        transmission: 0.98,
+        roughness: 0.02,
         metalness: 0.0,
-        ior: 1.5,
-        thickness: 0.06,
+        ior: 1.52,
+        thickness: 0.05,
         transparent: true,
         opacity: 1.0,
-        reflectivity: 0.85,
+        reflectivity: 0.9,
         depthWrite: false,
         wireframe,
       }),
@@ -281,8 +310,8 @@ function HyteY70PanoramicCase({
       >
         <meshStandardMaterial
           color={chassisHex}
-          roughness={0.45}
-          metalness={0.15}
+          roughness={0.35}
+          metalness={0.2}
           wireframe={wireframe}
         />
         <Edges threshold={15} color={edgeColor} />
@@ -296,8 +325,8 @@ function HyteY70PanoramicCase({
       >
         <meshStandardMaterial
           color={chassisHex}
-          roughness={0.45}
-          metalness={0.15}
+          roughness={0.35}
+          metalness={0.2}
           wireframe={wireframe}
         />
         <Edges threshold={15} color={edgeColor} />
@@ -307,8 +336,8 @@ function HyteY70PanoramicCase({
         <boxGeometry args={[CASE_WIDTH, CASE_HEIGHT - 0.16, 0.06]} />
         <meshStandardMaterial
           color={chassisHex}
-          roughness={0.45}
-          metalness={0.15}
+          roughness={0.35}
+          metalness={0.2}
           wireframe={wireframe}
         />
         <Edges threshold={15} color={edgeColor} />
@@ -318,8 +347,8 @@ function HyteY70PanoramicCase({
         <boxGeometry args={[0.08, CASE_HEIGHT - 0.16, 1.16]} />
         <meshStandardMaterial
           color={chassisHex}
-          roughness={0.45}
-          metalness={0.15}
+          roughness={0.35}
+          metalness={0.2}
           wireframe={wireframe}
         />
         <Edges threshold={15} color={edgeColor} />
@@ -338,8 +367,8 @@ function HyteY70PanoramicCase({
         <planeGeometry args={[1.12, 1.62]} />
         <meshStandardMaterial
           color={chassisHex}
-          roughness={0.45}
-          metalness={0.15}
+          roughness={0.35}
+          metalness={0.2}
           alphaMap={herringboneAlpha}
           transparent
           alphaTest={0.45}
@@ -359,7 +388,7 @@ function HyteY70PanoramicCase({
             <boxGeometry args={[0.05, 0.095, 0.58]} />
             <meshStandardMaterial
               color={isWhiteCase ? '#94a3b8' : '#272e3d'}
-              roughness={0.4}
+              roughness={0.35}
               metalness={0.45}
               wireframe={wireframe}
             />
@@ -377,7 +406,7 @@ function HyteY70PanoramicCase({
             <boxGeometry args={[0.05, 0.88, 0.075]} />
             <meshStandardMaterial
               color={isWhiteCase ? '#64748b' : '#1e2430'}
-              roughness={0.42}
+              roughness={0.35}
               metalness={0.45}
               wireframe={wireframe}
             />
@@ -390,8 +419,8 @@ function HyteY70PanoramicCase({
         <boxGeometry args={[2.48, 3.64, 0.05]} />
         <meshStandardMaterial
           color={interiorHex}
-          roughness={0.45}
-          metalness={0.15}
+          roughness={0.35}
+          metalness={0.2}
           wireframe={wireframe}
         />
         <Edges threshold={15} color={edgeColor} />
@@ -401,8 +430,8 @@ function HyteY70PanoramicCase({
         <boxGeometry args={[1.02, 1.12, 0.055]} />
         <meshStandardMaterial
           color={isWhiteCase ? '#b8c0cc' : '#0b0d12'}
-          roughness={0.5}
-          metalness={0.15}
+          roughness={0.4}
+          metalness={0.2}
           wireframe={wireframe}
         />
         <Edges threshold={15} color={edgeColor} />
@@ -417,8 +446,8 @@ function HyteY70PanoramicCase({
         <boxGeometry args={[0.36, 3.64, 0.05]} />
         <meshStandardMaterial
           color={accentTrimHex}
-          roughness={0.45}
-          metalness={0.15}
+          roughness={0.35}
+          metalness={0.2}
           wireframe={wireframe}
         />
         <Edges threshold={15} color={edgeColor} />
@@ -465,8 +494,8 @@ function HyteY70PanoramicCase({
         <planeGeometry args={[1.02, 3.44]} />
         <meshStandardMaterial
           color={chassisHex}
-          roughness={0.45}
-          metalness={0.15}
+          roughness={0.35}
+          metalness={0.2}
           alphaMap={herringboneAlpha}
           transparent
           alphaTest={0.45}
@@ -479,8 +508,8 @@ function HyteY70PanoramicCase({
         <boxGeometry args={[3.1, 0.14, 1.82]} />
         <meshStandardMaterial
           color={interiorHex}
-          roughness={0.45}
-          metalness={0.15}
+          roughness={0.35}
+          metalness={0.2}
           wireframe={wireframe}
         />
         <Edges threshold={15} color={edgeColor} />
@@ -493,8 +522,8 @@ function HyteY70PanoramicCase({
         <planeGeometry args={[2.96, 1.56]} />
         <meshStandardMaterial
           color={chassisHex}
-          roughness={0.45}
-          metalness={0.15}
+          roughness={0.35}
+          metalness={0.2}
           alphaMap={herringboneAlpha}
           transparent
           alphaTest={0.45}
@@ -526,7 +555,11 @@ function HyteY70PanoramicCase({
       </group>
 
       <group
-        position={[halfW - CASE_CHAMFER * 0.5, -halfH + 0.04, halfD - CASE_CHAMFER * 0.5]}
+        position={[
+          halfW - CASE_CHAMFER * 0.5,
+          -halfH + 0.04,
+          halfD - CASE_CHAMFER * 0.5,
+        ]}
         rotation={[0, Math.PI / 4, 0]}
         name="FrontChamferIoPanel"
       >
@@ -534,8 +567,8 @@ function HyteY70PanoramicCase({
           <boxGeometry args={[chamferWidth, 0.08, 0.08]} />
           <meshStandardMaterial
             color={chassisHex}
-            roughness={0.45}
-            metalness={0.15}
+            roughness={0.35}
+            metalness={0.2}
             wireframe={wireframe}
           />
           <Edges threshold={15} color={edgeColor} />
@@ -623,50 +656,92 @@ function HyteY70PanoramicCase({
         position={[-halfW, 0, halfD - 0.015]}
       >
         <mesh position={[sideDoorWidth * 0.5, 0, 0]} material={glassMaterial}>
-          <boxGeometry args={[sideDoorWidth, CASE_HEIGHT - 0.16, 0.024]} />
-          <Edges threshold={15} color={edgeColor} />
+          <boxGeometry args={[sideDoorWidth, CASE_HEIGHT - 0.16, 0.022]} />
+          <Edges threshold={15} color="#111318" />
         </mesh>
-        <mesh position={[sideDoorWidth * 0.5, halfH - 0.12, 0]}>
-          <boxGeometry args={[sideDoorWidth, 0.08, 0.028]} />
+        <mesh position={[sideDoorWidth * 0.5, halfH - 0.11, 0]}>
+          <boxGeometry args={[sideDoorWidth, 0.065, 0.026]} />
           <meshStandardMaterial
-            color={silkscreenHex}
-            roughness={0.5}
-            metalness={0.15}
+            color="#111318"
+            roughness={0.65}
+            metalness={0.2}
           />
         </mesh>
-        <mesh position={[sideDoorWidth * 0.5, -halfH + 0.12, 0]}>
-          <boxGeometry args={[sideDoorWidth, 0.08, 0.028]} />
+        <mesh position={[sideDoorWidth * 0.5, -halfH + 0.11, 0]}>
+          <boxGeometry args={[sideDoorWidth, 0.065, 0.026]} />
           <meshStandardMaterial
-            color={silkscreenHex}
-            roughness={0.5}
-            metalness={0.15}
+            color="#111318"
+            roughness={0.65}
+            metalness={0.2}
+          />
+        </mesh>
+        <mesh position={[0.03, 0, 0]}>
+          <boxGeometry args={[0.06, CASE_HEIGHT - 0.16, 0.026]} />
+          <meshStandardMaterial
+            color="#111318"
+            roughness={0.65}
+            metalness={0.2}
           />
         </mesh>
       </group>
 
       {showGlass && (
         <group name="PanoramicFixedFrontGlass">
-          <mesh
+          <group
             position={[
               halfW - CASE_CHAMFER * 0.5,
               0,
               halfD - CASE_CHAMFER * 0.5,
             ]}
             rotation={[0, Math.PI / 4, 0]}
-            material={glassMaterial}
           >
-            <boxGeometry args={[chamferWidth, CASE_HEIGHT - 0.16, 0.024]} />
-            <Edges threshold={15} color={edgeColor} />
-          </mesh>
+            <mesh material={glassMaterial}>
+              <boxGeometry args={[chamferWidth, CASE_HEIGHT - 0.16, 0.022]} />
+              <Edges threshold={15} color="#111318" />
+            </mesh>
+            <mesh position={[0, halfH - 0.11, 0]}>
+              <boxGeometry args={[chamferWidth, 0.065, 0.026]} />
+              <meshStandardMaterial
+                color="#111318"
+                roughness={0.65}
+                metalness={0.2}
+              />
+            </mesh>
+            <mesh position={[0, -halfH + 0.11, 0]}>
+              <boxGeometry args={[chamferWidth, 0.065, 0.026]} />
+              <meshStandardMaterial
+                color="#111318"
+                roughness={0.65}
+                metalness={0.2}
+              />
+            </mesh>
+          </group>
 
-          <mesh
+          <group
             position={[halfW - 0.015, 0, -CASE_CHAMFER * 0.5]}
             rotation={[0, Math.PI / 2, 0]}
-            material={glassMaterial}
           >
-            <boxGeometry args={[rightGlassWidth, CASE_HEIGHT - 0.16, 0.024]} />
-            <Edges threshold={15} color={edgeColor} />
-          </mesh>
+            <mesh material={glassMaterial}>
+              <boxGeometry args={[rightGlassWidth, CASE_HEIGHT - 0.16, 0.022]} />
+              <Edges threshold={15} color="#111318" />
+            </mesh>
+            <mesh position={[0, halfH - 0.11, 0]}>
+              <boxGeometry args={[rightGlassWidth, 0.065, 0.026]} />
+              <meshStandardMaterial
+                color="#111318"
+                roughness={0.65}
+                metalness={0.2}
+              />
+            </mesh>
+            <mesh position={[0, -halfH + 0.11, 0]}>
+              <boxGeometry args={[rightGlassWidth, 0.065, 0.026]} />
+              <meshStandardMaterial
+                color="#111318"
+                roughness={0.65}
+                metalness={0.2}
+              />
+            </mesh>
+          </group>
         </group>
       )}
     </group>
@@ -684,18 +759,35 @@ function ParametricMotherboard({
   );
 
   const isStrixWhite = Boolean(surfaceBundle?.isStrixWhite);
-  const heatsinkHex = isStrixWhite ? '#d8dce3' : moboPart?.vrmColor || '#1c2029';
+  const heatsinkHex = isStrixWhite ? '#e5e7eb' : moboPart?.vrmColor || '#1c2029';
   const dimmColor = isStrixWhite ? '#1e293b' : '#14171f';
   const edgeColor = isStrixWhite ? '#9ca3af' : '#2a2e37';
+
+  const vrmLeftGeo = useMemo(
+    () => createBeveledBoxGeometry(0.48, 1.58, 0.2, 0.016),
+    []
+  );
+  const vrmTopGeo = useMemo(
+    () => createBeveledBoxGeometry(0.92, 0.32, 0.16, 0.014),
+    []
+  );
+  const m2TopGeo = useMemo(
+    () => createBeveledBoxGeometry(1.02, 0.28, 0.1, 0.012),
+    []
+  );
+  const m2LowerGeo = useMemo(
+    () => createBeveledBoxGeometry(1.62, 0.78, 0.1, 0.014),
+    []
+  );
 
   const rogEyeMat = useMemo(() => {
     const m = new THREE.MeshStandardMaterial({
       map: surfaceBundle?.vrmTex || null,
       emissiveMap: surfaceBundle?.vrmEmissiveTex || null,
       emissive: new THREE.Color(isStrixWhite ? '#f59e0b' : '#38bdf8'),
-      emissiveIntensity: 1.25,
-      roughness: 0.42,
-      metalness: 0.25,
+      emissiveIntensity: 1.2,
+      roughness: 0.32,
+      metalness: 0.55,
       wireframe,
     });
     return m;
@@ -708,8 +800,8 @@ function ParametricMotherboard({
         <meshStandardMaterial
           map={surfaceBundle?.pcbTex || null}
           color={isStrixWhite ? '#1e222d' : '#11141c'}
-          roughness={0.58}
-          metalness={0.22}
+          roughness={0.5}
+          metalness={0.28}
           wireframe={wireframe}
         />
         <Edges threshold={15} color="#2a2e37" />
@@ -717,20 +809,24 @@ function ParametricMotherboard({
 
       <mesh
         position={[-0.88, 0.54, 0.13]}
+        geometry={vrmLeftGeo}
         material={rogEyeMat}
         castShadow
         receiveShadow
       >
-        <boxGeometry args={[0.48, 1.58, 0.2]} />
         <Edges threshold={15} color={edgeColor} />
       </mesh>
 
-      <mesh position={[-0.14, 1.28, 0.11]} castShadow receiveShadow>
-        <boxGeometry args={[0.92, 0.32, 0.16]} />
+      <mesh
+        position={[-0.14, 1.28, 0.11]}
+        geometry={vrmTopGeo}
+        castShadow
+        receiveShadow
+      >
         <meshStandardMaterial
           color={heatsinkHex}
-          roughness={0.45}
-          metalness={0.22}
+          roughness={0.32}
+          metalness={0.62}
           wireframe={wireframe}
         />
         <Edges threshold={15} color={edgeColor} />
@@ -803,24 +899,32 @@ function ParametricMotherboard({
         </group>
       ))}
 
-      <mesh position={[-0.16, -0.02, 0.08]} castShadow receiveShadow>
-        <boxGeometry args={[1.02, 0.28, 0.1]} />
+      <mesh
+        position={[-0.16, -0.02, 0.08]}
+        geometry={m2TopGeo}
+        castShadow
+        receiveShadow
+      >
         <meshStandardMaterial
           color={heatsinkHex}
-          roughness={0.45}
-          metalness={0.22}
+          roughness={0.32}
+          metalness={0.62}
           wireframe={wireframe}
         />
         <Edges threshold={15} color={edgeColor} />
       </mesh>
 
-      <mesh position={[0.08, -0.66, 0.085]} castShadow receiveShadow>
-        <boxGeometry args={[1.62, 0.78, 0.1]} />
+      <mesh
+        position={[0.08, -0.66, 0.085]}
+        geometry={m2LowerGeo}
+        castShadow
+        receiveShadow
+      >
         <meshStandardMaterial
           map={surfaceBundle?.m2Tex || null}
-          color={isStrixWhite ? '#d8dce3' : '#1e2430'}
-          roughness={0.45}
-          metalness={0.22}
+          color={isStrixWhite ? '#e5e7eb' : '#1e2430'}
+          roughness={0.34}
+          metalness={0.58}
           wireframe={wireframe}
         />
         <Edges threshold={15} color={edgeColor} />
@@ -914,21 +1018,37 @@ function ParametricGpu({
   const isWhiteGpu = String(gpuPart?.shroudColor || '')
     .toLowerCase()
     .includes('cbd5e1');
-  const shroudHex = isWhiteGpu ? '#d8dce3' : gpuPart?.shroudColor || '#151820';
+  const shroudHex = isWhiteGpu ? '#e5e7eb' : gpuPart?.shroudColor || '#151820';
   const edgeColor = isWhiteGpu ? '#9ca3af' : '#2a2e37';
   const L = 2.48;
   const T = 0.52;
   const W = 1.08;
   const finCount = 32;
 
+  const backplateGeo = useMemo(() => {
+    const g = createBeveledBoxGeometry(L, W, 0.038, 0.01);
+    g.rotateX(Math.PI / 2);
+    return g;
+  }, [L, W]);
+
+  const shroudGeo = useMemo(() => {
+    const g = createBeveledBoxGeometry(L, W, 0.14, 0.016);
+    g.rotateX(Math.PI / 2);
+    return g;
+  }, [L, W]);
+
   return (
     <group name="ParametricGpuNode">
-      <mesh position={[0, T / 2 - 0.02, 0]} castShadow receiveShadow>
-        <boxGeometry args={[L, 0.038, W]} />
+      <mesh
+        position={[0, T / 2 - 0.02, 0]}
+        geometry={backplateGeo}
+        castShadow
+        receiveShadow
+      >
         <meshStandardMaterial
           color={shroudHex}
-          metalness={0.55}
-          roughness={0.42}
+          metalness={0.62}
+          roughness={0.34}
           wireframe={wireframe}
         />
         <Edges threshold={15} color={edgeColor} />
@@ -962,12 +1082,16 @@ function ParametricGpu({
         </mesh>
       ))}
 
-      <mesh position={[0, -T / 2 + 0.07, 0]} castShadow receiveShadow>
-        <boxGeometry args={[L, 0.14, W]} />
+      <mesh
+        position={[0, -T / 2 + 0.07, 0]}
+        geometry={shroudGeo}
+        castShadow
+        receiveShadow
+      >
         <meshStandardMaterial
           color={shroudHex}
-          metalness={0.48}
-          roughness={0.42}
+          metalness={0.52}
+          roughness={0.36}
           wireframe={wireframe}
         />
         <Edges threshold={15} color={edgeColor} />
@@ -1012,17 +1136,20 @@ function ParametricGpu({
 function ParametricRam({ ramPart, wireframe = false, rgbRamMat }) {
   const sticks = ramPart?.specs?.sticks >= 4 ? [0, 0.13, 0.26, 0.39] : [0.13, 0.39];
   const hsColor = ramPart?.heatsinkColor || '#181b22';
+  const stickGeo = useMemo(
+    () => createBeveledBoxGeometry(0.058, 1.28, 0.3, 0.008),
+    []
+  );
 
   return (
     <group name="ParametricRamModules">
       {sticks.map((xOff, idx) => (
         <group key={`dimm-stick-${idx}`} position={[xOff, 0, 0]}>
-          <mesh castShadow receiveShadow>
-            <boxGeometry args={[0.058, 1.28, 0.3]} />
+          <mesh geometry={stickGeo} castShadow receiveShadow>
             <meshStandardMaterial
               color={hsColor}
-              metalness={0.65}
-              roughness={0.32}
+              metalness={0.68}
+              roughness={0.28}
               wireframe={wireframe}
             />
             <Edges threshold={15} color="#2a2e37" />
@@ -1049,6 +1176,12 @@ function ParametricCooler({
 }) {
   const isAir = coolerPart?.coolerStyle === 'air_dual';
   const radColor = coolerPart?.radiatorColor || '#14171f';
+
+  const radGeo = useMemo(() => {
+    const g = createBeveledBoxGeometry(2.56, 0.88, 0.2, 0.014);
+    g.rotateX(Math.PI / 2);
+    return g;
+  }, []);
 
   const tube1Geo = useMemo(() => {
     const c1 = new THREE.CatmullRomCurve3([
@@ -1140,12 +1273,11 @@ function ParametricCooler({
       )}
 
       <group position={[0.18, 0.98, 0.14]}>
-        <mesh castShadow receiveShadow>
-          <boxGeometry args={[2.56, 0.2, 0.88]} />
+        <mesh geometry={radGeo} castShadow receiveShadow>
           <meshStandardMaterial
             color={radColor}
-            metalness={0.6}
-            roughness={0.38}
+            metalness={0.62}
+            roughness={0.34}
             wireframe={wireframe}
           />
           <Edges threshold={15} color="#2a2e37" />
@@ -1184,25 +1316,28 @@ function ParametricDualChamberPsu({
   honeycombAlpha,
 }) {
   const isRogThor = String(psuPart?.name || '').toUpperCase().includes('THOR');
+  const psuGeo = useMemo(
+    () => createBeveledBoxGeometry(1.14, 1.3, 0.7, 0.016),
+    []
+  );
 
   return (
     <group name="VerticalDualChamberPsu">
-      <mesh castShadow receiveShadow>
-        <boxGeometry args={[1.4, 0.82, 1.28]} />
+      <mesh geometry={psuGeo} castShadow receiveShadow>
         <meshStandardMaterial
           color="#12151c"
-          metalness={0.58}
-          roughness={0.38}
+          metalness={0.6}
+          roughness={0.35}
           wireframe={wireframe}
         />
         <Edges threshold={15} color="#2a2e37" />
       </mesh>
 
-      <mesh position={[0, 0, -0.645]}>
-        <planeGeometry args={[1.3, 0.72]} />
+      <mesh position={[-0.574, 0, 0]} rotation={[0, -Math.PI / 2, 0]}>
+        <planeGeometry args={[0.62, 1.18]} />
         <meshStandardMaterial
           color="#090b0f"
-          roughness={0.45}
+          roughness={0.42}
           metalness={0.5}
           alphaMap={honeycombAlpha}
           transparent
@@ -1211,25 +1346,25 @@ function ParametricDualChamberPsu({
         />
       </mesh>
 
-      <mesh position={[-0.38, 0.12, -0.65]}>
-        <boxGeometry args={[0.22, 0.16, 0.03]} />
+      <mesh position={[-0.576, 0.28, -0.12]}>
+        <boxGeometry args={[0.02, 0.2, 0.16]} />
         <meshStandardMaterial color="#050608" roughness={0.4} metalness={0.6} />
       </mesh>
-      {[-0.43, -0.38, -0.33].map((px, i) => (
-        <mesh key={`prong-${i}`} position={[px, 0.12, -0.665]}>
-          <boxGeometry args={[0.018, 0.045, 0.024]} />
+      {[-0.16, -0.12, -0.08].map((pz, i) => (
+        <mesh key={`prong-${i}`} position={[-0.585, 0.28, pz]}>
+          <boxGeometry args={[0.02, 0.04, 0.018]} />
           <meshStandardMaterial color="#cbd5e1" metalness={0.9} roughness={0.2} />
         </mesh>
       ))}
 
-      <mesh position={[-0.38, -0.14, -0.65]}>
-        <boxGeometry args={[0.15, 0.11, 0.03]} />
+      <mesh position={[-0.576, -0.28, -0.12]}>
+        <boxGeometry args={[0.02, 0.14, 0.11]} />
         <meshStandardMaterial color="#dc2626" roughness={0.4} metalness={0.3} />
       </mesh>
 
       {isRogThor && (
-        <mesh position={[0, 0.415, 0]}>
-          <boxGeometry args={[0.58, 0.02, 0.28]} />
+        <mesh position={[0, 0.655, 0]}>
+          <boxGeometry args={[0.48, 0.02, 0.24]} />
           <meshStandardMaterial
             color="#38bdf8"
             emissive="#38bdf8"
@@ -1517,6 +1652,14 @@ export default function CapeModel({
     return clampToContainer(raw, partSize, CHASSIS_INTERNAL_BOUNDS);
   };
 
+  const expPsuPos = (base, offset, psuSize) => {
+    const raw = explodedView
+      ? [base[0] + offset[0], base[1] + offset[1], base[2] + offset[2]]
+      : base;
+    if (explodedView) return raw;
+    return clampPsuToRearChamber(raw, psuSize);
+  };
+
   const moboSocket = resolveCaseSocket(
     'socket_motherboard',
     caseSnaps.mount_motherboard
@@ -1567,12 +1710,12 @@ export default function CapeModel({
           {build.psu && (
             <group
               name="mount_psu"
-              position={expPos(
+              position={expPsuPos(
                 psuSocket.position,
                 [-0.55, 0, -0.45],
-                [0.82, 1.4, 1.28]
+                [1.14, 1.3, 0.7]
               )}
-              rotation={psuSocket.rotation}
+              rotation={[0, 0, 0]}
             >
               <ModelLoader
                 category="psu"
