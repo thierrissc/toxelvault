@@ -28,10 +28,7 @@ import {
   validateBuildCompatibility,
   recommendOptimalBuild,
 } from '../utils/textureGenerator';
-import {
-  resolveRealProductPhoto,
-  REAL_PRODUCT_IMAGE_DICTIONARY,
-} from '../utils/hardwareCatalogAdapter';
+import { resolveRealProductPhoto } from '../utils/hardwareCatalogAdapter';
 
 const PAGE_SIZE = 25;
 
@@ -202,20 +199,75 @@ function getTwoCardSpecs(part, category) {
   ];
 }
 
+const BRAND_ACCENT_STYLES = {
+  SAMSUNG: { color: '#1428a0', sub: 'SAMSUNG ELECTRONICS' },
+  CORSAIR: { color: '#0f172a', sub: 'CORSAIR MEMORY' },
+  KINGSTON: { color: '#dc2626', sub: 'KINGSTON FURY' },
+  'WESTERN DIGITAL': { color: '#2563eb', sub: 'WD BLACK SERIES' },
+  WD: { color: '#2563eb', sub: 'WD BLACK SERIES' },
+  CRUCIAL: { color: '#0284c7', sub: 'MICRON CRUCIAL' },
+  SEAGATE: { color: '#16a34a', sub: 'SEAGATE FIRECUDA' },
+  SABRENT: { color: '#ea580c', sub: 'SABRENT ROCKET' },
+  LEXAR: { color: '#1e293b', sub: 'LEXAR PROFESSIONAL' },
+  ASUS: { color: '#1d4ed8', sub: 'ASUS HARDWARE' },
+  'ASUS ROG': { color: '#dc2626', sub: 'REPUBLIC OF GAMERS' },
+  GIGABYTE: { color: '#0284c7', sub: 'AORUS GAMING' },
+  MSI: { color: '#dc2626', sub: 'MSI GAMING SERIES' },
+  ASROCK: { color: '#4d7c0f', sub: 'ASROCK INDUSTRIAL' },
+  AMD: { color: '#ea580c', sub: 'AMD RYZEN / RADEON' },
+  INTEL: { color: '#0284c7', sub: 'INTEL CORE SERIES' },
+  NVIDIA: { color: '#16a34a', sub: 'GEFORCE RTX' },
+  'G.SKILL': { color: '#dc2626', sub: 'TRIDENT Z SERIES' },
+  NZXT: { color: '#7e22ce', sub: 'NZXT KRAKEN / H-SERIES' },
+  NOCTUA: { color: '#78350f', sub: 'NOCTUA AUSTRIA' },
+  HYTE: { color: '#0f172a', sub: 'HYTE PANORAMIC' },
+  'LIAN LI': { color: '#1d4ed8', sub: 'LIAN LI INDUSTRIAL' },
+};
+
+function ManufacturerLogoPlaceholder({ part }) {
+  const brand = String(part?.brand || 'Hardware').trim();
+  const upperBrand = brand.toUpperCase();
+  const style = BRAND_ACCENT_STYLES[upperBrand] || {
+    color: '#1e293b',
+    sub: `${upperBrand} OFFICIAL`,
+  };
+  const shortModel = String(part?.name || '')
+    .replace(new RegExp(`^${brand}\\s*`, 'i'), '')
+    .slice(0, 32);
+
+  return (
+    <div className="h-full w-full flex flex-col items-center justify-center rounded-md bg-slate-50 border border-slate-200/80 px-3 py-2 text-center select-none">
+      <div
+        style={{ color: style.color }}
+        className="font-display font-black text-base tracking-[0.16em] uppercase leading-tight"
+      >
+        {brand}
+      </div>
+      <span className="text-[8px] font-bold tracking-[0.2em] text-slate-400 uppercase mt-0.5">
+        {style.sub}
+      </span>
+      <div className="mt-2 rounded bg-slate-200/75 px-2 py-0.5 text-[10px] font-semibold text-slate-700 truncate max-w-full">
+        {shortModel || part?.category?.toUpperCase()}
+      </div>
+    </div>
+  );
+}
+
 function CleanModalImage({ part, className = 'h-full w-full' }) {
-  const src = resolveRealProductPhoto(part);
-  const categoryFallback =
-    REAL_PRODUCT_IMAGE_DICTIONARY.byCategory[part?.category] ||
-    REAL_PRODUCT_IMAGE_DICTIONARY.byCategory.gpu;
+  const src =
+    part?.imageUrl !== undefined
+      ? part.imageUrl || part.thumbnail
+      : resolveRealProductPhoto(part);
+  const [failedUrl, setFailedUrl] = useState(null);
+
+  if (!src || failedUrl === src) {
+    return <ManufacturerLogoPlaceholder part={part} />;
+  }
 
   return (
     <img
       src={src}
-      onError={(e) => {
-        if (e.currentTarget.src !== categoryFallback) {
-          e.currentTarget.src = categoryFallback;
-        }
-      }}
+      onError={() => setFailedUrl(src)}
       alt={part?.name || 'Produto'}
       loading="lazy"
       style={{

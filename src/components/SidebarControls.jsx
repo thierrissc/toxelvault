@@ -40,10 +40,7 @@ import {
   validateBuildCompatibility,
   generateBuildPriceHistory,
 } from '../utils/textureGenerator';
-import {
-  resolveRealProductPhoto,
-  REAL_PRODUCT_IMAGE_DICTIONARY,
-} from '../utils/hardwareCatalogAdapter';
+import { resolveRealProductPhoto } from '../utils/hardwareCatalogAdapter';
 
 const CATEGORY_ICONS = {
   case: Box,
@@ -68,10 +65,14 @@ const BUILDCORES_SLOT_ORDER = [
 ];
 
 function ProductThumbnail({ part, onClick }) {
-  const primaryUrl = resolveRealProductPhoto(part);
-  const categoryBackupUrl =
-    REAL_PRODUCT_IMAGE_DICTIONARY.byCategory[part?.category] ||
-    REAL_PRODUCT_IMAGE_DICTIONARY.byCategory.cpu;
+  const primaryUrl =
+    part?.imageUrl !== undefined
+      ? part.imageUrl || part.thumbnail
+      : resolveRealProductPhoto(part);
+  const [failedUrl, setFailedUrl] = useState(null);
+  const brandLabel = String(part?.brand || 'HW')
+    .toUpperCase()
+    .slice(0, 8);
 
   return (
     <button
@@ -81,22 +82,29 @@ function ProductThumbnail({ part, onClick }) {
       className="relative shrink-0 rounded-xl border border-white/15 flex items-center justify-center cursor-pointer shadow-sm hover:scale-105 transition-transform"
       title={`Ver detalhes de ${part?.name || ''}`}
     >
-      <img
-        src={primaryUrl}
-        onError={(e) => {
-          if (e.currentTarget.src !== categoryBackupUrl) {
-            e.currentTarget.src = categoryBackupUrl;
-          }
-        }}
-        alt={part?.name || 'Produto'}
-        style={{
-          backgroundColor: '#ffffff',
-          objectFit: 'contain',
-          objectPosition: 'center',
-          padding: '4px',
-        }}
-        className="w-full h-full rounded-xl"
-      />
+      {primaryUrl && failedUrl !== primaryUrl ? (
+        <img
+          src={primaryUrl}
+          onError={() => setFailedUrl(primaryUrl)}
+          alt={part?.name || 'Produto'}
+          style={{
+            backgroundColor: '#ffffff',
+            objectFit: 'contain',
+            objectPosition: 'center',
+            padding: '4px',
+          }}
+          className="w-full h-full rounded-xl"
+        />
+      ) : (
+        <div className="w-full h-full rounded-xl bg-slate-100 flex flex-col items-center justify-center p-1 text-center">
+          <span className="font-display font-black text-[9px] tracking-wider text-slate-900 leading-none truncate max-w-full">
+            {brandLabel}
+          </span>
+          <span className="text-[7px] font-bold text-slate-500 uppercase mt-0.5">
+            {part?.category || '3D'}
+          </span>
+        </div>
+      )}
       <span
         style={{ backgroundColor: '#d926a9' }}
         className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full flex items-center justify-center shadow"
