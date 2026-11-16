@@ -48,88 +48,151 @@ export const STRICT_CATEGORY_WHITELIST = {
   ]),
 };
 
-export const OFFICIAL_CATEGORY_FALLBACKS = {
-  gpu: 'https://m.media-amazon.com/images/I/619ChWVOpoL._AC_SL1000_.jpg',
-  case: 'https://m.media-amazon.com/images/I/51MvaxlXd3L._AC_SL1000_.jpg',
-  motherboard: 'https://m.media-amazon.com/images/I/81p4nj7F2tL._AC_SL1000_.jpg',
-  cpu: 'https://m.media-amazon.com/images/I/71jxHGiiiNL._AC_SL1000_.jpg',
-  cooler: 'https://m.media-amazon.com/images/I/51b1eskcQBL._AC_SL1000_.jpg',
-  ram: 'https://m.media-amazon.com/images/I/61XlVUhmP+L._AC_SL1000_.jpg',
-  storage: 'https://m.media-amazon.com/images/I/71OWtcxKgvL._AC_SL1000_.jpg',
-  psu: 'https://m.media-amazon.com/images/I/715RNiMcRfL._AC_SL1000_.jpg',
+export const EXACT_PART_ASSET_BY_ID = {
+  case_hyte_y70_white:
+    'https://m.media-amazon.com/images/I/71CcCJVLTtL._AC_SL1000_.jpg',
+  case_hyte_y70_black:
+    'https://m.media-amazon.com/images/I/51MvaxlXd3L._AC_SL1000_.jpg',
+  case_lianli_o11_vision:
+    'https://m.media-amazon.com/images/I/61i70Cp4GHL._AC_SL1000_.jpg',
+  case_corsair_4000d_airflow:
+    'https://m.media-amazon.com/images/I/71snmM3aCwL._AC_SL1000_.jpg',
+  mobo_asus_rog_strix_x870a:
+    'https://m.media-amazon.com/images/I/81MH+nx+shL._AC_SL1000_.jpg',
+  mobo_asus_b650m_plus:
+    'https://m.media-amazon.com/images/I/81p4nj7F2tL._AC_SL1000_.jpg',
+  mobo_asus_rog_crosshair_x870e:
+    'https://m.media-amazon.com/images/I/81o1in2ebRL._AC_SL1000_.jpg',
+  mobo_asus_rog_maximus_z790:
+    'https://m.media-amazon.com/images/I/612+3pyMUbL._AC_SL1000_.jpg',
+  cpu_ryzen_7_7800x3d:
+    'https://m.media-amazon.com/images/I/71jxHGiiiNL._AC_SL1000_.jpg',
+  cpu_intel_i9_14900k:
+    'https://m.media-amazon.com/images/I/61C1DOLRK4L._AC_SL1000_.jpg',
+  gpu_rtx_4070_rog_strix:
+    'https://m.media-amazon.com/images/I/619ChWVOpoL._AC_SL1000_.jpg',
+  gpu_rx_7900_xtx_sapphire:
+    'https://m.media-amazon.com/images/I/81tvHo10s2L._AC_SL1000_.jpg',
+  ram_gskill_trident_z5_32gb:
+    'https://m.media-amazon.com/images/I/61XlVUhmP+L._AC_SL1000_.jpg',
+  ram_corsair_dominator_64gb:
+    'https://m.media-amazon.com/images/I/61OdVLSeCKL._AC_SL1000_.jpg',
+  cooler_nzxt_kraken_360:
+    'https://m.media-amazon.com/images/I/51b1eskcQBL._AC_SL1000_.jpg',
+  storage_samsung_990_pro_2tb:
+    'https://m.media-amazon.com/images/I/71OWtcxKgvL._AC_SL1000_.jpg',
+  psu_corsair_rm1000x_shift:
+    'https://m.media-amazon.com/images/I/715RNiMcRfL._AC_SL1000_.jpg',
 };
 
-export const STRICT_KEYWORD_RULES_BY_CATEGORY = {
-  gpu: [
-    { match: 'AERO', url: 'https://m.media-amazon.com/images/I/71awqTBwgtL._AC_SL1000_.jpg' },
-    { match: 'WHITE', url: 'https://m.media-amazon.com/images/I/71awqTBwgtL._AC_SL1000_.jpg' },
-    { match: '7900', url: 'https://m.media-amazon.com/images/I/81tvHo10s2L._AC_SL1000_.jpg' },
-    { match: '7800', url: 'https://m.media-amazon.com/images/I/81tvHo10s2L._AC_SL1000_.jpg' },
-    { match: 'RADEON', url: 'https://m.media-amazon.com/images/I/81tvHo10s2L._AC_SL1000_.jpg' },
-    { match: 'SAPPHIRE', url: 'https://m.media-amazon.com/images/I/81tvHo10s2L._AC_SL1000_.jpg' },
-    { match: 'NITRO', url: 'https://m.media-amazon.com/images/I/81tvHo10s2L._AC_SL1000_.jpg' },
-    { match: '4090', url: 'https://m.media-amazon.com/images/I/619ChWVOpoL._AC_SL1000_.jpg' },
-    { match: '4080', url: 'https://m.media-amazon.com/images/I/619ChWVOpoL._AC_SL1000_.jpg' },
-    { match: '4070', url: 'https://m.media-amazon.com/images/I/619ChWVOpoL._AC_SL1000_.jpg' },
-    { match: 'RTX', url: 'https://m.media-amazon.com/images/I/619ChWVOpoL._AC_SL1000_.jpg' },
-    { match: 'GEFORCE', url: 'https://m.media-amazon.com/images/I/619ChWVOpoL._AC_SL1000_.jpg' },
-  ],
+export const EXACT_MODEL_MATCHERS_BY_CATEGORY = {
   case: [
-    { match: 'WHITE', url: 'https://m.media-amazon.com/images/I/71CcCJVLTtL._AC_SL1000_.jpg' },
-    { match: 'SNOW', url: 'https://m.media-amazon.com/images/I/71CcCJVLTtL._AC_SL1000_.jpg' },
-    { match: 'HYTE', url: 'https://m.media-amazon.com/images/I/51MvaxlXd3L._AC_SL1000_.jpg' },
-    { match: 'O11', url: 'https://m.media-amazon.com/images/I/51MvaxlXd3L._AC_SL1000_.jpg' },
-    { match: 'LIAN LI', url: 'https://m.media-amazon.com/images/I/51MvaxlXd3L._AC_SL1000_.jpg' },
-    { match: '4000D', url: 'https://m.media-amazon.com/images/I/71snmM3aCwL._AC_SL1000_.jpg' },
-    { match: 'CORSAIR', url: 'https://m.media-amazon.com/images/I/71snmM3aCwL._AC_SL1000_.jpg' },
-    { match: 'NZXT', url: 'https://m.media-amazon.com/images/I/71Mwj6gKcdL._AC_SL1000_.jpg' },
-    { match: 'H9', url: 'https://m.media-amazon.com/images/I/71Mwj6gKcdL._AC_SL1000_.jpg' },
-    { match: 'H6', url: 'https://m.media-amazon.com/images/I/71Mwj6gKcdL._AC_SL1000_.jpg' },
+    {
+      test: (name) => name.includes('HYTE Y70') && (name.includes('WHITE') || name.includes('SNOW')),
+      url: 'https://m.media-amazon.com/images/I/71CcCJVLTtL._AC_SL1000_.jpg',
+    },
+    {
+      test: (name) => name.includes('HYTE Y70') && name.includes('BLACK'),
+      url: 'https://m.media-amazon.com/images/I/51MvaxlXd3L._AC_SL1000_.jpg',
+    },
+    {
+      test: (name) => name.includes('4000D AIRFLOW'),
+      url: 'https://m.media-amazon.com/images/I/71snmM3aCwL._AC_SL1000_.jpg',
+    },
+    {
+      test: (name) => name.includes('H9 FLOW'),
+      url: 'https://m.media-amazon.com/images/I/71Mwj6gKcdL._AC_SL1000_.jpg',
+    },
+    {
+      test: (name) => name.includes('O11 VISION'),
+      url: 'https://m.media-amazon.com/images/I/61i70Cp4GHL._AC_SL1000_.jpg',
+    },
   ],
   motherboard: [
-    { match: 'X870-A', url: 'https://m.media-amazon.com/images/I/81MH+nx+shL._AC_SL1000_.jpg' },
-    { match: 'B850-A', url: 'https://m.media-amazon.com/images/I/81MH+nx+shL._AC_SL1000_.jpg' },
-    { match: 'B650-A', url: 'https://m.media-amazon.com/images/I/81MH+nx+shL._AC_SL1000_.jpg' },
-    { match: 'WHITE', url: 'https://m.media-amazon.com/images/I/81MH+nx+shL._AC_SL1000_.jpg' },
-    { match: 'ICE', url: 'https://m.media-amazon.com/images/I/81MH+nx+shL._AC_SL1000_.jpg' },
-    { match: 'CROSSHAIR', url: 'https://m.media-amazon.com/images/I/81o1in2ebRL._AC_SL1000_.jpg' },
-    { match: 'X870E', url: 'https://m.media-amazon.com/images/I/81o1in2ebRL._AC_SL1000_.jpg' },
-    { match: 'X670E', url: 'https://m.media-amazon.com/images/I/81o1in2ebRL._AC_SL1000_.jpg' },
-    { match: 'MAXIMUS', url: 'https://m.media-amazon.com/images/I/612+3pyMUbL._AC_SL1000_.jpg' },
-    { match: 'Z790', url: 'https://m.media-amazon.com/images/I/612+3pyMUbL._AC_SL1000_.jpg' },
-    { match: 'TUF', url: 'https://m.media-amazon.com/images/I/81p4nj7F2tL._AC_SL1000_.jpg' },
-    { match: 'MSI', url: 'https://m.media-amazon.com/images/I/81R7FOmeOoL._AC_SL1000_.jpg' },
-    { match: 'GIGABYTE', url: 'https://m.media-amazon.com/images/I/81QyMksmunL._AC_SL1000_.jpg' },
-    { match: 'AORUS', url: 'https://m.media-amazon.com/images/I/81QyMksmunL._AC_SL1000_.jpg' },
-    { match: 'ASROCK', url: 'https://m.media-amazon.com/images/I/71VAf1UbEML._AC_SL1000_.jpg' },
-    { match: 'STEEL LEGEND', url: 'https://m.media-amazon.com/images/I/71VAf1UbEML._AC_SL1000_.jpg' },
-    { match: 'STRIX', url: 'https://m.media-amazon.com/images/I/81MH+nx+shL._AC_SL1000_.jpg' },
+    {
+      test: (name) => name.includes('STRIX X870-A') || name.includes('STRIX B650-A') || name.includes('STRIX B850-A'),
+      url: 'https://m.media-amazon.com/images/I/81MH+nx+shL._AC_SL1000_.jpg',
+    },
+    {
+      test: (name) => name.includes('TUF GAMING B650-PLUS') || name.includes('TUF GAMING B850-PLUS'),
+      url: 'https://m.media-amazon.com/images/I/81p4nj7F2tL._AC_SL1000_.jpg',
+    },
+    {
+      test: (name) => name.includes('CROSSHAIR X870E') || name.includes('CROSSHAIR X670E'),
+      url: 'https://m.media-amazon.com/images/I/81o1in2ebRL._AC_SL1000_.jpg',
+    },
+    {
+      test: (name) => name.includes('MAXIMUS Z790') || name.includes('B650M-AYW'),
+      url: 'https://m.media-amazon.com/images/I/612+3pyMUbL._AC_SL1000_.jpg',
+    },
+    {
+      test: (name) => name.includes('B650M AORUS ELITE'),
+      url: 'https://m.media-amazon.com/images/I/81R7FOmeOoL._AC_SL1000_.jpg',
+    },
+    {
+      test: (name) => name.includes('B550M AORUS ELITE') || name.includes('B650 AORUS ELITE'),
+      url: 'https://m.media-amazon.com/images/I/81QyMksmunL._AC_SL1000_.jpg',
+    },
+    {
+      test: (name) => name.includes('STEEL LEGEND'),
+      url: 'https://m.media-amazon.com/images/I/71VAf1UbEML._AC_SL1000_.jpg',
+    },
   ],
   cpu: [
-    { match: 'INTEL', url: 'https://m.media-amazon.com/images/I/61C1DOLRK4L._AC_SL1000_.jpg' },
-    { match: 'CORE I', url: 'https://m.media-amazon.com/images/I/61C1DOLRK4L._AC_SL1000_.jpg' },
-    { match: 'CORE ULTRA', url: 'https://m.media-amazon.com/images/I/61C1DOLRK4L._AC_SL1000_.jpg' },
-    { match: 'RYZEN', url: 'https://m.media-amazon.com/images/I/71jxHGiiiNL._AC_SL1000_.jpg' },
-    { match: 'AMD', url: 'https://m.media-amazon.com/images/I/71jxHGiiiNL._AC_SL1000_.jpg' },
+    {
+      test: (name) => name.includes('7800X3D'),
+      url: 'https://m.media-amazon.com/images/I/71jxHGiiiNL._AC_SL1000_.jpg',
+    },
+    {
+      test: (name) => name.includes('14900K') || name.includes('14700K'),
+      url: 'https://m.media-amazon.com/images/I/61C1DOLRK4L._AC_SL1000_.jpg',
+    },
   ],
-  cooler: [
-    { match: 'KRAKEN', url: 'https://m.media-amazon.com/images/I/51b1eskcQBL._AC_SL1000_.jpg' },
-    { match: 'NZXT', url: 'https://m.media-amazon.com/images/I/51b1eskcQBL._AC_SL1000_.jpg' },
+  gpu: [
+    {
+      test: (name) => name.includes('AERO') && (name.includes('4070') || name.includes('4080') || name.includes('5070')),
+      url: 'https://m.media-amazon.com/images/I/71awqTBwgtL._AC_SL1000_.jpg',
+    },
+    {
+      test: (name) => name.includes('NITRO+') && name.includes('7900 XTX'),
+      url: 'https://m.media-amazon.com/images/I/81tvHo10s2L._AC_SL1000_.jpg',
+    },
+    {
+      test: (name) => name.includes('ROG STRIX') && name.includes('4070'),
+      url: 'https://m.media-amazon.com/images/I/619ChWVOpoL._AC_SL1000_.jpg',
+    },
   ],
   ram: [
-    { match: 'DOMINATOR', url: 'https://m.media-amazon.com/images/I/61OdVLSeCKL._AC_SL1000_.jpg' },
-    { match: 'VENGEANCE', url: 'https://m.media-amazon.com/images/I/71xOTU97xEL._AC_SL1000_.jpg' },
-    { match: 'CORSAIR', url: 'https://m.media-amazon.com/images/I/71xOTU97xEL._AC_SL1000_.jpg' },
-    { match: 'TRIDENT', url: 'https://m.media-amazon.com/images/I/61XlVUhmP+L._AC_SL1000_.jpg' },
-    { match: 'G.SKILL', url: 'https://m.media-amazon.com/images/I/61XlVUhmP+L._AC_SL1000_.jpg' },
+    {
+      test: (name) => name.includes('TRIDENT Z5'),
+      url: 'https://m.media-amazon.com/images/I/61XlVUhmP+L._AC_SL1000_.jpg',
+    },
+    {
+      test: (name) => name.includes('DOMINATOR'),
+      url: 'https://m.media-amazon.com/images/I/61OdVLSeCKL._AC_SL1000_.jpg',
+    },
+    {
+      test: (name) => name.includes('VENGEANCE RGB') && name.includes('DDR5'),
+      url: 'https://m.media-amazon.com/images/I/71xOTU97xEL._AC_SL1000_.jpg',
+    },
+  ],
+  cooler: [
+    {
+      test: (name) => name.includes('KRAKEN') && name.includes('360'),
+      url: 'https://m.media-amazon.com/images/I/51b1eskcQBL._AC_SL1000_.jpg',
+    },
   ],
   storage: [
-    { match: 'SAMSUNG', url: 'https://m.media-amazon.com/images/I/71OWtcxKgvL._AC_SL1000_.jpg' },
-    { match: '990', url: 'https://m.media-amazon.com/images/I/71OWtcxKgvL._AC_SL1000_.jpg' },
+    {
+      test: (name) => name.includes('990 PRO'),
+      url: 'https://m.media-amazon.com/images/I/71OWtcxKgvL._AC_SL1000_.jpg',
+    },
   ],
   psu: [
-    { match: 'CORSAIR', url: 'https://m.media-amazon.com/images/I/715RNiMcRfL._AC_SL1000_.jpg' },
-    { match: 'ASUS', url: 'https://m.media-amazon.com/images/I/715RNiMcRfL._AC_SL1000_.jpg' },
+    {
+      test: (name) => name.includes('RM1000E'),
+      url: 'https://m.media-amazon.com/images/I/715RNiMcRfL._AC_SL1000_.jpg',
+    },
   ],
 };
 
@@ -144,36 +207,44 @@ export function isAssetValidForCategory(category, url) {
 }
 
 export function validateAndResolveAssetUrl(part) {
-  const category = part?.category || 'gpu';
-  const fallbackUrl =
-    OFFICIAL_CATEGORY_FALLBACKS[category] || OFFICIAL_CATEGORY_FALLBACKS.gpu;
+  if (!part) return null;
+  const category = part.category || 'gpu';
 
-  if (!part) return fallbackUrl;
-
-  const candidate = part.realPhotoUrl || part.imageUrl;
-  if (isAssetValidForCategory(category, candidate)) {
-    return candidate;
+  if (part.id && EXACT_PART_ASSET_BY_ID[part.id]) {
+    return EXACT_PART_ASSET_BY_ID[part.id];
   }
 
-  const upperName = String(part.name || '').toUpperCase();
-  const upperBrand = String(part.brand || '').toUpperCase();
-  const rules = STRICT_KEYWORD_RULES_BY_CATEGORY[category] || [];
-
-  for (const rule of rules) {
-    if (upperName.includes(rule.match) || upperBrand.includes(rule.match)) {
-      if (isAssetValidForCategory(category, rule.url)) {
-        return rule.url;
+  const directCandidate = part.thumbnail || part.imageUrl || part.realPhotoUrl;
+  if (isAssetValidForCategory(category, directCandidate)) {
+    const upperName = String(part.name || '').toUpperCase();
+    const matchers = EXACT_MODEL_MATCHERS_BY_CATEGORY[category] || [];
+    for (const m of matchers) {
+      if (m.test(upperName)) {
+        return m.url;
       }
     }
   }
 
-  return fallbackUrl;
+  const upperName = String(part.name || '').toUpperCase();
+  const matchers = EXACT_MODEL_MATCHERS_BY_CATEGORY[category] || [];
+  for (const m of matchers) {
+    if (m.test(upperName)) {
+      return m.url;
+    }
+  }
+
+  return null;
 }
 
 export const CHASSIS_INTERNAL_BOUNDS = {
   min: [-1.82, -1.94, -1.3],
   max: [1.78, 1.94, 1.28],
   chamferLimit: 2.42,
+};
+
+export const REAR_CHAMBER_PSU_BOUNDS = {
+  min: [-1.78, -1.86, -1.28],
+  max: [-0.48, 1.4, -0.44],
 };
 
 export function clampToContainer(
@@ -206,4 +277,11 @@ export function clampToContainer(
   }
 
   return [Number(x.toFixed(4)), Number(y.toFixed(4)), Number(z.toFixed(4))];
+}
+
+export function clampPsuToRearChamber(
+  position = [-1.18, -0.55, -0.86],
+  psuSize = [1.14, 1.3, 0.7]
+) {
+  return clampToContainer(position, psuSize, REAR_CHAMBER_PSU_BOUNDS);
 }

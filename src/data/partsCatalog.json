@@ -80,18 +80,18 @@
       "mount_psu": {
         "position": [
           -1.18,
-          -0.45,
-          -0.82
+          -0.55,
+          -0.86
         ],
         "rotation": [
           0,
           0,
-          1.570796
+          0
         ],
         "boundingBoxSize": [
-          0.86,
-          1.5,
-          1.4
+          1.14,
+          1.3,
+          0.7
         ]
       },
       "mount_top_radiator": {
@@ -309,10 +309,12 @@
       "brand": "HYTE",
       "category": "case",
       "price": 219.99,
+      "imageUrl": "https://m.media-amazon.com/images/I/71CcCJVLTtL._AC_SL1000_.jpg",
+      "thumbnail": "https://m.media-amazon.com/images/I/71CcCJVLTtL._AC_SL1000_.jpg",
       "realPhotoUrl": "https://m.media-amazon.com/images/I/71CcCJVLTtL._AC_SL1000_.jpg",
       "model3dPath": "/models/cases/hyte-y70-white.glb",
-      "chassisColor": "#d8dce3",
-      "interiorColor": "#cfd4dc",
+      "chassisColor": "#e5e7eb",
+      "interiorColor": "#d1d5db",
       "style": "panoramic_3piece",
       "mountOffset": {
         "position": [
@@ -407,7 +409,7 @@
       "brand": "Lian Li",
       "category": "case",
       "price": 149.99,
-      "realPhotoUrl": "https://m.media-amazon.com/images/I/51MvaxlXd3L._AC_SL1000_.jpg",
+      "realPhotoUrl": "https://m.media-amazon.com/images/I/61i70Cp4GHL._AC_SL1000_.jpg",
       "model3dPath": "/models/cases/lian-li-o11-vision.glb",
       "chassisColor": "#111318",
       "interiorColor": "#111318",
@@ -731,7 +733,7 @@
       "brand": "AMD",
       "category": "cpu",
       "price": 479.0,
-      "realPhotoUrl": "https://m.media-amazon.com/images/I/71jxHGiiiNL._AC_SL1000_.jpg",
+      "realPhotoUrl": null,
       "model3dPath": "/models/cpus/ryzen-7-9800x3d.glb",
       "mountOffset": {
         "position": [
@@ -862,7 +864,7 @@
       "brand": "NVIDIA",
       "category": "gpu",
       "price": 1799.99,
-      "realPhotoUrl": "https://m.media-amazon.com/images/I/619ChWVOpoL._AC_SL1000_.jpg",
+      "realPhotoUrl": null,
       "model3dPath": "/models/gpus/rtx-4090-fe.glb",
       "shroudColor": "#1e222b",
       "trimColor": "#94a3b8",
@@ -1089,7 +1091,7 @@
       "brand": "Noctua",
       "category": "cooler",
       "price": 119.95,
-      "realPhotoUrl": "https://m.media-amazon.com/images/I/51b1eskcQBL._AC_SL1000_.jpg",
+      "realPhotoUrl": null,
       "model3dPath": "/models/coolers/noctua-nh-d15.glb",
       "coolerStyle": "air_dual",
       "radiatorColor": "#181a20",
@@ -1222,7 +1224,7 @@
       "brand": "ASUS ROG",
       "category": "psu",
       "price": 329.99,
-      "realPhotoUrl": "https://m.media-amazon.com/images/I/715RNiMcRfL._AC_SL1000_.jpg",
+      "realPhotoUrl": null,
       "model3dPath": "/models/psus/asus-rog-thor-1200w.glb",
       "mountOffset": {
         "position": [

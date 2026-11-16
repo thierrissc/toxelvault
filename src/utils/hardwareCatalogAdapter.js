@@ -1,9 +1,5 @@
 import catalogData from '../data/partsCatalog.json';
-import {
-  OFFICIAL_CATEGORY_FALLBACKS,
-  STRICT_KEYWORD_RULES_BY_CATEGORY,
-  validateAndResolveAssetUrl,
-} from './assetValidator';
+import { validateAndResolveAssetUrl } from './assetValidator';
 
 export const GITHUB_DATASET_BASE_URL =
   'https://raw.githubusercontent.com/docyx/pc-part-dataset/main/data/json/';
@@ -21,20 +17,42 @@ export const DATASET_ENDPOINTS = {
   case: 'case.json',
 };
 
-const CACHE_STORAGE_NAME = 'toxelvault-hardware-dataset-v5';
-const LOCAL_STORAGE_PREFIX = 'toxelvault_hw_cat_v5_';
+const CACHE_STORAGE_NAME = 'toxelvault-hardware-dataset-v6';
+const LOCAL_STORAGE_PREFIX = 'toxelvault_hw_cat_v6_';
 const MAX_NORMALIZED_ITEMS_PER_CATEGORY = 320;
 
 const memoryCategoryCache = new Map();
 const wikimediaSearchCache = new Map();
 
 export const REAL_PRODUCT_IMAGE_DICTIONARY = {
-  byCategoryKeywords: STRICT_KEYWORD_RULES_BY_CATEGORY,
-  byCategory: OFFICIAL_CATEGORY_FALLBACKS,
+  byCategoryKeywords: {},
+  byCategory: {},
 };
 
 export function resolveRealProductPhoto(part) {
   return validateAndResolveAssetUrl(part);
+}
+
+function deduplicateCategoryImages(items = []) {
+  const seenUrls = new Set();
+  return items.map((item) => {
+    const candidate = resolveRealProductPhoto(item);
+    if (candidate && !seenUrls.has(candidate)) {
+      seenUrls.add(candidate);
+      return {
+        ...item,
+        imageUrl: candidate,
+        thumbnail: candidate,
+        realPhotoUrl: candidate,
+      };
+    }
+    return {
+      ...item,
+      imageUrl: null,
+      thumbnail: null,
+      realPhotoUrl: null,
+    };
+  });
 }
 
 export async function fetchWikimediaProductImage(part) {
@@ -420,8 +438,8 @@ export function normalizeDatasetItem(category, raw, index = 0) {
         ? '/models/cases/corsair-4000d-airflow.glb'
         : '/models/cases/hyte-y70-black.glb';
 
-    extraProps.chassisColor = isWhite ? '#d8dce3' : '#121316';
-    extraProps.interiorColor = isWhite ? '#cfd4dc' : '#121316';
+    extraProps.chassisColor = isWhite ? '#e5e7eb' : '#121316';
+    extraProps.interiorColor = isWhite ? '#d1d5db' : '#121316';
 
     specs = {
       formFactor: caseType.includes('Micro')
@@ -450,6 +468,7 @@ export function normalizeDatasetItem(category, raw, index = 0) {
 
   const resolvedImg = resolveRealProductPhoto({ ...raw, ...normalizedItem });
   normalizedItem.imageUrl = resolvedImg;
+  normalizedItem.thumbnail = resolvedImg;
   normalizedItem.realPhotoUrl = resolvedImg;
 
   return normalizedItem;
@@ -623,14 +642,7 @@ export async function fetchCategoryHardware(category, { forceRefresh = false } =
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          const hydrated = parsed.map((item) => {
-            const realPhoto = resolveRealProductPhoto(item);
-            return {
-              ...item,
-              imageUrl: realPhoto,
-              realPhotoUrl: realPhoto,
-            };
-          });
+          const hydrated = deduplicateCategoryImages(parsed);
           memoryCategoryCache.set(category, hydrated);
           return { parts: hydrated, source: 'localStorage-cache' };
         }
@@ -641,16 +653,9 @@ export async function fetchCategoryHardware(category, { forceRefresh = false } =
   }
 
   const endpointFile = DATASET_ENDPOINTS[category];
-  const seedParts = catalogData.parts
-    .filter((p) => p.category === category)
-    .map((p) => {
-      const realPhoto = resolveRealProductPhoto(p);
-      return {
-        ...p,
-        imageUrl: realPhoto,
-        realPhotoUrl: realPhoto,
-      };
-    });
+  const seedParts = deduplicateCategoryImages(
+    catalogData.parts.filter((p) => p.category === category)
+  );
 
   if (!endpointFile) {
     memoryCategoryCache.set(category, seedParts);
@@ -671,7 +676,7 @@ export async function fetchCategoryHardware(category, { forceRefresh = false } =
     );
 
     const seenNames = new Set(seedParts.map((s) => s.name.toLowerCase()));
-    const combined = [
+    const combinedRaw = [
       ...seedParts,
       ...normalizedFromGithub.filter((item) => {
         const key = item.name.toLowerCase();
@@ -680,6 +685,7 @@ export async function fetchCategoryHardware(category, { forceRefresh = false } =
         return true;
       }),
     ];
+    const combined = deduplicateCategoryImages(combinedRaw);
 
     memoryCategoryCache.set(category, combined);
 
