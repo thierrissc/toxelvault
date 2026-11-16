@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
+import { clampToContainer, CHASSIS_INTERNAL_BOUNDS } from '../utils/assetValidator';
 
 const DRACO_DECODER_URL =
   'https://www.gstatic.com/draco/versioned/decoders/1.5.6/';
@@ -55,7 +56,12 @@ class GlbLoadErrorBoundary extends React.Component {
   }
 }
 
-function GlbSceneRenderer({ url, wireframe = false, onSocketsDetected }) {
+function GlbSceneRenderer({
+  url,
+  category,
+  wireframe = false,
+  onSocketsDetected,
+}) {
   const { gl } = useThree();
 
   const gltf = useGLTF(url, DRACO_DECODER_URL, true, (loader) => {
@@ -95,15 +101,33 @@ function GlbSceneRenderer({ url, wireframe = false, onSocketsDetected }) {
         node.getWorldPosition(pos);
         node.getWorldQuaternion(quat);
         euler.setFromQuaternion(quat);
+        const clampedPos = clampToContainer(
+          [pos.x, pos.y, pos.z],
+          [0.4, 0.4, 0.4],
+          CHASSIS_INTERNAL_BOUNDS
+        );
         sockets[node.name] = {
-          position: [pos.x, pos.y, pos.z],
+          position: clampedPos,
           rotation: [euler.x, euler.y, euler.z],
         };
       }
     });
 
+    if (category && category !== 'case') {
+      const box = new THREE.Box3().setFromObject(clone);
+      if (!box.isEmpty()) {
+        const size = new THREE.Vector3();
+        box.getSize(size);
+        const maxDim = Math.max(size.x, size.y, size.z);
+        if (maxDim > 3.2) {
+          const uniformFactor = 2.8 / maxDim;
+          clone.scale.setScalar(uniformFactor);
+        }
+      }
+    }
+
     return { clonedScene: clone, detectedSockets: sockets };
-  }, [gltf.scene, wireframe]);
+  }, [gltf.scene, wireframe, category]);
 
   useEffect(() => {
     if (onSocketsDetected && Object.keys(detectedSockets).length > 0) {
@@ -184,6 +208,7 @@ export default function ModelLoader({
       <Suspense fallback={fallback}>
         <GlbSceneRenderer
           url={availableUrl}
+          category={category}
           wireframe={wireframe}
           onSocketsDetected={onSocketsDetected}
         />
