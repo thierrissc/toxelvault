@@ -44,81 +44,261 @@
   "snapPoints": {
     "case": {
       "root_chassis": {
-        "position": [0, 0, 0],
-        "rotation": [0, 0, 0],
-        "boundingBoxSize": [4.0, 4.2, 2.8]
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "boundingBoxSize": [
+          4.0,
+          4.2,
+          2.8
+        ]
       },
       "mount_motherboard": {
-        "position": [-0.42, 0.16, -0.26],
-        "rotation": [0, 0, 0],
-        "boundingBoxSize": [2.44, 3.05, 0.08]
+        "position": [
+          -0.42,
+          0.16,
+          -0.26
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "boundingBoxSize": [
+          2.44,
+          3.05,
+          0.08
+        ]
       },
       "mount_psu": {
-        "position": [-1.18, -0.45, -0.82],
-        "rotation": [0, 0, 1.570796],
-        "boundingBoxSize": [0.86, 1.5, 1.4]
+        "position": [
+          -1.18,
+          -0.45,
+          -0.82
+        ],
+        "rotation": [
+          0,
+          0,
+          1.570796
+        ],
+        "boundingBoxSize": [
+          0.86,
+          1.5,
+          1.4
+        ]
       },
       "mount_top_radiator": {
-        "position": [-0.05, 1.84, 0.45],
-        "rotation": [0, 0, 0],
-        "boundingBoxSize": [3.6, 0.28, 1.2]
+        "position": [
+          -0.05,
+          1.84,
+          0.45
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "boundingBoxSize": [
+          3.6,
+          0.28,
+          1.2
+        ]
       },
       "mount_side_fan_bracket": {
-        "position": [1.22, 0.0, -0.32],
-        "rotation": [0, 0, 0],
-        "boundingBoxSize": [1.2, 3.6, 0.25]
+        "position": [
+          1.22,
+          0.0,
+          -0.32
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "boundingBoxSize": [
+          1.2,
+          3.6,
+          0.25
+        ]
       },
       "mount_rear_exhaust_fan": {
-        "position": [-1.84, 0.82, 0.48],
-        "rotation": [0, 1.570796, 0],
-        "boundingBoxSize": [0.25, 1.2, 1.2]
+        "position": [
+          -1.84,
+          0.82,
+          0.48
+        ],
+        "rotation": [
+          0,
+          1.570796,
+          0
+        ],
+        "boundingBoxSize": [
+          0.25,
+          1.2,
+          1.2
+        ]
       },
       "mount_bottom_fan_bracket": {
-        "position": [-0.05, -1.94, 0.45],
-        "rotation": [-1.570796, 0, 0],
-        "boundingBoxSize": [3.6, 1.2, 0.25]
+        "position": [
+          -0.05,
+          -1.94,
+          0.45
+        ],
+        "rotation": [
+          -1.570796,
+          0,
+          0
+        ],
+        "boundingBoxSize": [
+          3.6,
+          1.2,
+          0.25
+        ]
       }
     },
     "motherboard": {
       "socket_cpu": {
-        "position": [-0.18, 0.68, 0.06],
-        "rotation": [0, 0, 0],
-        "boundingBoxSize": [0.58, 0.62, 0.08]
+        "position": [
+          -0.18,
+          0.68,
+          0.06
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "boundingBoxSize": [
+          0.58,
+          0.62,
+          0.08
+        ]
       },
       "mount_cooler": {
-        "position": [-0.18, 0.68, 0.14],
-        "rotation": [0, 0, 0],
-        "boundingBoxSize": [0.85, 0.85, 0.65]
+        "position": [
+          -0.18,
+          0.68,
+          0.14
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "boundingBoxSize": [
+          0.85,
+          0.85,
+          0.65
+        ]
       },
       "slot_pcie_x16": {
-        "position": [0.42, -0.38, 0.72],
-        "rotation": [0, 0, 0],
-        "boundingBoxSize": [3.36, 0.65, 1.4]
+        "position": [
+          0.42,
+          -0.38,
+          0.72
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "boundingBoxSize": [
+          3.36,
+          0.65,
+          1.4
+        ]
       },
       "slot_ram_1": {
-        "position": [0.42, 0.68, 0.12],
-        "rotation": [0, 0, 0],
-        "boundingBoxSize": [0.08, 1.34, 0.44]
+        "position": [
+          0.42,
+          0.68,
+          0.12
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "boundingBoxSize": [
+          0.08,
+          1.34,
+          0.44
+        ]
       },
       "slot_ram_2": {
-        "position": [0.55, 0.68, 0.12],
-        "rotation": [0, 0, 0],
-        "boundingBoxSize": [0.08, 1.34, 0.44]
+        "position": [
+          0.55,
+          0.68,
+          0.12
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "boundingBoxSize": [
+          0.08,
+          1.34,
+          0.44
+        ]
       },
       "slot_ram_3": {
-        "position": [0.68, 0.68, 0.12],
-        "rotation": [0, 0, 0],
-        "boundingBoxSize": [0.08, 1.34, 0.44]
+        "position": [
+          0.68,
+          0.68,
+          0.12
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "boundingBoxSize": [
+          0.08,
+          1.34,
+          0.44
+        ]
       },
       "slot_ram_4": {
-        "position": [0.81, 0.68, 0.12],
-        "rotation": [0, 0, 0],
-        "boundingBoxSize": [0.08, 1.34, 0.44]
+        "position": [
+          0.81,
+          0.68,
+          0.12
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "boundingBoxSize": [
+          0.08,
+          1.34,
+          0.44
+        ]
       },
       "slot_m2_1": {
-        "position": [-0.16, -0.04, 0.07],
-        "rotation": [0, 0, 0],
-        "boundingBoxSize": [0.8, 0.24, 0.08]
+        "position": [
+          -0.16,
+          -0.04,
+          0.07
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "boundingBoxSize": [
+          0.8,
+          0.24,
+          0.08
+        ]
       }
     }
   },
@@ -135,9 +315,21 @@
       "interiorColor": "#cfd4dc",
       "style": "panoramic_3piece",
       "mountOffset": {
-        "position": [0, 0, 0],
-        "rotation": [0, 0, 0],
-        "scale": [1, 1, 1]
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
       },
       "specs": {
         "formFactor": "ATX / Micro-ATX / Mini-ITX",
@@ -149,7 +341,12 @@
         "tdpW": 0
       },
       "merchants": [
-        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 219.99 }
+        {
+          "name": "Amazon",
+          "shipping": "FREE s/h",
+          "stock": "In stock",
+          "price": 219.99
+        }
       ]
     },
     {
@@ -158,15 +355,27 @@
       "brand": "HYTE",
       "category": "case",
       "price": 219.99,
-      "realPhotoUrl": "https://m.media-amazon.com/images/I/61i70Cp4GHL._AC_SL1000_.jpg",
+      "realPhotoUrl": "https://m.media-amazon.com/images/I/51MvaxlXd3L._AC_SL1000_.jpg",
       "model3dPath": "/models/cases/hyte-y70-black.glb",
       "chassisColor": "#111318",
       "interiorColor": "#111318",
       "style": "panoramic_3piece",
       "mountOffset": {
-        "position": [0, 0, 0],
-        "rotation": [0, 0, 0],
-        "scale": [1, 1, 1]
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
       },
       "specs": {
         "formFactor": "ATX / Micro-ATX / Mini-ITX",
@@ -178,8 +387,18 @@
         "tdpW": 0
       },
       "merchants": [
-        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 219.99 },
-        { "name": "Newegg", "shipping": "FREE s/h", "stock": "In stock", "price": 224.99 }
+        {
+          "name": "Amazon",
+          "shipping": "FREE s/h",
+          "stock": "In stock",
+          "price": 219.99
+        },
+        {
+          "name": "Newegg",
+          "shipping": "FREE s/h",
+          "stock": "In stock",
+          "price": 224.99
+        }
       ]
     },
     {
@@ -194,9 +413,21 @@
       "interiorColor": "#111318",
       "style": "panoramic_vision",
       "mountOffset": {
-        "position": [0, 0, 0],
-        "rotation": [0, 0, 0],
-        "scale": [1, 1, 1]
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
       },
       "specs": {
         "formFactor": "E-ATX / ATX / Micro-ATX",
@@ -208,7 +439,12 @@
         "tdpW": 0
       },
       "merchants": [
-        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 149.99 }
+        {
+          "name": "Amazon",
+          "shipping": "FREE s/h",
+          "stock": "In stock",
+          "price": 149.99
+        }
       ]
     },
     {
@@ -223,9 +459,21 @@
       "interiorColor": "#111318",
       "style": "mesh_airflow",
       "mountOffset": {
-        "position": [0, 0, 0],
-        "rotation": [0, 0, 0],
-        "scale": [1, 1, 1]
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
       },
       "specs": {
         "formFactor": "ATX / Micro-ATX",
@@ -237,7 +485,12 @@
         "tdpW": 0
       },
       "merchants": [
-        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 104.99 }
+        {
+          "name": "Amazon",
+          "shipping": "FREE s/h",
+          "stock": "In stock",
+          "price": 104.99
+        }
       ]
     },
     {
@@ -253,9 +506,21 @@
       "accentColor": "#f59e0b",
       "themeVariant": "strix_white",
       "mountOffset": {
-        "position": [0, 0, 0],
-        "rotation": [0, 0, 0],
-        "scale": [1, 1, 1]
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
       },
       "specs": {
         "socket": "AM5",
@@ -268,7 +533,12 @@
         "tdpW": 50
       },
       "merchants": [
-        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 277.0 }
+        {
+          "name": "Amazon",
+          "shipping": "FREE s/h",
+          "stock": "In stock",
+          "price": 277.0
+        }
       ]
     },
     {
@@ -283,9 +553,21 @@
       "vrmColor": "#1c2029",
       "accentColor": "#94a3b8",
       "mountOffset": {
-        "position": [0, 0, 0],
-        "rotation": [0, 0, 0],
-        "scale": [1, 1, 1]
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
       },
       "specs": {
         "socket": "AM5",
@@ -298,7 +580,12 @@
         "tdpW": 45
       },
       "merchants": [
-        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 209.99 }
+        {
+          "name": "Amazon",
+          "shipping": "FREE s/h",
+          "stock": "In stock",
+          "price": 209.99
+        }
       ]
     },
     {
@@ -313,9 +600,21 @@
       "vrmColor": "#181b22",
       "accentColor": "#38bdf8",
       "mountOffset": {
-        "position": [0, 0, 0],
-        "rotation": [0, 0, 0],
-        "scale": [1, 1, 1]
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
       },
       "specs": {
         "socket": "AM5",
@@ -328,7 +627,12 @@
         "tdpW": 55
       },
       "merchants": [
-        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 649.99 }
+        {
+          "name": "Amazon",
+          "shipping": "FREE s/h",
+          "stock": "In stock",
+          "price": 649.99
+        }
       ]
     },
     {
@@ -343,9 +647,21 @@
       "vrmColor": "#1e2430",
       "accentColor": "#60a5fa",
       "mountOffset": {
-        "position": [0, 0, 0],
-        "rotation": [0, 0, 0],
-        "scale": [1, 1, 1]
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
       },
       "specs": {
         "socket": "LGA1700",
@@ -358,7 +674,12 @@
         "tdpW": 55
       },
       "merchants": [
-        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 559.99 }
+        {
+          "name": "Amazon",
+          "shipping": "FREE s/h",
+          "stock": "In stock",
+          "price": 559.99
+        }
       ]
     },
     {
@@ -370,9 +691,21 @@
       "realPhotoUrl": "https://m.media-amazon.com/images/I/71jxHGiiiNL._AC_SL1000_.jpg",
       "model3dPath": "/models/cpus/ryzen-7-7800x3d.glb",
       "mountOffset": {
-        "position": [0, 0, 0],
-        "rotation": [0, 0, 0],
-        "scale": [1, 1, 1]
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
       },
       "specs": {
         "socket": "AM5",
@@ -384,7 +717,12 @@
         "tdpW": 120
       },
       "merchants": [
-        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 363.99 }
+        {
+          "name": "Amazon",
+          "shipping": "FREE s/h",
+          "stock": "In stock",
+          "price": 363.99
+        }
       ]
     },
     {
@@ -393,12 +731,24 @@
       "brand": "AMD",
       "category": "cpu",
       "price": 479.0,
-      "realPhotoUrl": "https://m.media-amazon.com/images/I/91ITeh+6zRL._AC_SL1000_.jpg",
+      "realPhotoUrl": "https://m.media-amazon.com/images/I/71jxHGiiiNL._AC_SL1000_.jpg",
       "model3dPath": "/models/cpus/ryzen-7-9800x3d.glb",
       "mountOffset": {
-        "position": [0, 0, 0],
-        "rotation": [0, 0, 0],
-        "scale": [1, 1, 1]
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
       },
       "specs": {
         "socket": "AM5",
@@ -410,7 +760,12 @@
         "tdpW": 120
       },
       "merchants": [
-        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 479.0 }
+        {
+          "name": "Amazon",
+          "shipping": "FREE s/h",
+          "stock": "In stock",
+          "price": 479.0
+        }
       ]
     },
     {
@@ -422,9 +777,21 @@
       "realPhotoUrl": "https://m.media-amazon.com/images/I/61C1DOLRK4L._AC_SL1000_.jpg",
       "model3dPath": "/models/cpus/intel-i9-14900k.glb",
       "mountOffset": {
-        "position": [0, 0, 0],
-        "rotation": [0, 0, 0],
-        "scale": [1, 1, 1]
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
       },
       "specs": {
         "socket": "LGA1700",
@@ -436,7 +803,12 @@
         "tdpW": 253
       },
       "merchants": [
-        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 439.0 }
+        {
+          "name": "Amazon",
+          "shipping": "FREE s/h",
+          "stock": "In stock",
+          "price": 439.0
+        }
       ]
     },
     {
@@ -445,14 +817,26 @@
       "brand": "ASUS ROG",
       "category": "gpu",
       "price": 649.99,
-      "realPhotoUrl": "https://m.media-amazon.com/images/I/810WDL8XS1L._AC_SL1000_.jpg",
+      "realPhotoUrl": "https://m.media-amazon.com/images/I/619ChWVOpoL._AC_SL1000_.jpg",
       "model3dPath": "/models/gpus/rtx-4070.glb",
       "shroudColor": "#151820",
       "trimColor": "#475569",
       "mountOffset": {
-        "position": [0, 0, 0],
-        "rotation": [0, 0, 0],
-        "scale": [1, 1, 1]
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
       },
       "specs": {
         "vram": "12 GB GDDR6X (192-bit)",
@@ -464,7 +848,12 @@
         "tdpW": 215
       },
       "merchants": [
-        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 649.99 }
+        {
+          "name": "Amazon",
+          "shipping": "FREE s/h",
+          "stock": "In stock",
+          "price": 649.99
+        }
       ]
     },
     {
@@ -478,9 +867,21 @@
       "shroudColor": "#1e222b",
       "trimColor": "#94a3b8",
       "mountOffset": {
-        "position": [0, 0, 0],
-        "rotation": [0, 0, 0],
-        "scale": [0.96, 1, 1]
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
       },
       "specs": {
         "vram": "24 GB GDDR6X (384-bit, 1008 GB/s)",
@@ -492,7 +893,12 @@
         "tdpW": 450
       },
       "merchants": [
-        { "name": "Best Buy", "shipping": "FREE s/h", "stock": "In stock", "price": 1799.99 }
+        {
+          "name": "Best Buy",
+          "shipping": "FREE s/h",
+          "stock": "In stock",
+          "price": 1799.99
+        }
       ]
     },
     {
@@ -506,9 +912,21 @@
       "shroudColor": "#282e3b",
       "trimColor": "#cbd5e1",
       "mountOffset": {
-        "position": [0, 0, 0],
-        "rotation": [0, 0, 0],
-        "scale": [0.98, 1, 1]
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
       },
       "specs": {
         "vram": "24 GB GDDR6 (384-bit)",
@@ -520,7 +938,12 @@
         "tdpW": 355
       },
       "merchants": [
-        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 919.99 }
+        {
+          "name": "Amazon",
+          "shipping": "FREE s/h",
+          "stock": "In stock",
+          "price": 919.99
+        }
       ]
     },
     {
@@ -533,9 +956,21 @@
       "model3dPath": "/models/ram/gskill-trident-z5.glb",
       "heatsinkColor": "#181b22",
       "mountOffset": {
-        "position": [0, 0, 0],
-        "rotation": [0, 0, 0],
-        "scale": [1, 1, 1]
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
       },
       "specs": {
         "memoryType": "DDR5",
@@ -547,7 +982,12 @@
         "tdpW": 12
       },
       "merchants": [
-        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 112.99 }
+        {
+          "name": "Amazon",
+          "shipping": "FREE s/h",
+          "stock": "In stock",
+          "price": 112.99
+        }
       ]
     },
     {
@@ -560,9 +1000,21 @@
       "model3dPath": "/models/ram/corsair-dominator-titanium.glb",
       "heatsinkColor": "#222631",
       "mountOffset": {
-        "position": [0, 0, 0],
-        "rotation": [0, 0, 0],
-        "scale": [1, 1, 1]
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
       },
       "specs": {
         "memoryType": "DDR5",
@@ -574,7 +1026,12 @@
         "tdpW": 20
       },
       "merchants": [
-        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 289.99 }
+        {
+          "name": "Amazon",
+          "shipping": "FREE s/h",
+          "stock": "In stock",
+          "price": 289.99
+        }
       ]
     },
     {
@@ -588,12 +1045,29 @@
       "coolerStyle": "aio_360",
       "radiatorColor": "#14171f",
       "mountOffset": {
-        "position": [0, 0, 0],
-        "rotation": [0, 0, 0],
-        "scale": [1, 1, 1]
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
       },
       "specs": {
-        "supportedSockets": ["AM5", "AM4", "LGA1700", "LGA1851"],
+        "supportedSockets": [
+          "AM5",
+          "AM4",
+          "LGA1700",
+          "LGA1851"
+        ],
         "coolerType": "360mm AIO Liquid Cooler (2.36\" LCD)",
         "fanRpm": "500 - 1,800 RPM",
         "dimensionsMm": "Radiator: 360 x 120 x 25 mm",
@@ -601,7 +1075,12 @@
         "tdpW": 22
       },
       "merchants": [
-        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 279.99 }
+        {
+          "name": "Amazon",
+          "shipping": "FREE s/h",
+          "stock": "In stock",
+          "price": 279.99
+        }
       ]
     },
     {
@@ -610,17 +1089,34 @@
       "brand": "Noctua",
       "category": "cooler",
       "price": 119.95,
-      "realPhotoUrl": "https://m.media-amazon.com/images/I/610RTWemhSL._AC_SL1000_.jpg",
+      "realPhotoUrl": "https://m.media-amazon.com/images/I/51b1eskcQBL._AC_SL1000_.jpg",
       "model3dPath": "/models/coolers/noctua-nh-d15.glb",
       "coolerStyle": "air_dual",
       "radiatorColor": "#181a20",
       "mountOffset": {
-        "position": [0, 0, 0],
-        "rotation": [0, 0, 0],
-        "scale": [1, 1, 1]
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
       },
       "specs": {
-        "supportedSockets": ["AM5", "AM4", "LGA1700", "LGA1851"],
+        "supportedSockets": [
+          "AM5",
+          "AM4",
+          "LGA1700",
+          "LGA1851"
+        ],
         "coolerType": "Dual-Tower 6-Heatpipe Air Cooler",
         "fanRpm": "300 - 1,500 RPM",
         "dimensionsMm": "165 x 150 x 161 mm",
@@ -628,7 +1124,12 @@
         "tdpW": 10
       },
       "merchants": [
-        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 119.95 }
+        {
+          "name": "Amazon",
+          "shipping": "FREE s/h",
+          "stock": "In stock",
+          "price": 119.95
+        }
       ]
     },
     {
@@ -640,9 +1141,21 @@
       "realPhotoUrl": "https://m.media-amazon.com/images/I/71OWtcxKgvL._AC_SL1000_.jpg",
       "model3dPath": "/models/storage/samsung-990-pro.glb",
       "mountOffset": {
-        "position": [0, 0, 0],
-        "rotation": [0, 0, 0],
-        "scale": [1, 1, 1]
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
       },
       "specs": {
         "capacity": "2 TB (2,000 GB)",
@@ -653,7 +1166,12 @@
         "tdpW": 8
       },
       "merchants": [
-        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 169.99 }
+        {
+          "name": "Amazon",
+          "shipping": "FREE s/h",
+          "stock": "In stock",
+          "price": 169.99
+        }
       ]
     },
     {
@@ -665,9 +1183,21 @@
       "realPhotoUrl": "https://m.media-amazon.com/images/I/715RNiMcRfL._AC_SL1000_.jpg",
       "model3dPath": "/models/psus/corsair-rm1000x.glb",
       "mountOffset": {
-        "position": [0, 0, 0],
-        "rotation": [0, 0, 0],
-        "scale": [1, 1, 1]
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
       },
       "specs": {
         "wattageCapacity": 1000,
@@ -678,7 +1208,12 @@
         "tdpW": 0
       },
       "merchants": [
-        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 189.99 }
+        {
+          "name": "Amazon",
+          "shipping": "FREE s/h",
+          "stock": "In stock",
+          "price": 189.99
+        }
       ]
     },
     {
@@ -687,12 +1222,24 @@
       "brand": "ASUS ROG",
       "category": "psu",
       "price": 329.99,
-      "realPhotoUrl": "https://m.media-amazon.com/images/I/71iESqOEpeL._AC_SL1000_.jpg",
+      "realPhotoUrl": "https://m.media-amazon.com/images/I/715RNiMcRfL._AC_SL1000_.jpg",
       "model3dPath": "/models/psus/asus-rog-thor-1200w.glb",
       "mountOffset": {
-        "position": [0, 0, 0],
-        "rotation": [0, 0, 0],
-        "scale": [1, 1, 1]
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
       },
       "specs": {
         "wattageCapacity": 1200,
@@ -703,7 +1250,12 @@
         "tdpW": 0
       },
       "merchants": [
-        { "name": "Amazon", "shipping": "FREE s/h", "stock": "In stock", "price": 329.99 }
+        {
+          "name": "Amazon",
+          "shipping": "FREE s/h",
+          "stock": "In stock",
+          "price": 329.99
+        }
       ]
     }
   ]
