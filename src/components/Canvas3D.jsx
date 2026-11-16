@@ -12,32 +12,60 @@ import * as THREE from 'three';
 import CapeModel from './CapeModel';
 import { DEFAULT_RGB_CONFIG } from '../utils/textureGenerator';
 
-function StudioEnvironmentRig({ envPreset = 'studio' }) {
+const FLOOR_THEMES = {
+  dark: {
+    bg: '#090b0f',
+    plane: '#090b0f',
+    cell: '#161a24',
+    section: '#232938',
+  },
+  slate: {
+    bg: '#11151e',
+    plane: '#131822',
+    cell: '#222938',
+    section: '#334155',
+  },
+  carbon: {
+    bg: '#050608',
+    plane: '#06070a',
+    cell: '#11141c',
+    section: '#1e293b',
+  },
+};
+
+function StudioEnvironmentRig({ envPreset = 'studio', isPcOn = true }) {
   return (
     <>
-      <ambientLight intensity={0.12} color="#e2e8f0" />
+      <ambientLight intensity={isPcOn ? 0.24 : 0.18} color="#e2e8f0" />
 
       <directionalLight
         position={[6.5, 11.0, 7.5]}
-        intensity={1.15}
+        intensity={isPcOn ? 1.25 : 0.95}
         color="#f8fafc"
         castShadow
         shadow-mapSize={[2048, 2048]}
         shadow-bias={-0.0002}
-        shadow-normalBias={0.02}
-      />
-
-      <directionalLight
-        position={[-6.0, 5.8, 4.2]}
-        intensity={0.35}
-        color="#cbd5e1"
       />
 
       <spotLight
         position={[-7.0, 7.5, -5.2]}
-        angle={0.6}
+        angle={0.65}
+        penumbra={0.85}
+        intensity={1.6}
+        color="#cbd5e1"
+        distance={22}
+      />
+      <directionalLight
+        position={[-6.0, 5.8, 4.2]}
+        intensity={0.65}
+        color="#cbd5e1"
+      />
+
+      <spotLight
+        position={[6.8, 1.5, -5.0]}
+        angle={0.7}
         penumbra={0.9}
-        intensity={1.2}
+        intensity={1.3}
         color="#94a3b8"
         distance={22}
       />
@@ -45,32 +73,43 @@ function StudioEnvironmentRig({ envPreset = 'studio' }) {
       <Suspense fallback={null}>
         <Environment
           preset={envPreset}
-          environmentIntensity={0.45}
-          resolution={256}
+          environmentIntensity={isPcOn ? 0.62 : 0.48}
+          resolution={512}
         >
           <Lightformer
             form="rect"
-            intensity={0.9}
-            color="#e5e7eb"
+            intensity={1.35}
+            color="#f1f5f9"
             scale={[10, 5, 1]}
             position={[0, 9.0, 0]}
             rotation={[Math.PI / 2, 0, 0]}
           />
+
           <Lightformer
             form="rect"
-            intensity={0.6}
+            intensity={1.1}
             color="#cbd5e1"
             scale={[6, 7, 1]}
             position={[-7.0, 3.5, -2.5]}
             rotation={[0, Math.PI / 2.2, 0]}
           />
+
           <Lightformer
             form="rect"
-            intensity={0.45}
+            intensity={0.95}
             color="#94a3b8"
             scale={[6, 7, 1]}
             position={[7.0, 2.8, -2.5]}
             rotation={[0, -Math.PI / 2.2, 0]}
+          />
+
+          <Lightformer
+            form="rect"
+            intensity={0.8}
+            color="#e2e8f0"
+            scale={[4, 6, 1]}
+            position={[2.8, 3.8, 6.5]}
+            target={[0, 2.1, 0]}
           />
         </Environment>
       </Suspense>
@@ -78,7 +117,9 @@ function StudioEnvironmentRig({ envPreset = 'studio' }) {
   );
 }
 
-function BuildCoresDarkGridFloor() {
+function BuildCoresDarkGridFloor({ floorTheme = 'dark' }) {
+  const palette = FLOOR_THEMES[floorTheme] || FLOOR_THEMES.dark;
+
   return (
     <group position={[0, 0, 0]}>
       <mesh
@@ -88,7 +129,7 @@ function BuildCoresDarkGridFloor() {
       >
         <planeGeometry args={[80, 80]} />
         <meshStandardMaterial
-          color="#090b0f"
+          color={palette.plane}
           roughness={0.88}
           metalness={0.12}
         />
@@ -99,10 +140,10 @@ function BuildCoresDarkGridFloor() {
         args={[40, 40]}
         cellSize={0.5}
         cellThickness={0.65}
-        cellColor="#161a24"
+        cellColor={palette.cell}
         sectionSize={2.0}
         sectionThickness={1.15}
-        sectionColor="#232938"
+        sectionColor={palette.section}
         fadeDistance={24}
         fadeStrength={1.35}
         infiniteGrid
@@ -110,9 +151,9 @@ function BuildCoresDarkGridFloor() {
 
       <ContactShadows
         position={[0, 0.006, 0]}
-        opacity={0.82}
+        opacity={0.86}
         scale={13.5}
-        blur={2.1}
+        blur={2.0}
         far={5.5}
         color="#000000"
       />
@@ -120,7 +161,7 @@ function BuildCoresDarkGridFloor() {
   );
 }
 
-function SceneBridge({ onStatsUpdate, screenshotHandlerRef }) {
+function SceneBridge({ onStatsUpdate, screenshotHandlerRef, bgHex = '#090b0f' }) {
   const { gl, scene, camera } = useThree();
   const frameCount = useRef(0);
   const lastTime = useRef(0);
@@ -133,7 +174,7 @@ function SceneBridge({ onStatsUpdate, screenshotHandlerRef }) {
       const prevBackground = scene.background;
       const prevClearAlpha = gl.getClearAlpha();
 
-      scene.background = new THREE.Color('#090b0f');
+      scene.background = new THREE.Color(bgHex);
       gl.render(scene, camera);
 
       const dataUrl = gl.domElement.toDataURL('image/png');
@@ -144,7 +185,7 @@ function SceneBridge({ onStatsUpdate, screenshotHandlerRef }) {
 
       return dataUrl;
     };
-  }, [gl, scene, camera, screenshotHandlerRef]);
+  }, [gl, scene, camera, screenshotHandlerRef, bgHex]);
 
   useFrame(() => {
     frameCount.current += 1;
@@ -174,20 +215,24 @@ export default function Canvas3D({
   customGlbOverrides,
   showBoundingLabels,
   envPreset = 'studio',
+  floorTheme = 'dark',
   wireframe,
   autoRotate,
   explodedView,
   showGlass = true,
+  showCables = true,
   isPcOn = true,
   showAirflow = false,
   showDisplays = true,
-  showCaseFans = true,
+  displayConfig,
+  fanConfig,
   rgbConfig = DEFAULT_RGB_CONFIG,
   cameraViewTrigger,
   onStatsUpdate,
   screenshotHandlerRef,
 }) {
   const controlsRef = useRef();
+  const palette = FLOOR_THEMES[floorTheme] || FLOOR_THEMES.dark;
 
   useEffect(() => {
     if (!controlsRef.current || !cameraViewTrigger) return;
@@ -220,7 +265,10 @@ export default function Canvas3D({
   }, [cameraViewTrigger]);
 
   return (
-    <div className="relative w-full h-full overflow-hidden bg-[#090b0f]">
+    <div
+      className="relative w-full h-full overflow-hidden"
+      style={{ backgroundColor: palette.bg }}
+    >
       <Canvas
         shadows
         dpr={[1, 2]}
@@ -239,10 +287,10 @@ export default function Canvas3D({
           far: 120,
         }}
       >
-        <color attach="background" args={['#090b0f']} />
-        <fog attach="fog" args={['#090b0f', 14, 32]} />
+        <color attach="background" args={[palette.bg]} />
+        <fog attach="fog" args={[palette.bg, 14, 32]} />
 
-        <StudioEnvironmentRig envPreset={envPreset} />
+        <StudioEnvironmentRig envPreset={envPreset} isPcOn={isPcOn} />
 
         <CapeModel
           build={build}
@@ -251,23 +299,23 @@ export default function Canvas3D({
           wireframe={wireframe}
           explodedView={explodedView}
           showGlass={showGlass}
+          showCables={showCables}
           isPcOn={isPcOn}
           showAirflow={showAirflow}
           showDisplays={showDisplays}
-          showCaseFans={showCaseFans}
+          displayConfig={displayConfig}
+          fanConfig={fanConfig}
           rgbConfig={rgbConfig}
         />
 
-        <BuildCoresDarkGridFloor />
+        <BuildCoresDarkGridFloor floorTheme={floorTheme} />
 
         <EffectComposer disableNormalPass={false} multisampling={4}>
           <N8AO
-            aoRadius={0.35}
-            distanceFalloff={0.6}
-            intensity={4.0}
-            aoSamples={16}
-            denoiseSamples={8}
-            color="#000000"
+            aoRadius={0.55}
+            distanceFalloff={1.0}
+            intensity={3.6}
+            color="#020305"
             halfRes={false}
           />
         </EffectComposer>
@@ -288,6 +336,7 @@ export default function Canvas3D({
         <SceneBridge
           onStatsUpdate={onStatsUpdate}
           screenshotHandlerRef={screenshotHandlerRef}
+          bgHex={palette.bg}
         />
       </Canvas>
     </div>
