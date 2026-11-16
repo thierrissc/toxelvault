@@ -1,11 +1,21 @@
 import * as THREE from 'three';
 import catalogData from '../data/partsCatalog.json';
 import modelManifest from '../../public/models/manifest.json';
+import { validateAndResolveAssetUrl } from './assetValidator';
 
 export const HARDWARE_CATEGORIES = catalogData.categories;
 export const SNAP_POINTS = catalogData.snapPoints;
-export const ALL_PARTS = catalogData.parts;
 export const MODEL_MANIFEST = modelManifest;
+
+export const ALL_PARTS = catalogData.parts.map((part) => {
+  const verifiedUrl = validateAndResolveAssetUrl(part);
+  return {
+    ...part,
+    imageUrl: verifiedUrl,
+    thumbnail: verifiedUrl,
+    realPhotoUrl: verifiedUrl,
+  };
+});
 
 export const HARDWARE_CATALOG = HARDWARE_CATEGORIES.reduce((acc, cat) => {
   acc[cat.id] = ALL_PARTS.filter((p) => p.category === cat.id);

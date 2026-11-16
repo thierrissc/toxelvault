@@ -10,10 +10,14 @@ import {
 import {
   preloadAllHardwareCategories,
   clearHardwareDatasetCache,
+  enforceStorageVersion,
 } from './utils/hardwareCatalogAdapter';
 
 export default function App() {
-  const [build, setBuild] = useState(DEFAULT_BUILD);
+  const [build, setBuild] = useState(() => {
+    enforceStorageVersion();
+    return DEFAULT_BUILD;
+  });
   const [catalogByCategory, setCatalogByCategory] = useState(HARDWARE_CATALOG);
   const [datasetStatus, setDatasetStatus] = useState({
     loading: true,

@@ -17,12 +17,52 @@ export const DATASET_ENDPOINTS = {
   case: 'case.json',
 };
 
-const CACHE_STORAGE_NAME = 'toxelvault-hardware-dataset-v6';
-const LOCAL_STORAGE_PREFIX = 'toxelvault_hw_cat_v6_';
+export const STORAGE_VERSION = 'v2';
+const STORAGE_VERSION_KEY = 'toxelvault_storage_version';
+const CACHE_STORAGE_NAME = `toxelvault-hardware-dataset-${STORAGE_VERSION}`;
+const LOCAL_STORAGE_PREFIX = `toxelvault_hw_cat_${STORAGE_VERSION}_`;
 const MAX_NORMALIZED_ITEMS_PER_CATEGORY = 320;
 
 const memoryCategoryCache = new Map();
 const wikimediaSearchCache = new Map();
+
+export function enforceStorageVersion() {
+  if (typeof window === 'undefined') return;
+  try {
+    if (window.localStorage) {
+      const currentVersion = window.localStorage.getItem(STORAGE_VERSION_KEY);
+      if (currentVersion !== STORAGE_VERSION) {
+        const keysToRemove = [];
+        for (let i = 0; i < window.localStorage.length; i++) {
+          const key = window.localStorage.key(i);
+          if (key && key !== STORAGE_VERSION_KEY) {
+            keysToRemove.push(key);
+          }
+        }
+        keysToRemove.forEach((k) => window.localStorage.removeItem(k));
+        window.localStorage.setItem(STORAGE_VERSION_KEY, STORAGE_VERSION);
+      }
+    }
+    if ('caches' in window) {
+      window.caches
+        .keys()
+        .then((names) => {
+          names.forEach((name) => {
+            if (name !== CACHE_STORAGE_NAME) {
+              window.caches.delete(name);
+            }
+          });
+        })
+        .catch(() => {
+          void 0;
+        });
+    }
+  } catch {
+    void 0;
+  }
+}
+
+enforceStorageVersion();
 
 export const REAL_PRODUCT_IMAGE_DICTIONARY = {
   byCategoryKeywords: {},
