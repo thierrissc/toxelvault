@@ -607,9 +607,9 @@ export function createMotherboardSurfaceTextures(part) {
 
   if (isStrixWhite) {
     const grad = vCtx.createLinearGradient(0, 0, 512, 1024);
-    grad.addColorStop(0, '#f8fafc');
-    grad.addColorStop(0.5, '#e2e8f0');
-    grad.addColorStop(1, '#cbd5e1');
+    grad.addColorStop(0, '#d8dce3');
+    grad.addColorStop(0.5, '#c4cad4');
+    grad.addColorStop(1, '#94a3b8');
     vCtx.fillStyle = grad;
     vCtx.fillRect(0, 0, 512, 1024);
 
@@ -704,9 +704,9 @@ export function createMotherboardSurfaceTextures(part) {
 
   if (isStrixWhite) {
     const mGrad = mCtx.createLinearGradient(0, 0, 1024, 512);
-    mGrad.addColorStop(0, '#f1f5f9');
-    mGrad.addColorStop(0.55, '#cbd5e1');
-    mGrad.addColorStop(1, '#94a3b8');
+    mGrad.addColorStop(0, '#d8dce3');
+    mGrad.addColorStop(0.55, '#b8c0cc');
+    mGrad.addColorStop(1, '#8c96a6');
     mCtx.fillStyle = mGrad;
     mCtx.fillRect(0, 0, 1024, 512);
 
@@ -759,10 +759,39 @@ export function createMotherboardSurfaceTextures(part) {
   return bundle;
 }
 
-let cachedLcdTex = null;
-export function createKrakenLcdTexture() {
-  if (cachedLcdTex) return cachedLcdTex;
+const lcdTexCache = new Map();
+export function createKrakenLcdTexture(displayConfig = {}) {
   if (typeof document === 'undefined') return null;
+
+  const mode = displayConfig?.mode || 'cpu_temp';
+  const customText = String(displayConfig?.customText || 'TOXEL').slice(0, 10);
+  const cacheKey = `${mode}_${customText}`;
+
+  if (lcdTexCache.has(cacheKey)) {
+    return lcdTexCache.get(cacheKey);
+  }
+
+  let topLabel = 'CPU TEMP';
+  let mainValue = '42°C';
+  let subLabel = 'PUMP 2640 RPM';
+  let ringColor = '#38bdf8';
+
+  if (mode === 'gpu_temp') {
+    topLabel = 'GPU TEMP';
+    mainValue = '61°C';
+    subLabel = 'CORE 2640 MHZ';
+    ringColor = '#a855f7';
+  } else if (mode === 'load_pct') {
+    topLabel = 'SYSTEM LOAD';
+    mainValue = '34%';
+    subLabel = 'LIQUID 36°C';
+    ringColor = '#4ade80';
+  } else if (mode === 'custom') {
+    topLabel = 'CUSTOM LCD';
+    mainValue = customText || '42°C';
+    subLabel = 'CPU 42°C • GPU 61°C';
+    ringColor = '#f59e0b';
+  }
 
   const canvas = document.createElement('canvas');
   canvas.width = 512;
@@ -772,28 +801,36 @@ export function createKrakenLcdTexture() {
   ctx.fillStyle = '#07090e';
   ctx.fillRect(0, 0, 512, 512);
 
-  ctx.strokeStyle = '#38bdf8';
+  ctx.strokeStyle = '#1e293b';
   ctx.lineWidth = 18;
   ctx.beginPath();
-  ctx.arc(256, 256, 212, -Math.PI * 0.75, Math.PI * 0.75);
+  ctx.arc(256, 256, 212, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.strokeStyle = ringColor;
+  ctx.lineWidth = 18;
+  ctx.beginPath();
+  ctx.arc(256, 256, 212, -Math.PI * 0.75, Math.PI * 0.65);
   ctx.stroke();
 
   ctx.fillStyle = '#94a3b8';
   ctx.font = 'bold 28px Inter, sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('LIQUID TEMP', 256, 168);
+  ctx.textBaseline = 'middle';
+  ctx.fillText(topLabel, 256, 156);
 
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 116px Inter, sans-serif';
-  ctx.fillText('38°C', 256, 288);
+  ctx.fillStyle = '#e2e8f0';
+  const mainFontSize = mainValue.length > 5 ? 68 : 112;
+  ctx.font = `bold ${mainFontSize}px Inter, sans-serif`;
+  ctx.fillText(mainValue, 256, 258);
 
-  ctx.fillStyle = '#38bdf8';
-  ctx.font = 'bold 26px Inter, sans-serif';
-  ctx.fillText('PUMP 2640 RPM', 256, 356);
+  ctx.fillStyle = ringColor;
+  ctx.font = 'bold 24px Inter, sans-serif';
+  ctx.fillText(subLabel, 256, 356);
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.anisotropy = 8;
   tex.needsUpdate = true;
-  cachedLcdTex = tex;
+  lcdTexCache.set(cacheKey, tex);
   return tex;
 }
