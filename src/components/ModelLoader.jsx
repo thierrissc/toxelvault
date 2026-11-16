@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useMemo, useState } from 'react';
+import React, { Suspense, useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
@@ -9,34 +9,6 @@ const DRACO_DECODER_URL =
   'https://www.gstatic.com/draco/versioned/decoders/1.5.6/';
 const KTX2_TRANSCODER_URL =
   'https://www.gstatic.com/basis-universal/versioned/2021-04-15-ba1c3e4/';
-
-const glbAvailabilityCache = new Map();
-
-async function checkGlbExists(url) {
-  if (!url) return false;
-  if (url.startsWith('blob:') || url.startsWith('data:')) return true;
-  if (glbAvailabilityCache.has(url)) {
-    return glbAvailabilityCache.get(url);
-  }
-
-  try {
-    const res = await fetch(url, { method: 'HEAD' });
-    if (!res.ok) {
-      glbAvailabilityCache.set(url, false);
-      return false;
-    }
-    const contentType = (res.headers.get('content-type') || '').toLowerCase();
-    if (contentType.includes('text/html')) {
-      glbAvailabilityCache.set(url, false);
-      return false;
-    }
-    glbAvailabilityCache.set(url, true);
-    return true;
-  } catch {
-    glbAvailabilityCache.set(url, false);
-    return false;
-  }
-}
 
 class GlbLoadErrorBoundary extends React.Component {
   constructor(props) {
@@ -140,74 +112,20 @@ function GlbSceneRenderer({
 
 export default function ModelLoader({
   category,
-  part,
   customOverrideUrl = null,
   wireframe = false,
   onSocketsDetected,
   fallback = null,
 }) {
-  const candidateUrl = useMemo(() => {
-    if (customOverrideUrl) return customOverrideUrl;
-    if (part?.model3dPath) return part.model3dPath;
-    if (category && part?.id) return `/models/${category}/${part.id}.glb`;
-    return null;
-  }, [customOverrideUrl, part, category]);
-
-  const [probedState, setProbedState] = useState({ key: null, url: null });
-
-  const isDirectBlob =
-    Boolean(candidateUrl) &&
-    (candidateUrl.startsWith('blob:') || candidateUrl.startsWith('data:'));
-
-  useEffect(() => {
-    let active = true;
-    if (!candidateUrl || isDirectBlob) {
-      return undefined;
-    }
-
-    checkGlbExists(candidateUrl).then((exists) => {
-      if (!active) return;
-      if (exists) {
-        setProbedState({ key: candidateUrl, url: candidateUrl });
-      } else if (category && part?.id) {
-        const altPath = `/models/${category}/${part.id}.glb`;
-        if (altPath !== candidateUrl) {
-          checkGlbExists(altPath).then((altExists) => {
-            if (active) {
-              setProbedState({
-                key: candidateUrl,
-                url: altExists ? altPath : null,
-              });
-            }
-          });
-        } else {
-          setProbedState({ key: candidateUrl, url: null });
-        }
-      } else {
-        setProbedState({ key: candidateUrl, url: null });
-      }
-    });
-
-    return () => {
-      active = false;
-    };
-  }, [candidateUrl, isDirectBlob, category, part]);
-
-  const availableUrl = isDirectBlob
-    ? candidateUrl
-    : probedState.key === candidateUrl
-    ? probedState.url
-    : null;
-
-  if (!availableUrl) {
+  if (!customOverrideUrl) {
     return fallback;
   }
 
   return (
-    <GlbLoadErrorBoundary key={availableUrl} fallback={fallback}>
+    <GlbLoadErrorBoundary key={customOverrideUrl} fallback={fallback}>
       <Suspense fallback={fallback}>
         <GlbSceneRenderer
-          url={availableUrl}
+          url={customOverrideUrl}
           category={category}
           wireframe={wireframe}
           onSocketsDetected={onSocketsDetected}
