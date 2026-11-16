@@ -237,14 +237,14 @@ export function validateAndResolveAssetUrl(part) {
 }
 
 export const CHASSIS_INTERNAL_BOUNDS = {
-  min: [-1.82, -1.94, -1.3],
-  max: [1.78, 1.94, 1.28],
-  chamferLimit: 2.42,
+  min: [-1.86, -1.96, -1.52],
+  max: [1.82, 1.96, 1.48],
+  chamferLimit: 2.65,
 };
 
 export const REAR_CHAMBER_PSU_BOUNDS = {
-  min: [-1.78, -1.86, -1.28],
-  max: [-0.48, 1.4, -0.44],
+  min: [-1.86, -1.88, -1.52],
+  max: [-0.55, 1.4, -0.36],
 };
 
 export function clampToContainer(
