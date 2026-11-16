@@ -292,20 +292,26 @@ export default function SidebarControls({
   onOpenAssistant,
   envPreset,
   setEnvPreset,
+  floorTheme = 'dark',
+  setFloorTheme,
   autoRotate,
   setAutoRotate,
   explodedView,
   setExplodedView,
   showGlass = true,
   setShowGlass,
+  showCables = true,
+  setShowCables,
   isPcOn = true,
   setIsPcOn,
   showAirflow = false,
   setShowAirflow,
   showDisplays = true,
   setShowDisplays,
-  showCaseFans = true,
-  setShowCaseFans,
+  displayConfig = { mode: 'cpu_temp', customText: '42°C' },
+  setDisplayConfig,
+  fanConfig = { top: true, side: true, bottom: true, rear: true, rpmMode: 'normal' },
+  setFanConfig,
   rgbConfig,
   setRgbConfig,
   onSnapCamera,
@@ -320,10 +326,12 @@ export default function SidebarControls({
   const glbInputRef = useRef(null);
   const dropdownRef = useRef(null);
   const rgbMenuRef = useRef(null);
+  const dockRef = useRef(null);
 
   const [uploadTargetCategory, setUploadTargetCategory] = useState('gpu');
   const [viewMenuOpen, setViewMenuOpen] = useState(false);
   const [rgbMenuOpen, setRgbMenuOpen] = useState(false);
+  const [activeDockPopover, setActiveDockPopover] = useState(null);
   const [mobileDrawer, setMobileDrawer] = useState(false);
 
   const [sidebarTab, setSidebarTab] = useState('parts');
@@ -340,6 +348,9 @@ export default function SidebarControls({
       }
       if (rgbMenuRef.current && !rgbMenuRef.current.contains(e.target)) {
         setRgbMenuOpen(false);
+      }
+      if (dockRef.current && !dockRef.current.contains(e.target)) {
+        setActiveDockPopover(null);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -891,17 +902,334 @@ export default function SidebarControls({
 
             <div className="flex-1 w-full h-full">{children}</div>
 
-            <div className="pointer-events-none absolute bottom-4 left-0 right-0 z-20 flex items-center justify-center px-3">
+            <div
+              ref={dockRef}
+              className="pointer-events-none absolute bottom-4 left-0 right-0 z-20 flex flex-col items-center justify-center px-3"
+            >
+              {activeDockPopover === 'fans' && (
+                <div className="pointer-events-auto mb-3 w-80 rounded-2xl bg-[#13151d]/98 backdrop-blur-xl border border-white/[0.14] p-4 shadow-[0_24px_60px_rgba(0,0,0,0.9)] space-y-3.5">
+                  <div className="flex items-center justify-between border-b border-white/[0.08] pb-2">
+                    <span className="text-xs font-bold text-white flex items-center gap-2">
+                      <Fan className="h-3.5 w-3.5 text-slate-300" />
+                      Controle de Ventoinhas (Fans)
+                    </span>
+                    <span className="text-[10px] font-semibold text-slate-400">
+                      120mm ARGB
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <span className="block text-[11px] font-semibold text-slate-400">
+                      Grupos de Ventoinhas
+                    </span>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {[
+                        { key: 'top', label: 'Topo (3x 120mm)' },
+                        { key: 'side', label: 'Lateral (3x 120mm)' },
+                        { key: 'bottom', label: 'Base (3x 120mm)' },
+                        { key: 'rear', label: 'Traseira (1x 120mm)' },
+                      ].map((g) => {
+                        const enabled = fanConfig?.[g.key] !== false;
+                        return (
+                          <button
+                            key={g.key}
+                            type="button"
+                            onClick={() =>
+                              setFanConfig &&
+                              setFanConfig((prev) => ({
+                                ...prev,
+                                [g.key]: !enabled,
+                              }))
+                            }
+                            className={`flex items-center justify-between rounded-lg px-2.5 py-2 text-xs font-semibold border transition cursor-pointer ${
+                              enabled
+                                ? 'bg-white/[0.12] border-white/[0.28] text-white'
+                                : 'bg-[#181b24] border-white/[0.07] text-slate-400 hover:text-white'
+                            }`}
+                          >
+                            <span className="truncate">{g.label}</span>
+                            <span
+                              className={`h-2 w-2 rounded-full shrink-0 ${
+                                enabled ? 'bg-[#4ade80]' : 'bg-slate-600'
+                              }`}
+                            />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5 pt-2 border-t border-white/[0.08]">
+                    <span className="block text-[11px] font-semibold text-slate-400">
+                      Velocidade de Rotação (RPM)
+                    </span>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {[
+                        { id: 'silent', label: 'Silencioso' },
+                        { id: 'normal', label: 'Normal' },
+                        { id: 'turbo', label: 'Turbo' },
+                      ].map((spd) => (
+                        <button
+                          key={spd.id}
+                          type="button"
+                          onClick={() =>
+                            setFanConfig &&
+                            setFanConfig((prev) => ({
+                              ...prev,
+                              rpmMode: spd.id,
+                            }))
+                          }
+                          className={`rounded-lg py-1.5 px-2 text-xs font-semibold border transition cursor-pointer ${
+                            (fanConfig?.rpmMode || 'normal') === spd.id
+                              ? 'bg-white text-slate-950 border-white'
+                              : 'bg-[#181b24] border-white/[0.07] text-slate-300 hover:text-white'
+                          }`}
+                        >
+                          {spd.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeDockPopover === 'config' && (
+                <div className="pointer-events-auto mb-3 w-80 rounded-2xl bg-[#13151d]/98 backdrop-blur-xl border border-white/[0.14] p-4 shadow-[0_24px_60px_rgba(0,0,0,0.9)] space-y-3.5">
+                  <div className="flex items-center justify-between border-b border-white/[0.08] pb-2">
+                    <span className="text-xs font-bold text-white flex items-center gap-2">
+                      <SlidersHorizontal className="h-3.5 w-3.5 text-slate-300" />
+                      Configuração da Cena 3D
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setShowGlass(!showGlass)}
+                      className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold border transition cursor-pointer ${
+                        showGlass
+                          ? 'bg-white/[0.12] border-white/[0.25] text-white'
+                          : 'bg-[#181b24] border-white/[0.07] text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <span>Vidro Temperado Panorâmico</span>
+                      <span className="text-[10px] font-bold">
+                        {showGlass ? 'Visível' : 'Oculto'}
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowCables && setShowCables(!showCables)}
+                      className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold border transition cursor-pointer ${
+                        showCables
+                          ? 'bg-white/[0.12] border-white/[0.25] text-white'
+                          : 'bg-[#181b24] border-white/[0.07] text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <span>Cabos e Tubos Sleeved</span>
+                      <span className="text-[10px] font-bold">
+                        {showCables ? 'Visíveis' : 'Ocultos'}
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setExplodedView(!explodedView)}
+                      className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold border transition cursor-pointer ${
+                        explodedView
+                          ? 'bg-white/[0.12] border-white/[0.25] text-white'
+                          : 'bg-[#181b24] border-white/[0.07] text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <span>Explodir Peças (Exploded View)</span>
+                      <span className="text-[10px] font-bold">
+                        {explodedView ? 'Ativo' : 'Normal'}
+                      </span>
+                    </button>
+                  </div>
+
+                  <div className="space-y-1.5 pt-2 border-t border-white/[0.08]">
+                    <span className="block text-[11px] font-semibold text-slate-400">
+                      Cor do Chão / Grid
+                    </span>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {[
+                        { id: 'dark', label: 'Escuro' },
+                        { id: 'slate', label: 'Estúdio' },
+                        { id: 'carbon', label: 'Carbono' },
+                      ].map((t) => (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() => setFloorTheme && setFloorTheme(t.id)}
+                          className={`rounded-lg py-1.5 px-2 text-xs font-semibold border transition cursor-pointer ${
+                            floorTheme === t.id
+                              ? 'bg-white text-slate-950 border-white'
+                              : 'bg-[#181b24] border-white/[0.07] text-slate-300 hover:text-white'
+                          }`}
+                        >
+                          {t.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeDockPopover === 'rgb' && (
+                <div className="pointer-events-auto mb-3 w-80 rounded-2xl bg-[#13151d]/98 backdrop-blur-xl border border-white/[0.14] p-4 shadow-[0_24px_60px_rgba(0,0,0,0.9)] space-y-3.5">
+                  <div className="flex items-center justify-between border-b border-white/[0.08] pb-2">
+                    <span className="text-xs font-bold text-white flex items-center gap-2">
+                      <Palette className="h-3.5 w-3.5 text-slate-300" />
+                      Controlador de Iluminação RGB
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {[
+                      { id: 'static', label: 'Estático' },
+                      { id: 'breathing', label: 'Respiração' },
+                      { id: 'rainbow', label: 'Arco-Íris' },
+                      { id: 'off', label: 'Desligado' },
+                    ].map((m) => (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() =>
+                          setRgbConfig((prev) => ({ ...prev, mode: m.id }))
+                        }
+                        className={`rounded-lg py-1.5 px-2.5 text-xs font-semibold border transition cursor-pointer ${
+                          rgbConfig?.mode === m.id
+                            ? 'bg-white text-slate-950 border-white'
+                            : 'bg-[#181b24] border-white/[0.07] text-slate-300 hover:text-white'
+                        }`}
+                      >
+                        {m.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="space-y-2 pt-2 border-t border-white/[0.08]">
+                    <span className="block text-[11px] font-semibold text-slate-400">
+                      Seletor de Cores Rápido
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={rgbConfig?.globalColor || '#00f2fe'}
+                        onChange={(e) => handleGlobalColorChange(e.target.value)}
+                        className="h-8 w-10 rounded cursor-pointer bg-transparent border border-white/20"
+                      />
+                      <div className="flex flex-wrap gap-1.5 flex-1">
+                        {RGB_PRESETS.map((preset) => (
+                          <button
+                            key={preset.id}
+                            type="button"
+                            onClick={() => handleGlobalColorChange(preset.color)}
+                            className="flex items-center gap-1.5 rounded-lg bg-[#181b24] hover:bg-white/[0.12] border border-white/[0.08] px-2 py-1 text-[11px] font-medium text-slate-200 transition cursor-pointer"
+                          >
+                            <span
+                              className="h-2.5 w-2.5 rounded-full"
+                              style={{ backgroundColor: preset.color }}
+                            />
+                            <span>{preset.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeDockPopover === 'displays' && (
+                <div className="pointer-events-auto mb-3 w-80 rounded-2xl bg-[#13151d]/98 backdrop-blur-xl border border-white/[0.14] p-4 shadow-[0_24px_60px_rgba(0,0,0,0.9)] space-y-3.5">
+                  <div className="flex items-center justify-between border-b border-white/[0.08] pb-2">
+                    <span className="text-xs font-bold text-white flex items-center gap-2">
+                      <Monitor className="h-3.5 w-3.5 text-slate-300" />
+                      Tela LCD do Water Cooler
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowDisplays && setShowDisplays(!showDisplays)
+                      }
+                      className={`rounded-md px-2 py-0.5 text-[10px] font-bold cursor-pointer ${
+                        showDisplays
+                          ? 'bg-[#4ade80]/20 text-[#4ade80]'
+                          : 'bg-white/[0.08] text-slate-400'
+                      }`}
+                    >
+                      {showDisplays ? 'LIGADA' : 'DESLIGADA'}
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {[
+                      { id: 'cpu_temp', label: 'Temp CPU (42°C)' },
+                      { id: 'gpu_temp', label: 'Temp GPU (61°C)' },
+                      { id: 'load_pct', label: 'Uso Sistema (34%)' },
+                      { id: 'custom', label: 'Texto Custom' },
+                    ].map((opt) => (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => {
+                          if (setShowDisplays) setShowDisplays(true);
+                          if (setDisplayConfig) {
+                            setDisplayConfig((prev) => ({
+                              ...prev,
+                              mode: opt.id,
+                            }));
+                          }
+                        }}
+                        className={`rounded-lg py-2 px-2.5 text-xs font-semibold border transition cursor-pointer ${
+                          (displayConfig?.mode || 'cpu_temp') === opt.id
+                            ? 'bg-white text-slate-950 border-white'
+                            : 'bg-[#181b24] border-white/[0.07] text-slate-300 hover:text-white'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {displayConfig?.mode === 'custom' && (
+                    <div className="space-y-1 pt-2 border-t border-white/[0.08]">
+                      <span className="block text-[11px] font-semibold text-slate-400">
+                        Texto Horizontal no Display LCD
+                      </span>
+                      <input
+                        type="text"
+                        maxLength={10}
+                        value={displayConfig?.customText || ''}
+                        onChange={(e) =>
+                          setDisplayConfig &&
+                          setDisplayConfig((prev) => ({
+                            ...prev,
+                            customText: e.target.value,
+                          }))
+                        }
+                        placeholder="Ex: 42°C"
+                        className="w-full rounded-lg bg-[#0d0f14] border border-white/[0.15] px-3 py-1.5 text-xs font-bold text-white focus:outline-none focus:border-white/40"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="pointer-events-auto flex items-center gap-1 rounded-2xl bg-[#13151d]/95 backdrop-blur-xl border border-white/[0.12] p-1.5 shadow-[0_18px_50px_rgba(0,0,0,0.85)]">
                 <button
                   type="button"
-                  onClick={() => setShowCaseFans && setShowCaseFans(!showCaseFans)}
+                  onClick={() =>
+                    setActiveDockPopover((p) => (p === 'fans' ? null : 'fans'))
+                  }
                   className={`flex flex-col items-center justify-center min-w-[56px] sm:min-w-[64px] py-1.5 px-2 rounded-xl text-[10px] font-semibold transition cursor-pointer ${
-                    showCaseFans
-                      ? 'bg-white/[0.12] text-white border border-white/[0.2]'
-                      : 'text-slate-400 hover:text-white hover:bg-white/[0.06] border border-transparent'
+                    activeDockPopover === 'fans'
+                      ? 'bg-white text-slate-950 border border-white'
+                      : 'text-slate-300 hover:text-white hover:bg-white/[0.08] border border-transparent'
                   }`}
-                  title="Alternar Ventoinhas do Gabinete (Fans)"
+                  title="Configurar Ventoinhas e RPM (Fans)"
                 >
                   <Fan className="h-4 w-4 mb-1 text-current" />
                   <span>Fans</span>
@@ -909,13 +1237,17 @@ export default function SidebarControls({
 
                 <button
                   type="button"
-                  onClick={() => setViewMenuOpen((prev) => !prev)}
+                  onClick={() =>
+                    setActiveDockPopover((p) =>
+                      p === 'config' ? null : 'config'
+                    )
+                  }
                   className={`flex flex-col items-center justify-center min-w-[56px] sm:min-w-[64px] py-1.5 px-2 rounded-xl text-[10px] font-semibold transition cursor-pointer ${
-                    viewMenuOpen || !showGlass || explodedView
-                      ? 'bg-white/[0.12] text-white border border-white/[0.2]'
-                      : 'text-slate-400 hover:text-white hover:bg-white/[0.06] border border-transparent'
+                    activeDockPopover === 'config'
+                      ? 'bg-white text-slate-950 border border-white'
+                      : 'text-slate-300 hover:text-white hover:bg-white/[0.08] border border-transparent'
                   }`}
-                  title="Configurações de Cena 3D e Câmera (Config)"
+                  title="Vidro, Cabos, Exploded View e Piso (Config)"
                 >
                   <SlidersHorizontal className="h-4 w-4 mb-1 text-current" />
                   <span>Config</span>
@@ -923,11 +1255,13 @@ export default function SidebarControls({
 
                 <button
                   type="button"
-                  onClick={() => setRgbMenuOpen((prev) => !prev)}
+                  onClick={() =>
+                    setActiveDockPopover((p) => (p === 'rgb' ? null : 'rgb'))
+                  }
                   className={`flex flex-col items-center justify-center min-w-[56px] sm:min-w-[64px] py-1.5 px-2 rounded-xl text-[10px] font-semibold transition cursor-pointer ${
-                    rgbMenuOpen || (isPcOn && rgbConfig?.mode !== 'off')
-                      ? 'bg-white/[0.12] text-white border border-white/[0.2]'
-                      : 'text-slate-400 hover:text-white hover:bg-white/[0.06] border border-transparent'
+                    activeDockPopover === 'rgb'
+                      ? 'bg-white text-slate-950 border border-white'
+                      : 'text-slate-300 hover:text-white hover:bg-white/[0.08] border border-transparent'
                   }`}
                   title="Controlador de Iluminação RGB / ARGB"
                 >
@@ -937,13 +1271,17 @@ export default function SidebarControls({
 
                 <button
                   type="button"
-                  onClick={() => setShowDisplays && setShowDisplays(!showDisplays)}
+                  onClick={() =>
+                    setActiveDockPopover((p) =>
+                      p === 'displays' ? null : 'displays'
+                    )
+                  }
                   className={`flex flex-col items-center justify-center min-w-[56px] sm:min-w-[64px] py-1.5 px-2 rounded-xl text-[10px] font-semibold transition cursor-pointer ${
-                    showDisplays
-                      ? 'bg-white/[0.12] text-white border border-white/[0.2]'
-                      : 'text-slate-400 hover:text-white hover:bg-white/[0.06] border border-transparent'
+                    activeDockPopover === 'displays'
+                      ? 'bg-white text-slate-950 border border-white'
+                      : 'text-slate-300 hover:text-white hover:bg-white/[0.08] border border-transparent'
                   }`}
-                  title="Alternar Display LCD de Temperatura do Water Cooler (Displays)"
+                  title="Personalizar Display LCD do Water Cooler (Displays)"
                 >
                   <Monitor className="h-4 w-4 mb-1 text-current" />
                   <span>Displays</span>
@@ -951,11 +1289,14 @@ export default function SidebarControls({
 
                 <button
                   type="button"
-                  onClick={() => setShowAirflow && setShowAirflow(!showAirflow)}
+                  onClick={() => {
+                    setActiveDockPopover(null);
+                    if (setShowAirflow) setShowAirflow(!showAirflow);
+                  }}
                   className={`flex flex-col items-center justify-center min-w-[56px] sm:min-w-[64px] py-1.5 px-2 rounded-xl text-[10px] font-semibold transition cursor-pointer ${
                     showAirflow
-                      ? 'bg-[#d926a9]/25 text-white border border-[#d926a9]/60'
-                      : 'text-slate-400 hover:text-white hover:bg-white/[0.06] border border-transparent'
+                      ? 'bg-[#d926a9] text-white border border-[#d926a9]'
+                      : 'text-slate-300 hover:text-white hover:bg-white/[0.08] border border-transparent'
                   }`}
                   title="Simulador de Fluxo de Ar 3D (Flow)"
                 >
@@ -965,9 +1306,12 @@ export default function SidebarControls({
 
                 <button
                   type="button"
-                  onClick={onCaptureScreenshot}
+                  onClick={() => {
+                    setActiveDockPopover(null);
+                    if (onCaptureScreenshot) onCaptureScreenshot();
+                  }}
                   className="flex flex-col items-center justify-center min-w-[56px] sm:min-w-[64px] py-1.5 px-2 rounded-xl text-[10px] font-semibold text-slate-300 hover:text-white hover:bg-white/[0.1] border border-transparent transition cursor-pointer"
-                  title="Capturar Render / Screenshot do PC 3D"
+                  title="Baixar Screenshot meu-setup-3d.png (Render)"
                 >
                   <Camera className="h-4 w-4 mb-1 text-current" />
                   <span>Render</span>

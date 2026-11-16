@@ -30,15 +30,27 @@ export default function App() {
   const [customGlbOverrides, setCustomGlbOverrides] = useState({});
 
   const [envPreset, setEnvPreset] = useState('studio');
+  const [floorTheme, setFloorTheme] = useState('dark');
   const [showBoundingLabels, setShowBoundingLabels] = useState(false);
   const [wireframe, setWireframe] = useState(false);
   const [autoRotate, setAutoRotate] = useState(false);
   const [explodedView, setExplodedView] = useState(false);
   const [showGlass, setShowGlass] = useState(true);
+  const [showCables, setShowCables] = useState(true);
   const [isPcOn, setIsPcOn] = useState(true);
   const [showAirflow, setShowAirflow] = useState(false);
   const [showDisplays, setShowDisplays] = useState(true);
-  const [showCaseFans, setShowCaseFans] = useState(true);
+  const [displayConfig, setDisplayConfig] = useState({
+    mode: 'cpu_temp',
+    customText: '42°C',
+  });
+  const [fanConfig, setFanConfig] = useState({
+    top: true,
+    side: true,
+    bottom: true,
+    rear: true,
+    rpmMode: 'normal',
+  });
   const [rgbConfig, setRgbConfig] = useState(DEFAULT_RGB_CONFIG);
   const [currency, setCurrency] = useState('BRL');
 
@@ -161,10 +173,19 @@ export default function App() {
     setExplodedView(false);
     setShowBoundingLabels(false);
     setShowGlass(true);
+    setShowCables(true);
+    setFloorTheme('dark');
     setIsPcOn(true);
     setShowAirflow(false);
     setShowDisplays(true);
-    setShowCaseFans(true);
+    setDisplayConfig({ mode: 'cpu_temp', customText: '42°C' });
+    setFanConfig({
+      top: true,
+      side: true,
+      bottom: true,
+      rear: true,
+      rpmMode: 'normal',
+    });
     setRgbConfig(DEFAULT_RGB_CONFIG);
   }, []);
 
@@ -174,7 +195,7 @@ export default function App() {
     if (!dataUrl) return;
 
     const link = document.createElement('a');
-    link.download = `toxelvault-build.png`;
+    link.download = 'meu-setup-3d.png';
     link.href = dataUrl;
     document.body.appendChild(link);
     link.click();
@@ -210,6 +231,8 @@ export default function App() {
         }
         envPreset={envPreset}
         setEnvPreset={setEnvPreset}
+        floorTheme={floorTheme}
+        setFloorTheme={setFloorTheme}
         showBoundingLabels={showBoundingLabels}
         setShowBoundingLabels={setShowBoundingLabels}
         wireframe={wireframe}
@@ -220,14 +243,18 @@ export default function App() {
         setExplodedView={setExplodedView}
         showGlass={showGlass}
         setShowGlass={setShowGlass}
+        showCables={showCables}
+        setShowCables={setShowCables}
         isPcOn={isPcOn}
         setIsPcOn={setIsPcOn}
         showAirflow={showAirflow}
         setShowAirflow={setShowAirflow}
         showDisplays={showDisplays}
         setShowDisplays={setShowDisplays}
-        showCaseFans={showCaseFans}
-        setShowCaseFans={setShowCaseFans}
+        displayConfig={displayConfig}
+        setDisplayConfig={setDisplayConfig}
+        fanConfig={fanConfig}
+        setFanConfig={setFanConfig}
         rgbConfig={rgbConfig}
         setRgbConfig={setRgbConfig}
         onSnapCamera={handleSnapCamera}
@@ -244,14 +271,17 @@ export default function App() {
           customGlbOverrides={customGlbOverrides}
           showBoundingLabels={showBoundingLabels}
           envPreset={envPreset}
+          floorTheme={floorTheme}
           wireframe={wireframe}
           autoRotate={autoRotate}
           explodedView={explodedView}
           showGlass={showGlass}
+          showCables={showCables}
           isPcOn={isPcOn}
           showAirflow={showAirflow}
           showDisplays={showDisplays}
-          showCaseFans={showCaseFans}
+          displayConfig={displayConfig}
+          fanConfig={fanConfig}
           rgbConfig={rgbConfig}
           cameraViewTrigger={cameraViewTrigger}
           onStatsUpdate={setStats}
